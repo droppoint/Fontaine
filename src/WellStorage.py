@@ -106,6 +106,8 @@ class WellStorage(object):
             return False
 
     def add_parameter(self, parameter, data):
+        if parameter == "FPR":
+            parameter = "FPRP"
         if not parameter in self.parameters:
             self.parameters[parameter] = list(data)
         else:
@@ -218,8 +220,17 @@ class WellStorage(object):
                                                    key)
                 mask[i] += 1
                 self.add_parameter('NPW', mask)
-#                self.add_parameter("N" + well_code[1:3] + "T", mask)  # new wells
+
+                mask = list(self.mask)
+                mask[i] += oil_prod[i]
+                self.add_parameter("NOPT", mask)  # bad code
+
+                mask = list(self.mask)
+                mask[i] += water_prod[i]
+                self.add_parameter("NWPT", mask)  # new wells
+
                 return
+
             if (oil_prod[i] + water_prod[i] + gas_prod[i] <
                     oil_inj[i] + water_inj[i] + gas_inj[i]):
                 self.wells[number]['First_run'] = (i + self.minimal_year,

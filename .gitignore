@@ -7,4 +7,8 @@ src/build/
 *.log
 *.rsm
 *.bak
+*.xls
 *.profile
+*.project
+*.pydevproject
+.settings/

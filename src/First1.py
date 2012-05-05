@@ -39,18 +39,6 @@ def timer(f):  # time benchmark
         return res
     return tmp
 
-@timer
-def mapcount(filename):  # input file lines counter
-    import mmap          # whole file in memory
-    f = open(filename, "r+")
-    buf = mmap.mmap(f.fileno(), 0)
-    lines = 0
-    readline = buf.readline
-    while readline():
-        lines += 1
-    f.close()
-    return lines
-
 
 def config_init(filename):
     import ConfigParser
@@ -68,7 +56,7 @@ def getline(file):
     import re
     import mmap
     line = ''
-    filelength = mapcount(file)
+
     initialization(file)
 
     def parseBlock(pointer):
@@ -91,11 +79,13 @@ def getline(file):
                 temp.append(value)
         del(temp)
 #        quantity_str = buf.readline()
-        buf.readline()
-        numbers_str = buf.readline()
-        numbers = re.findall(r"\b([E0-9.-]+)\b", numbers_str)
-        if ((len(headers) - 1) > len(numbers)) and numbers != "\n":
-            temp_num = numbers[14:]   # bad block of code
+        line = buf.readline()
+        while not re.search(r"\s([0-9]+[A-Z]?(?:[-_]?\w*)?)\s", line):
+            line = buf.readline()
+        numbers_str = line
+        numbers = re.findall(r"\s([0-9]+[A-Z]?(?:[-_]?\w*)?)\s", numbers_str)
+        if ((len(headers) - 1) > len(numbers)) and numbers != []:
+            temp_num = numbers_str[14:]   # bad block of code
             numbers = []
             nn = 0
             while nn + 13 < len(temp_num):
@@ -112,7 +102,7 @@ def getline(file):
             line = buf.readline()
         data = line
         result['data'] = []
-        while not data == config.breaker:  # parsing the data
+        while not (data == config.breaker or buf.tell() == filesize):  # parsing the data
             dataline = re.findall(r"\s((?:[-+]?[0-9]*\.[0-9]*E?-?[0-9]*)|0)\s",
                                    data)
             result['data'].append([dataline[i - 1] for i in index])
@@ -121,12 +111,17 @@ def getline(file):
 
     f = open(file, "r+")
     buf = mmap.mmap(f.fileno(), 0)  # add filename check
+    filesize = buf.size()
     n = 0
     buf.seek(n)
     while buf.find("SUMMARY", n) != -1:
+        if progress.wasCanceled():
+            f.close()
+            break
+        progress.setValue(int((n / filesize) * 100))
         n = buf.find("SUMMARY", n)
         m = buf.find("DATE", n)
-        buf.seek(n)
+        buf.seek(n)  # WHY???
         n += 1
         buf.seek(m)
         str = buf.readline()
@@ -146,7 +141,6 @@ def getline(file):
                     storage.add_parameter(parameter, welldata)
 
     f.close()
-    return line
 
 
 def initialization(filename):
@@ -204,7 +198,7 @@ def initialization(filename):
         if re.search(r"^\s*[-]*\r\n$", line):
             commentaryline = num
             firstdataline = buf.tell()
-        elif re.findall(r"\s(DATE)", line):
+        elif re.findall(r"\s(DATE)", line):  # WHY???
             header = num
         line = buf.readline()
     buf.seek(firstdataline)
@@ -255,7 +249,6 @@ def renderData(filename):
     water_IR = storage.production_rate('WWIT')
     water_IR_tons = [x / 1000 for x in water_IR]
     for well in storage.wells:
-        print well
         storage.add_First_Year(well)
     new_wells_liq_tons = list(map(lambda x, y: (x * oil_density + y *
                                                 water_density) / 1000000,
@@ -331,7 +324,6 @@ def renderData(filename):
 
     work_time = list(storage.mask)  # bad
     for wells in storage.wells.values():
-        print wells['First_run']
         if not wells['First_run'][1] == "Exploratory":
             work_time[wells['First_run'][0] - storage.minimal_year] += \
                      wells['First_run'][2]
@@ -391,12 +383,12 @@ def renderData(filename):
     printRow(u'      в т.ч. под закачку', inj_transfer, 45)
     printRow(u'   нагнетательных', output_wells_inj, 46)
 
-    printRow(u'Ср. взв. пластовое давление, атм', storage.parameters.get('FPR',mask), 48) # FPRP or FPR
+    printRow(u'Ср. взв. пластовое давление, атм', storage.parameters.get('FPRP',mask), 48) # FPRP or FPR
     printRow(u'   в зоне отбора, атм', reservoir_pres[0], 49)
     printRow(u'   в зоне закачки, атм', reservoir_pres[1], 50)
     
-    printRow(u'Ср. забойное давление доб. скважин , атм', bottomhole_pres[0], 53)   
-    printRow(u'Ср. забойное давление нагн. скважин , атм', bottomhole_pres[1], 54)
+    printRow(u'Ср. забойное давление доб. скважин , атм', bottomhole_pres[0], 52)   
+    printRow(u'Ср. забойное давление нагн. скважин , атм', bottomhole_pres[1], 53)
     progress.setValue(100)
     try: 
         wb.save(filename)
