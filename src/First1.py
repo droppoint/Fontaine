@@ -102,10 +102,12 @@ def getline(file):
             line = buf.readline()
         data = line
         result['data'] = []
-        while not (data == config.breaker or buf.tell() == filesize):  # parsing the data
+        while not data == config.breaker:  # parsing the data
             dataline = re.findall(r"\s((?:[-+]?[0-9]*\.[0-9]*E?-?[0-9]*)|0)\s",
                                    data)
             result['data'].append([dataline[i - 1] for i in index])
+            if buf.tell() == filesize:
+                break
             data = buf.readline()
         return result
 
@@ -205,7 +207,7 @@ def initialization(filename):
     dataline = buf.readline()
     d_pattern, r_pattern = dateformatcheck(dataline)
     dataheight = num - commentaryline
-    for i in range(dataheight - 1):  # получение массива дат
+    for i in range(dataheight):  # получение массива дат
 #        locale.setlocale(locale.LC_ALL, 'en_US.utf8')
         cur_date = datetime.strptime(re.findall(r_pattern, dataline)[0],
                                                             d_pattern)
