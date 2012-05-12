@@ -10,7 +10,7 @@ Created on 03.04.2012
 
 from __future__ import division
 import sys
-#import locale
+import locale
 from WellStorage import *
 from PySide import QtGui, QtCore
 from fontaine_ui import Ui_MainWindow
@@ -19,7 +19,7 @@ class _Constants:   # this class store initial data and constants
     class ConstError(TypeError):
         pass
 
-    def __setattr__(self, name, value):
+    def __setitem__(self, name, value):
         if name in self.__dict__:
             raise self.ConstError, "Can't rebind const(%s)" % name
         self.__dict__[name] = value
@@ -28,6 +28,10 @@ class _Constants:   # this class store initial data and constants
         if name in self.__dict__:
             raise self.ConstError, "Can't unbind const(%s)" % name
         raise NameError + name
+
+    def reset(self):
+        self.__dict__.clear()
+#        log.info('Constants cleared')  # TODO: logger
 
 
 def timer(f):  # time benchmark
@@ -42,13 +46,20 @@ def timer(f):  # time benchmark
 
 def config_init(filename):
     import ConfigParser
-    try:
-        config = ConfigParser.ConfigParser()
-        config.read(filename)
-        const.oil_density = config.get('Fluid Properties', 'OIL_DENSITY')
-        const.water_density = config.get('Fluid Properties', 'WATER_DENSITY')
-    except:
-        pass
+    import json
+
+    def parseSection(section_name):
+        if not section_name in config.sections():
+            return
+        for options in config.options(section_name):
+            const[options] = config.get(section_name, options)
+#    try:
+    config = ConfigParser.ConfigParser()
+    config.read(filename)
+    for sections in config.sections():
+        parseSection(sections)
+#    except:
+#        print "Configuration file not found"
 
 
 @timer
@@ -97,7 +108,6 @@ def getline(file):
                 nn += 13
         result['numbers'] = [numbers[i - 1] for i in index if numbers]
         #Reading data
-        line = buf.readline()
         while not re.search(config.r_pattern, line):
             line = buf.readline()
         data = line
@@ -208,7 +218,7 @@ def initialization(filename):
     d_pattern, r_pattern = dateformatcheck(dataline)
     dataheight = num - commentaryline
     for i in range(dataheight):  # получение массива дат
-#        locale.setlocale(locale.LC_ALL, 'en_US.utf8')
+        locale.setlocale(locale.LC_ALL, 'en_US.utf8')
         cur_date = datetime.strptime(re.findall(r_pattern, dataline)[0],
                                                             d_pattern)
         dataline = buf.readline()
@@ -227,6 +237,7 @@ def initialization(filename):
 #Excel write module
 @timer
 def renderData(filename):
+    import json
     import xlwt
     from xlwt.Utils import rowcol_to_cell
     if progress.wasCanceled():
@@ -385,40 +396,48 @@ def renderData(filename):
     printRow(u'      в т.ч. под закачку', inj_transfer, 45)
     printRow(u'   нагнетательных', output_wells_inj, 46)
 
-    printRow(u'Ср. взв. пластовое давление, атм', storage.parameters.get('FPRP',mask), 48) # FPRP or FPR
+    printRow(u'Ср. взв. пластовое давление, атм',
+                    storage.parameters.get('FPRP', mask), 48)  # FPRP or FPR
     printRow(u'   в зоне отбора, атм', reservoir_pres[0], 49)
     printRow(u'   в зоне закачки, атм', reservoir_pres[1], 50)
-    
-    printRow(u'Ср. забойное давление доб. скважин , атм', bottomhole_pres[0], 52)   
-    printRow(u'Ср. забойное давление нагн. скважин , атм', bottomhole_pres[1], 53)
+
+    printRow(u'Ср. забойное давление доб. скважин, атм',
+                                    bottomhole_pres[0], 52)
+    printRow(u'Ср. забойное давление нагн. скважин, атм',
+                                    bottomhole_pres[1], 53)
     progress.setValue(100)
-    try: 
+    s = json.dumps(storage.wells)
+    print s
+    try:
         wb.save(filename)
         ui.informationMessage(u"Завершено")
-    except: 
+    except:
         ui.informationMessage(u"<p>Не удалось сохранить файл</p>")
 
-    
 
 if __name__ == "__main__":
     const = _Constants()
     config = _Constants()
     storage = WellStorage()
+    category = _Constants()
 #    sys.stdout = open("info.log", "w")
 #    sys.stderr = open("error.log", "w")
-    config_init('config.ini')
     app = QtGui.QApplication(sys.argv)
     mainwindow = QtGui.QMainWindow()
-    progress = QtGui.QProgressDialog(u"Подготовка отчета...", u"Отмена", 0, 100)
+    progress = QtGui.QProgressDialog(u"Подготовка отчета...", 
+                                        u"Отмена", 0, 100)
     progress.setWindowModality(QtCore.Qt.WindowModal)
     ui = Ui_MainWindow()
     ui.setupUi(mainwindow)
-    
-    def ignition ():
+
+    def ignition():
         filename = ui.lineEdit.text()
         savefile = ui.setSaveFileName()
-        
-        if filename and savefile: 
+        const.reset()  # Блок try не помешал бы
+        config.reset()
+        config_init('config.ini')
+#        config_init('wells.ini')
+        if filename and savefile:
             getline(filename)
             renderData(savefile)
             storage.clear()
@@ -427,7 +446,7 @@ if __name__ == "__main__":
         else:
             ui.informationMessage(u"Выберите файл для сохранения")
     ui.pushButton_2.clicked.connect(ignition)
-    
+
     mainwindow.show()
     sys.exit(app.exec_())
 
