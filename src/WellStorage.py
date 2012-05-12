@@ -55,6 +55,7 @@ class WellStorage(object):
             firstYear = True
             welldata = []
             worktime = []
+            welldata_dec = []
             for cur, next in pairs(sorted(self.dates)):
                 cur_line = self.dates[cur]
                 next_line = self.dates[next]
@@ -64,11 +65,26 @@ class WellStorage(object):
                 m = countMonth(cur, data)
                 worktime.append(m)
             self.add_worktime(number, worktime)
+
+            dec_dates = sorted(self.dates)  # baaaaaad
+            dec_dates.pop(0)
+            for cur in dec_dates:  # december pattern
+                if self.dates[cur] == 0:
+                    cur.next()
+                cur_line = self.dates[cur] - 1
+                next_line = self.dates[cur]
+                welldata_dec.append(
+                    float(data[next_line]) - \
+                        float(data[cur_line]))
+
             if not well_code in self.wells[number]:
                 self.wells[number][well_code] = welldata
+                self.wells[number]["dec" + well_code] = welldata_dec
             else:  # bad code
                 self.wells[number][well_code] = list(map(lambda x, y: x + y,
                                 self.wells[number][well_code], welldata))
+                self.wells[number]["dec" + well_code] = list(map(lambda x, y: x + y,
+                                self.wells[number]["dec" + well_code], welldata_dec))
                 print "lateral indeed", number, well_code
             if not "First_run" in self.wells[number]:
                 self.wells[number]['First_run'] = ('N/A', "Exploratory", 0)
@@ -95,16 +111,37 @@ class WellStorage(object):
         if number in self.wells:
             oil_inj = self.recieveLine(number, 'WOIT')
             oil_prod = self.recieveLine(number, 'WOPT')
+            gas_prod = self.recieveLine(number, 'WGPT')
             water_prod = self.recieveLine(number, 'WWPT')
             water_inj = self.recieveLine(number, 'WWIT')
+            gas_inj = self.recieveLine(number, 'WGIT')
             output = [0 for unused_well in oil_prod]
-            for year, (oil_p, water_p, water_i, oil_i) in enumerate(
-                        zip(oil_prod, water_prod, oil_inj, water_inj)):
-                if (oil_p + water_p) < (water_i + oil_i):
+            for year, (oil_p, water_p, gas_p, water_i, oil_i, gas_i) in enumerate(
+                        zip(oil_prod, water_prod, gas_prod, oil_inj, water_inj, gas_inj)):
+                if (oil_p + water_p + gas_p) < (water_i + oil_i + gas_i):
                         output[year] += 1
-                elif (oil_p + water_p) > (water_i + oil_i):
+                elif (oil_p + water_p + gas_p) > (water_i + oil_i + gas_i):
                         output[year] += 2
             self.wells[number]['cls_mask'] = output
+        else:
+            return False
+
+    def well_classification2(self, number):  # BAD MASK
+        if number in self.wells:
+            oil_inj = self.recieveLine(number, 'decWOIT')
+            oil_prod = self.recieveLine(number, 'decWOPT')
+            gas_prod = self.recieveLine(number, 'decWGPT')
+            water_prod = self.recieveLine(number, 'decWWPT')
+            water_inj = self.recieveLine(number, 'decWWIT')
+            gas_inj = self.recieveLine(number, 'decWGIT')
+            output = [0 for unused_well in oil_prod]
+            for year, (oil_p, water_p, gas_p, water_i, oil_i, gas_i) in enumerate(
+                        zip(oil_prod, water_prod, gas_prod, oil_inj, water_inj, gas_inj)):
+                if (oil_p + water_p + gas_p) < (water_i + oil_i + gas_i):
+                        output[year] += 1
+                elif (oil_p + water_p + gas_p) > (water_i + oil_i + gas_i):
+                        output[year] += 2
+            self.wells[number]['cls_mask_dec'] = output
         else:
             return False
 
@@ -140,7 +177,7 @@ class WellStorage(object):
         wells_fond.remove(0)
         for year, unused_item in enumerate(wells_fond):
             for well in self.wells.values():
-                if well['cls_mask'][year] == code:
+                if well['cls_mask_dec'][year] == code:
                     wells_fond[year] += 1
         return wells_fond
 

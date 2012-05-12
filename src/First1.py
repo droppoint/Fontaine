@@ -355,6 +355,7 @@ def renderData(filename):
 
     for wellname in storage.wells:  # initiating classification of wells
         storage.well_classification(wellname)
+        storage.well_classification2(wellname)
 
     reservoir_pres = storage.avg_pressure('WBPN')
     bottomhole_pres = storage.avg_pressure('WBHP')
