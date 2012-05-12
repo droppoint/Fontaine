@@ -380,6 +380,16 @@ def renderData(filename):
             work_time[wells['First_run'][0] - storage.minimal_year] += \
                      wells['First_run'][2]
 
+    storage.mask.pop(0)
+    inj = list(storage.mask)
+    prod = list(storage.mask)
+    for years, unused_val in enumerate(storage.mask):
+        for wells in storage.wells:
+            if storage.wells[wells]['cls_mask'][years] == 2:
+                prod[years] += storage.wells[wells]['In_work'][years]
+            if storage.wells[wells]['cls_mask'][years] == 1:
+                inj[years] += storage.wells[wells]['In_work'][years]
+
     def printRow(name, data, y):
         x = 0
         ws.write(y, x, name)
@@ -444,6 +454,11 @@ def renderData(filename):
                                     bottomhole_pres[0], 52)
     printRow(u'Ср. забойное давление нагн. скважин, атм',
                                     bottomhole_pres[1], 53)
+
+    printRow(u'Время работы добывающих скважин',
+                                    prod, 54)
+    printRow(u'Время работы нагнетательных скважин',
+                                    inj, 55)
     progress.setValue(100)
 #    s = json.dumps(storage.wells)
 #    print s

@@ -77,6 +77,7 @@ class WellStorage(object):
             welldata = []
             for year in sorted(self.dates.values()):
                 welldata.append(float(data[year]))
+            welldata.pop(0)  # december pattern
             self.wells[number][well_code] = welldata
 
     def add_worktime(self, number, data):
@@ -116,6 +117,8 @@ class WellStorage(object):
     def add_parameter(self, parameter, data):
         if parameter == "FPR":
             parameter = "FPRP"
+        if parameter == "FPRP":
+            data.pop(0)
         if not parameter in self.parameters:
             self.parameters[parameter] = list(data)
         else:
