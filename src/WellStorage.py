@@ -43,7 +43,10 @@ class WellStorage(object):
                         float(data[curr + start]) != 0):
                     m += 1 * k
             return m
-
+        shrt_num = re.findall(r"^([0-9]+)", number)
+        if shrt_num[0] != number:
+            print "lateral", number, well_code
+            number = shrt_num[0]
         if not number in self.wells:
             self.wells[number] = {}
         if not self.mask:
@@ -61,7 +64,12 @@ class WellStorage(object):
                 m = countMonth(cur, data)
                 worktime.append(m)
             self.add_worktime(number, worktime)
-            self.wells[number][well_code] = welldata
+            if not well_code in self.wells[number]:
+                self.wells[number][well_code] = welldata
+            else:  # bad code
+                self.wells[number][well_code] = list(map(lambda x, y: x + y,
+                                self.wells[number][well_code], welldata))
+                print "lateral indeed", number, well_code
             if not "First_run" in self.wells[number]:
                 self.wells[number]['First_run'] = ('N/A', "Exploratory", 0)
 

@@ -267,8 +267,8 @@ def renderData(filename):
     from xlwt.Utils import rowcol_to_cell
     if progress.wasCanceled():
             return
-        
-    if storage.category:  # cut if not in category
+
+    if hasattr(storage, 'category'):  # cut if not in category
         pat = ['WOPT', 'WWPT', 'WGPT', 'WOIT', 'WWIT', 'WGIT']
         tmp = list(storage.wells)
         for wells in tmp:
@@ -447,6 +447,7 @@ def renderData(filename):
     progress.setValue(100)
 #    s = json.dumps(storage.wells)
 #    print s
+    print storage.wells.keys()
     try:
         wb.save(filename)
         ui.informationMessage(u"Завершено")
@@ -459,8 +460,8 @@ if __name__ == "__main__":
     config = _Constants()
     storage = WellStorage()
     category = _Constants()
-#    sys.stdout = open("info.log", "w")
-#    sys.stderr = open("error.log", "w")
+    sys.stdout = open("info.log", "w")
+    sys.stderr = open("error.log", "w")
     app = QtGui.QApplication(sys.argv)
     mainwindow = QtGui.QMainWindow()
     progress = QtGui.QProgressDialog(u"Подготовка отчета...", 
