@@ -19,19 +19,30 @@ class Ui_MainWindow(object):
         self.centralwidget = QtGui.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.pushButton = QtGui.QPushButton(self.centralwidget)
-        self.pushButton.setGeometry(QtCore.QRect(310, 80, 98, 27))
+        self.pushButton.setGeometry(QtCore.QRect(310, 40, 100, 25))
         self.pushButton.setObjectName("pushButton")
         self.pushButton.clicked.connect(self.setOpenFileName)
         self.lineEdit = QtGui.QLineEdit(self.centralwidget)
-        self.lineEdit.setGeometry(QtCore.QRect(20, 80, 271, 27))
+        self.lineEdit.setGeometry(QtCore.QRect(20, 40, 270, 25))
         self.lineEdit.setObjectName("lineEdit")
         self.lineEdit.setReadOnly(True)
         self.pushButton_2 = QtGui.QPushButton(self.centralwidget)
-        self.pushButton_2.setGeometry(QtCore.QRect(150, 140, 131, 27))
+        self.pushButton_2.setGeometry(QtCore.QRect(150, 180, 130, 25))
         self.pushButton_2.setObjectName("pushButton_2")
         self.label = QtGui.QLabel(self.centralwidget)
-        self.label.setGeometry(QtCore.QRect(20, 35, 181, 17))
+        self.label.setGeometry(QtCore.QRect(20, 15, 180, 20))
         self.label.setObjectName("label")
+        self.label_2 = QtGui.QLabel(self.centralwidget)
+        self.label_2.setGeometry(QtCore.QRect(20, 80, 180, 20))
+        self.label_2.setObjectName("label_2")
+        self.lineEdit_2 = QtGui.QLineEdit(self.centralwidget)
+        self.lineEdit_2.setGeometry(QtCore.QRect(20, 105, 270, 25))
+        self.lineEdit_2.setObjectName("lineEdit_2")
+        self.lineEdit_2.setReadOnly(True)
+        self.pushButton_3 = QtGui.QPushButton(self.centralwidget)
+        self.pushButton_3.setGeometry(QtCore.QRect(310, 105, 100, 25))
+        self.pushButton_3.setObjectName("pushButton_3")
+        self.pushButton_3.clicked.connect(self.setFileName)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 428, 25))
@@ -51,8 +62,10 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Fontaine", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton.setText(QtGui.QApplication.translate("MainWindow", "Обзор", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton_3.setText(QtGui.QApplication.translate("MainWindow", "Обзор", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton_2.setText(QtGui.QApplication.translate("MainWindow", "Преобразовать", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("MainWindow", "Выберите файл  *.rsm", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_2.setText(QtGui.QApplication.translate("MainWindow", "Выберите файл категории запасов", None, QtGui.QApplication.UnicodeUTF8))
         
     def setOpenFileName(self):    
         options = QtGui.QFileDialog.Options()
@@ -64,6 +77,17 @@ class Ui_MainWindow(object):
                     "Eclipse RSM File (*.rsm);;All Files (*)","",options)
         if fileName:
             self.lineEdit.setText(fileName)
+    
+    def setFileName(self):    
+        options = QtGui.QFileDialog.Options()
+        if not self.native.isChecked():
+            options |= QtGui.QFileDialog.DontUseNativeDialog
+        fileName, filtr = QtGui.QFileDialog.getOpenFileName(self.pushButton, 
+                    u"Открыть",
+                    "",
+                    "All Files (*)","",options)
+        if fileName:
+            self.lineEdit_2.setText(fileName)
             
     def setSaveFileName(self):    
         options = QtGui.QFileDialog.Options()

@@ -10,7 +10,7 @@ Created on 03.04.2012
 
 from __future__ import division
 import sys
-import locale
+#import locale
 from WellStorage import *
 from PySide import QtGui, QtCore
 from fontaine_ui import Ui_MainWindow
@@ -46,20 +46,45 @@ def timer(f):  # time benchmark
 
 def config_init(filename):
     import ConfigParser
-    import json
 
     def parseSection(section_name):
         if not section_name in config.sections():
             return
         for options in config.options(section_name):
             const[options] = config.get(section_name, options)
-#    try:
+#    try:                                    # unblock this after debug
     config = ConfigParser.ConfigParser()
     config.read(filename)
     for sections in config.sections():
         parseSection(sections)
 #    except:
 #        print "Configuration file not found"
+
+
+def wells_init(filename):
+    import mmap
+    import re
+
+    result = {}
+    try:
+        f = open(filename, "r+")
+    except IOError as e:
+        print "Category file not found proceeding"
+        return
+    buf = mmap.mmap(f.fileno(), 0)  # add filename check
+    filesize = buf.size()
+    n = 0
+    buf.seek(n)
+    while True:
+        print buf.tell()
+        if buf.tell() == filesize:
+            break
+        data = buf.readline()
+        raw = re.match(r"^([0-9]+[A-Z]?(?:[-_]?\w*)?)\s+(0.\d+|1)", data)
+        if raw:
+            well = raw.groups()
+            result.update(dict([well]))  # bad memory consumption
+    storage.category = result
 
 
 @timer
@@ -218,7 +243,7 @@ def initialization(filename):
     d_pattern, r_pattern = dateformatcheck(dataline)
     dataheight = num - commentaryline
     for i in range(dataheight):  # получение массива дат
-        locale.setlocale(locale.LC_ALL, 'en_US.utf8')
+#        locale.setlocale(locale.LC_ALL, 'en_US.utf8')
         cur_date = datetime.strptime(re.findall(r_pattern, dataline)[0],
                                                             d_pattern)
         dataline = buf.readline()
@@ -237,11 +262,25 @@ def initialization(filename):
 #Excel write module
 @timer
 def renderData(filename):
-    import json
+#    import json
     import xlwt
     from xlwt.Utils import rowcol_to_cell
     if progress.wasCanceled():
             return
+        
+    if storage.category:  # cut if not in category
+        pat = ['WOPT', 'WWPT', 'WGPT', 'WOIT', 'WWIT', 'WGIT']
+        tmp = list(storage.wells)
+        for wells in tmp:
+            if not wells in storage.category:
+                del(storage.wells[wells])
+        for wells in storage.wells:  # bad intendation
+            k = float(storage.category[wells])
+            for p in pat:
+                if p in storage.wells[wells]:
+                    storage.wells[wells][p] = list(
+                        map(lambda x: x * k, storage.wells[wells][p]))
+
     mask = list(storage.mask)
     oil_density = int(const.oil_density)
     water_density = int(const.water_density)
@@ -406,8 +445,8 @@ def renderData(filename):
     printRow(u'Ср. забойное давление нагн. скважин, атм',
                                     bottomhole_pres[1], 53)
     progress.setValue(100)
-    s = json.dumps(storage.wells)
-    print s
+#    s = json.dumps(storage.wells)
+#    print s
     try:
         wb.save(filename)
         ui.informationMessage(u"Завершено")
@@ -432,11 +471,12 @@ if __name__ == "__main__":
 
     def ignition():
         filename = ui.lineEdit.text()
+        well_filename = ui.lineEdit_2.text()
         savefile = ui.setSaveFileName()
         const.reset()  # Блок try не помешал бы
         config.reset()
         config_init('config.ini')
-#        config_init('wells.ini')
+        wells_init(well_filename)
         if filename and savefile:
             getline(filename)
             renderData(savefile)
