@@ -119,9 +119,13 @@ class WellStorage(object):
             output = [0 for unused_well in oil_prod]
             for year, (oil_p, water_p, gas_p, water_i, oil_i, gas_i) in enumerate(
                         zip(oil_prod, water_prod, gas_prod, oil_inj, water_inj, gas_inj)):
-                if (oil_p + water_p + gas_p) < (water_i + oil_i + gas_i):
+#                if (oil_p + water_p + gas_p) < (water_i + oil_i + gas_i):
+#                        output[year] += 1
+#                elif (oil_p + water_p + gas_p) > (water_i + oil_i + gas_i):
+#                        output[year] += 2
+                if (water_i + oil_i + gas_i) > 0:
                         output[year] += 1
-                elif (oil_p + water_p + gas_p) > (water_i + oil_i + gas_i):
+                elif (oil_p + water_p + gas_p) > 0:
                         output[year] += 2
             self.wells[number]['cls_mask'] = output
         else:
@@ -138,9 +142,13 @@ class WellStorage(object):
             output = [0 for unused_well in oil_prod]
             for year, (oil_p, water_p, gas_p, water_i, oil_i, gas_i) in enumerate(
                         zip(oil_prod, water_prod, gas_prod, oil_inj, water_inj, gas_inj)):
-                if (oil_p + water_p + gas_p) < (water_i + oil_i + gas_i):
+#                if (oil_p + water_p + gas_p) < (water_i + oil_i + gas_i):
+#                        output[year] += 1
+#                elif (oil_p + water_p + gas_p) > (water_i + oil_i + gas_i):
+#                        output[year] += 2
+                if (water_i + oil_i + gas_i) > 0:
                         output[year] += 1
-                elif (oil_p + water_p + gas_p) > (water_i + oil_i + gas_i):
+                elif (oil_p + water_p + gas_p) > 0:
                         output[year] += 2
             self.wells[number]['cls_mask_dec'] = output
         else:
@@ -262,8 +270,34 @@ class WellStorage(object):
         oil_inj = self.recieveLine(number, 'WOIT')
         gas_inj = self.recieveLine(number, 'WGIT')
         for i, key in enumerate(self.wells[number]['In_work']):
-            if (oil_prod[i] + water_prod[i] + gas_prod[i] >
-                    oil_inj[i] + water_inj[i] + gas_inj[i]):
+#            if (oil_prod[i] + water_prod[i] + gas_prod[i] >
+#                    oil_inj[i] + water_inj[i] + gas_inj[i]):
+#                self.wells[number]['First_run'] = (i + self.minimal_year,
+#                                                   "Production",
+#                                                   key)
+#                mask[i] += 1
+#                self.add_parameter('NPW', mask)
+#
+#                mask = list(self.mask)
+#                mask[i] += oil_prod[i]
+#                self.add_parameter("NOPT", mask)  # bad code
+#
+#                mask = list(self.mask)
+#                mask[i] += water_prod[i]
+#                self.add_parameter("NWPT", mask)  # new wells
+#
+#                return
+
+#            if (oil_prod[i] + water_prod[i] + gas_prod[i] <
+#                    oil_inj[i] + water_inj[i] + gas_inj[i]):
+            if (oil_inj[i] + water_inj[i] + gas_inj[i]) > 0:
+                self.wells[number]['First_run'] = (i + self.minimal_year,
+                                                   "Injection",
+                                                   key)
+                mask[i] += 1
+                self.add_parameter('NIW', mask)
+                return
+            elif (oil_prod[i] + water_prod[i] + gas_prod[i]) > 0:
                 self.wells[number]['First_run'] = (i + self.minimal_year,
                                                    "Production",
                                                    key)
@@ -280,14 +314,6 @@ class WellStorage(object):
 
                 return
 
-            if (oil_prod[i] + water_prod[i] + gas_prod[i] <
-                    oil_inj[i] + water_inj[i] + gas_inj[i]):
-                self.wells[number]['First_run'] = (i + self.minimal_year,
-                                                   "Injection",
-                                                   key)
-                mask[i] += 1
-                self.add_parameter('NIW', mask)
-                return
         self.wells[number]['First_run'] = ('N/A', "Exploratory", 0)
 
     def clear(self):
