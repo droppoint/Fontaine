@@ -88,12 +88,12 @@ def wells_init(filename):
 
 
 @timer
-def getline(file):
+def getline(file, **kwargs):
     import re
     import mmap
     import math  # maybe in other place?
     line = ''
-
+    lateral = kwargs.get('lateral')
     initialization(file)
 
     def parseBlock(pointer):
@@ -120,11 +120,7 @@ def getline(file):
         factor = []
         while not re.search(r"\s([0-9]+[A-Z]?(?:[-_]?\w*)?)\s", line):
             if re.search(r"(?:\*10\*\*(\d))", line):
-#                print headers
-#                print line
-#                factor = re.findall(r"(?:\*10\*\*(\d))", line)
                 temp_num = line[14:]   # bad block of code
-                numbers = []
                 nn = 0
                 while nn + 13 < len(temp_num):
                     if re.match(r"(?:\*10\*\*(\d))", temp_num[nn:nn + 13]):
@@ -193,7 +189,7 @@ def getline(file):
                             fl = float(factor)
                             fk = math.pow(10.0, fl)
                             data = [float(i) * fk for i in data]
-                    storage.add_well(well_num, parameter, data)
+                    storage.add_well(well_num, parameter, data, lateral=lateral)
 
                 if re.match(r"^(FPRP?)$", parameter):
                     welldata = []
@@ -285,7 +281,7 @@ def initialization(filename):
 
 #Excel write module
 @timer
-def renderData(filename):
+def renderData(filename, debug):
 #    import json
     import xlwt
     from xlwt.Utils import rowcol_to_cell
@@ -313,7 +309,6 @@ def renderData(filename):
     font0.name = 'Times New Roman'
     wb = xlwt.Workbook()
     ws = wb.add_sheet(u'gosplan_input')
-    debuglist = wb.add_sheet(u'debug')
 
     oil_PR = storage.production_rate('WOPT')
     oil_PR_tons = [x * oil_density / 1000000 for x in oil_PR]
@@ -423,20 +418,23 @@ def renderData(filename):
             ws.write(y, x, key)
             x += 1
 
-    def printDebugRow(name, data, y):
-        x = 0
-        debuglist.write(y, x, name)
-        x += 1
-        for key in data:
-            debuglist.write(y, x, key)
+    if debug:
+        debuglist = wb.add_sheet(u'debug')
+
+        def printDebugRow(name, data, y):
+            x = 0
+            debuglist.write(y, x, name)
             x += 1
-    n = 0
-    for well in storage.wells:
-        printDebugRow(well, [], n)
-        n += 1
-        for parameter in storage.wells[well]:
-            printDebugRow(parameter, storage.wells[well][parameter], n)
+            for key in data:
+                debuglist.write(y, x, key)
+                x += 1
+        n = 0
+        for well in storage.wells:
+            printDebugRow(well, [], n)
             n += 1
+            for parameter in storage.wells[well]:
+                printDebugRow(parameter, storage.wells[well][parameter], n)
+                n += 1
 
     printRow(u'Годы', sorted(storage.dates.iterkeys()), 0)
 
@@ -500,8 +498,6 @@ if __name__ == "__main__":
     config = _Constants()
     storage = WellStorage()
     category = _Constants()
-#    sys.stdout = open("info.log", "w")
-#    sys.stderr = open("error.log", "w")
     app = QtGui.QApplication(sys.argv)
     mainwindow = QtGui.QMainWindow()
     progress = QtGui.QProgressDialog(u"Подготовка отчета...",
@@ -511,6 +507,10 @@ if __name__ == "__main__":
     ui.setupUi(mainwindow)
 
     def ignition():
+        info_file = open("info.log", "w")
+        sys.stdout = info_file
+        error_file = open("error.log", "w")
+        sys.stderr = error_file
         filename = ui.lineEdit.text()
         well_filename = ui.lineEdit_2.text()
         savefile = ui.setSaveFileName()
@@ -518,14 +518,17 @@ if __name__ == "__main__":
         config.reset()
         config_init('config.ini')
         wells_init(well_filename)
+
         if filename and savefile:
-            getline(filename)
-            renderData(savefile)
+            getline(filename, lateral=ui.tracks.isChecked())
+            renderData(savefile, ui.debug.isChecked())
             storage.clear()
         elif not filename:
             ui.informationMessage(u"Выберите файл для обработки")
         else:
             ui.informationMessage(u"Выберите файл для сохранения")
+        info_file.close()
+        error_file.close()
     ui.pushButton_2.clicked.connect(ignition)
 
     mainwindow.show()
