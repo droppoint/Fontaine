@@ -119,6 +119,8 @@ def getline(file, **kwargs):
         line = buf.readline()
         factor = []
         while not re.search(r"\s([0-9]+[A-Z]?(?:[-_]?\w*)?)\s", line):
+            if re.search(config.r_pattern, line):
+                break
             if re.search(r"(?:\*10\*\*(\d))", line):
                 temp_num = line[14:]   # bad block of code
                 nn = 0
@@ -281,10 +283,12 @@ def initialization(filename):
 
 #Excel write module
 @timer
-def renderData(filename, debug):
+def renderData(filename, **kwargs):
 #    import json
     import xlwt
     from xlwt.Utils import rowcol_to_cell
+    lateral = kwargs.get('lateral')
+    debug = kwargs.get('debug')
     if progress.wasCanceled():
             return
 
@@ -361,7 +365,7 @@ def renderData(filename, debug):
     index_output_well = list(storage.output_well(well)
                              for well in storage.wells
                              if storage.output_well(well))
-
+    print index_output_well
     all_output_well = list(mask)
     output_wells_prod = list(mask)
     output_wells_inj = list(mask)
@@ -371,6 +375,8 @@ def renderData(filename, debug):
             output_wells_inj[year] += 1
         else:
             output_wells_prod[year] += 1
+        print all_output_well
+        print output_wells_prod
 
     for wellname in storage.wells:  # initiating classification of wells
         storage.well_classification(wellname)
@@ -396,7 +402,8 @@ def renderData(filename, debug):
 
     work_time = list(storage.mask)  # bad
     for wells in storage.wells.values():
-        if not wells['First_run'][1] == "Exploratory":
+        if not (wells['First_run'][1] == "Exploratory" or
+            wells['First_run'][1] == "Dummy"):
             work_time[wells['First_run'][0] - storage.minimal_year] += \
                      wells['First_run'][2]
 
@@ -460,6 +467,8 @@ def renderData(filename, debug):
     printRow(u'Ввод скважин из бурения', [], 37)
     printRow(u'   добывающих', storage.parameters.get('NPW', mask), 38)
     printRow(u'   нагнетательных', storage.parameters.get('NIW', mask), 39)
+    if lateral:
+        printRow(u'   боковые стволы', storage.parameters.get('NLB', mask), 40)
 
     printRow(u'Перевод из доб. в нагн.', inj_transfer, 41)
 
@@ -521,7 +530,8 @@ if __name__ == "__main__":
 
         if filename and savefile:
             getline(filename, lateral=ui.tracks.isChecked())
-            renderData(savefile, ui.debug.isChecked())
+            renderData(savefile, debug = ui.debug.isChecked(),
+                       lateral=ui.tracks.isChecked())
             storage.clear()
         elif not filename:
             ui.informationMessage(u"Выберите файл для обработки")

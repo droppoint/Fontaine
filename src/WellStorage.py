@@ -43,13 +43,23 @@ class WellStorage(object):
                         float(data[curr + start]) != 0):
                     m += 1 * k
             return m
+        if not number in self.wells:
+            self.wells[number] = {}
         if lateral:
             shrt_num = re.findall(r"^([0-9A-Z]+)(?=BS|[_-])", number)
             if shrt_num:
-                print "lateral", number, well_code, shrt_num[0]
+#                print "lateral", number, well_code, shrt_num[0]
+                if not shrt_num[0] in self.wells:
+                    self.wells[shrt_num[0]] = {}
+                if not "Lateral" in self.wells[shrt_num[0]]:
+                    self.wells[shrt_num[0]]["Lateral"] = []
+                if not number in self.wells[shrt_num[0]]["Lateral"]:
+                    self.wells[shrt_num[0]]["Lateral"].append(number)
+                if not "L_Borholes" in self.parameters:
+                    self.parameters["L_Borholes"] = []
+                if not number in self.parameters["L_Borholes"]:
+                    self.parameters["L_Borholes"].append(number)
 #                number = shrt_num[0]
-        if not number in self.wells:
-            self.wells[number] = {}
         if not self.mask:
             self.mask = [0 for unused_item in self.dates]
         if re.match(r"^(W[O|G|W][I|P]T)$", well_code):
@@ -185,37 +195,61 @@ class WellStorage(object):
         wells_fond = list(self.mask)
         wells_fond.remove(0)
         for year, unused_item in enumerate(wells_fond):
-            for well in self.wells.values():
-                if well['cls_mask_dec'][year] == code:
-                    wells_fond[year] += 1
+            for well in self.wells:
+                if not well in self.parameters["L_Borholes"]:
+                    if self.wells[well]['cls_mask_dec'][year] == code:
+                        wells_fond[year] += 1
+                    elif 'Lateral' in self.wells[well]:
+                        for wells in self.wells[well]['Lateral']:
+                            if self.wells[wells]['cls_mask_dec'][year] == code:
+                                wells_fond[year] += 1
+                                break
         return wells_fond
 
     def recieveLine(self, number, code):
         if code in self.wells[number]:
             return self.wells[number][code]
         else:
-            return list(self.mask)
+            mask = list(self.mask)
+            mask.remove(0)
+            return list(mask)
 
     def output_well(self, number):  # !!! Rework
-        if number in self.wells:
-            oil_prod = self.recieveLine(number, 'WOPT')  # too many lines
-            water_prod = self.recieveLine(number, 'WWPT')
-            gas_prod = self.recieveLine(number, 'WGPT')
-            water_inj = self.recieveLine(number, 'WWIT')
-            oil_inj = self.recieveLine(number, 'WOIT')
-            gas_inj = self.recieveLine(number, 'WGIT')
-            welltype = False  # false means production well
-            for year in reversed(range(len(oil_prod))):
-                if oil_prod[year] > 0 or water_prod[year] > 0 or gas_prod[year] > 0:
-                    break
-                elif water_inj[year] > 0 or oil_inj[year] > 0 or gas_inj[year] > 0:
-                    welltype = True
-                    break
-            if year == len(oil_prod) - 1:
-                return False
-            return year, welltype
-        else:
+        if number in self.parameters["L_Borholes"]:
             return False
+        if not number in self.wells:
+            return False
+        oil_prod = self.recieveLine(number, 'WOPT')  # too many lines
+        water_prod = self.recieveLine(number, 'WWPT')
+        gas_prod = self.recieveLine(number, 'WGPT')
+        water_inj = self.recieveLine(number, 'WWIT')
+        oil_inj = self.recieveLine(number, 'WOIT')
+        gas_inj = self.recieveLine(number, 'WGIT')
+        if 'Lateral' in self.wells[number]:
+            for wells in self.wells[number]['Lateral']:
+                oil_prod2 = self.recieveLine(wells, 'WOPT')
+                water_prod2 = self.recieveLine(wells, 'WWPT')
+                gas_prod2 = self.recieveLine(wells, 'WGPT')
+                water_inj2 = self.recieveLine(wells, 'WWIT')
+                oil_inj2 = self.recieveLine(wells, 'WOIT')
+                gas_inj2 = self.recieveLine(wells, 'WGIT')
+                oil_prod = list(map(lambda x, y: x + y, oil_prod, oil_prod2))
+                water_prod = list(map(lambda x, y: x + y, water_prod, water_prod2))
+                gas_prod = list(map(lambda x, y: x + y, gas_prod, gas_prod2))
+                oil_inj = list(map(lambda x, y: x + y, oil_inj, oil_inj2))
+                water_inj = list(map(lambda x, y: x + y, water_inj, water_inj2))
+                gas_inj = list(map(lambda x, y: x + y, gas_inj, gas_inj2))
+        welltype = False  # false means production well
+        for year in reversed(range(len(oil_prod))): #  change to mask
+            if water_inj[year] + oil_inj[year] + gas_inj[year] > 0:
+                welltype = True
+                break
+            elif oil_prod[year] + water_prod[year] + gas_prod[year] > 0:
+                welltype = False
+                break
+        if year == len(oil_prod) - 1:
+            return False
+        return year, welltype
 
     def inj_transfer_check(self, number):
         mask = list(self.mask)
@@ -269,6 +303,9 @@ class WellStorage(object):
         water_inj = self.recieveLine(number, 'WWIT')
         oil_inj = self.recieveLine(number, 'WOIT')
         gas_inj = self.recieveLine(number, 'WGIT')
+        if not 'In_work' in self.wells[number]:
+            self.wells[number]['First_run'] = ('N/A', "Dummy", 0)
+            return
         for i, key in enumerate(self.wells[number]['In_work']):
 #            if (oil_prod[i] + water_prod[i] + gas_prod[i] >
 #                    oil_inj[i] + water_inj[i] + gas_inj[i]):
@@ -295,22 +332,27 @@ class WellStorage(object):
                                                    "Injection",
                                                    key)
                 mask[i] += 1
-                self.add_parameter('NIW', mask)
+                if not number in self.parameters["L_Borholes"]:
+                    self.add_parameter('NIW', mask)
+                else:
+                    self.add_parameter('NLB', mask)
                 return
             elif (oil_prod[i] + water_prod[i] + gas_prod[i]) > 0:
                 self.wells[number]['First_run'] = (i + self.minimal_year,
                                                    "Production",
                                                    key)
                 mask[i] += 1
-                self.add_parameter('NPW', mask)
+                if not number in self.parameters["L_Borholes"]:  # bad spot 
+                    self.add_parameter('NPW', mask)
+                    mask = list(self.mask)
+                    mask[i] += oil_prod[i]
+                    self.add_parameter("NOPT", mask)  # bad code
 
-                mask = list(self.mask)
-                mask[i] += oil_prod[i]
-                self.add_parameter("NOPT", mask)  # bad code
-
-                mask = list(self.mask)
-                mask[i] += water_prod[i]
-                self.add_parameter("NWPT", mask)  # new wells
+                    mask = list(self.mask)
+                    mask[i] += water_prod[i]
+                    self.add_parameter("NWPT", mask)
+                else:
+                    self.add_parameter('NLB', mask)
 
                 return
 
