@@ -43,10 +43,10 @@ class WellStorage(object):
                         float(data[curr + start]) != 0):
                     m += 1 * k
             return m
-        shrt_num = re.findall(r"^([0-9]+)", number)
-        if shrt_num[0] != number:
-            print "lateral", number, well_code
-            number = shrt_num[0]
+#        shrt_num = re.findall(r"^([0-9A-Z]+)(?=BS|[_-])", number)
+#        if shrt_num:
+#            print "lateral", number, well_code, shrt_num[0]
+#            number = shrt_num[0]
         if not number in self.wells:
             self.wells[number] = {}
         if not self.mask:

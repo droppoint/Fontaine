@@ -91,6 +91,7 @@ def wells_init(filename):
 def getline(file):
     import re
     import mmap
+    import math  # maybe in other place?
     line = ''
 
     initialization(file)
@@ -116,10 +117,27 @@ def getline(file):
         del(temp)
 #        quantity_str = buf.readline()
         line = buf.readline()
+        factor = []
         while not re.search(r"\s([0-9]+[A-Z]?(?:[-_]?\w*)?)\s", line):
+            if re.search(r"(?:\*10\*\*(\d))", line):
+#                print headers
+#                print line
+#                factor = re.findall(r"(?:\*10\*\*(\d))", line)
+                temp_num = line[14:]   # bad block of code
+                numbers = []
+                nn = 0
+                while nn + 13 < len(temp_num):
+                    if re.match(r"(?:\*10\*\*(\d))", temp_num[nn:nn + 13]):
+                        factor.append(re.findall(r"(?:\*10\*\*(\d))",
+                                                temp_num[nn:nn + 13])[0])
+                    else:
+                        factor.append(None)
+                    nn += 13
             line = buf.readline()
+        result['factor'] = list(factor)
         numbers_str = line
         numbers = re.findall(r"\s([0-9]+[A-Z]?(?:[-_]?\w*)?)\s", numbers_str)
+
         if ((len(headers) - 1) > len(numbers)) and numbers != []:
             temp_num = numbers_str[14:]   # bad block of code
             numbers = []
@@ -169,6 +187,12 @@ def getline(file):
                 parameter = block['headers'][key]
 
                 if re.match(r"^(W[O|G|W][I|P]T)|(WBPN|WBHP)$", parameter):
+                    if block['factor']:
+                        factor = block['factor'][key]
+                        if factor:
+                            fl = float(factor)
+                            fk = math.pow(10.0, fl)
+                            data = [float(i) * fk for i in data]
                     storage.add_well(well_num, parameter, data)
 
                 if re.match(r"^(FPRP?)$", parameter):
@@ -476,11 +500,11 @@ if __name__ == "__main__":
     config = _Constants()
     storage = WellStorage()
     category = _Constants()
-    sys.stdout = open("info.log", "w")
-    sys.stderr = open("error.log", "w")
+#    sys.stdout = open("info.log", "w")
+#    sys.stderr = open("error.log", "w")
     app = QtGui.QApplication(sys.argv)
     mainwindow = QtGui.QMainWindow()
-    progress = QtGui.QProgressDialog(u"Подготовка отчета...", 
+    progress = QtGui.QProgressDialog(u"Подготовка отчета...",
                                         u"Отмена", 0, 100)
     progress.setWindowModality(QtCore.Qt.WindowModal)
     ui = Ui_MainWindow()
