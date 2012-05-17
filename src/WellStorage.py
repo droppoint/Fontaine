@@ -196,14 +196,17 @@ class WellStorage(object):
         wells_fond.remove(0)
         for year, unused_item in enumerate(wells_fond):
             for well in self.wells:
-                if not well in self.parameters["L_Borholes"]:
-                    if self.wells[well]['cls_mask_dec'][year] == code:
-                        wells_fond[year] += 1
-                    elif 'Lateral' in self.wells[well]:
-                        for wells in self.wells[well]['Lateral']:
-                            if self.wells[wells]['cls_mask_dec'][year] == code:
-                                wells_fond[year] += 1
-                                break
+                if ("L_Borholes" in self.parameters) and \
+                  (well in self.parameters["L_Borholes"]):
+                    continue
+
+                if self.wells[well]['cls_mask_dec'][year] == code:
+                    wells_fond[year] += 1
+                elif 'Lateral' in self.wells[well]:
+                    for wells in self.wells[well]['Lateral']:
+                        if self.wells[wells]['cls_mask_dec'][year] == code:
+                            wells_fond[year] += 1
+                            break
         return wells_fond
 
     def recieveLine(self, number, code):
@@ -215,7 +218,8 @@ class WellStorage(object):
             return list(mask)
 
     def output_well(self, number):  # !!! Rework
-        if number in self.parameters["L_Borholes"]:
+        if ("L_Borholes" in self.parameters) and \
+            (number in self.parameters["L_Borholes"]):
             return False
         if not number in self.wells:
             return False
@@ -332,17 +336,22 @@ class WellStorage(object):
                                                    "Injection",
                                                    key)
                 mask[i] += 1
-                if not number in self.parameters["L_Borholes"]:
-                    self.add_parameter('NIW', mask)
+                if ("L_Borholes" in self.parameters) and \
+                  (number in self.parameters["L_Borholes"]):
+                    self.add_parameter('NLB', mask)  
                 else:
-                    self.add_parameter('NLB', mask)
+                    self.add_parameter('NIW', mask)
                 return
             elif (oil_prod[i] + water_prod[i] + gas_prod[i]) > 0:
                 self.wells[number]['First_run'] = (i + self.minimal_year,
                                                    "Production",
                                                    key)
                 mask[i] += 1
-                if not number in self.parameters["L_Borholes"]:  # bad spot 
+
+                if ("L_Borholes" in self.parameters) and \
+                  (number in self.parameters["L_Borholes"]):  # bad spot
+                    self.add_parameter('NLB', mask)
+                else:
                     self.add_parameter('NPW', mask)
                     mask = list(self.mask)
                     mask[i] += oil_prod[i]
@@ -351,8 +360,6 @@ class WellStorage(object):
                     mask = list(self.mask)
                     mask[i] += water_prod[i]
                     self.add_parameter("NWPT", mask)
-                else:
-                    self.add_parameter('NLB', mask)
 
                 return
 

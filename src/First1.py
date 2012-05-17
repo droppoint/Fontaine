@@ -147,6 +147,8 @@ def getline(file, **kwargs):
                 else:
                     numbers.append("N/A")
                 nn += 13
+        if numbers == []:
+            numbers = ["N/A" for unused_i in range(len(headers) - 1)]
         result['numbers'] = [numbers[i - 1] for i in index if numbers]
         #Reading data
         while not re.search(config.r_pattern, line):
@@ -375,8 +377,6 @@ def renderData(filename, **kwargs):
             output_wells_inj[year] += 1
         else:
             output_wells_prod[year] += 1
-        print all_output_well
-        print output_wells_prod
 
     for wellname in storage.wells:  # initiating classification of wells
         storage.well_classification(wellname)
@@ -517,9 +517,9 @@ if __name__ == "__main__":
 
     def ignition():
         info_file = open("info.log", "w")
-        sys.stdout = info_file
+#        sys.stdout = info_file
         error_file = open("error.log", "w")
-        sys.stderr = error_file
+#        sys.stderr = error_file
         filename = ui.lineEdit.text()
         well_filename = ui.lineEdit_2.text()
         savefile = ui.setSaveFileName()
