@@ -107,9 +107,9 @@ class Ui_MainWindow(object):
             return fileName
         
     
-    def informationMessage(self, message):    
+    def informationMessage(self, message, caption="Fontaine"):    
         reply = QtGui.QMessageBox.information(self.pushButton_2,
-                u"QMessageBox.information()", message)
+                caption, message)
 
 #        if reply == QtGui.QMessageBox.Ok:
 #            self.informationLabel.setText("OK")

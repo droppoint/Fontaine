@@ -4,13 +4,14 @@ Created on 24.04.2012
 @author: APartilov
 '''
 
+
 class Singleton(type):
     '''
     Singleton class for creating 1 uniquie instance with
     1 input point
     '''
-    def __init__(cls, name, bases, dict):
-        super(Singleton, cls).__init__(name, bases, dict)
+    def __init__(cls, name, bases, dictationary):
+        super(Singleton, cls).__init__(name, bases, dictationary)
         cls.instance = None
 
     def __call__(cls, *args, **kw):
@@ -33,6 +34,7 @@ class WellStorage(object):
     def add_well(self, number, well_code, data, **kwargs):
         import re
         lateral = kwargs.get('lateral')
+
         def countMonth(pointer, data):
             m = 0
             start = self.dates[pointer]
@@ -63,13 +65,13 @@ class WellStorage(object):
         if not self.mask:
             self.mask = [0 for unused_item in self.dates]
         if re.match(r"^(W[O|G|W][I|P]T)$", well_code):
-            firstYear = True
+#            firstYear = True
             welldata = []
             worktime = []
             welldata_dec = []
-            for cur, next in pairs(sorted(self.dates)):
+            for cur, nex in pairs(sorted(self.dates)):
                 cur_line = self.dates[cur]
-                next_line = self.dates[next]
+                next_line = self.dates[nex]
                 welldata.append(
                     float(data[next_line]) - \
                         float(data[cur_line]))
@@ -238,13 +240,15 @@ class WellStorage(object):
                 oil_inj2 = self.recieveLine(wells, 'WOIT')
                 gas_inj2 = self.recieveLine(wells, 'WGIT')
                 oil_prod = list(map(lambda x, y: x + y, oil_prod, oil_prod2))
-                water_prod = list(map(lambda x, y: x + y, water_prod, water_prod2))
+                water_prod = list(map(lambda x, y: x + y,
+                                      water_prod, water_prod2))
                 gas_prod = list(map(lambda x, y: x + y, gas_prod, gas_prod2))
                 oil_inj = list(map(lambda x, y: x + y, oil_inj, oil_inj2))
-                water_inj = list(map(lambda x, y: x + y, water_inj, water_inj2))
+                water_inj = list(map(lambda x, y: x + y,
+                                     water_inj, water_inj2))
                 gas_inj = list(map(lambda x, y: x + y, gas_inj, gas_inj2))
         welltype = False  # false means production well
-        for year in reversed(range(len(oil_prod))): #  change to mask
+        for year in reversed(range(len(oil_prod))):  # change to mask
             if water_inj[year] + oil_inj[year] + gas_inj[year] > 0:
                 welltype = True
                 break
@@ -261,13 +265,13 @@ class WellStorage(object):
         if number in self.wells:
             cls_mask = self.recieveLine(number, 'cls_mask')
             n = 0
-            for cur, next in pairs(cls_mask):
+            for cur, nex in pairs(cls_mask):
                 n += 1
-                if cur == 2 and next == 1:
+                if cur == 2 and nex == 1:
                     mask[n] += 1
                     self.wells[number]['First_run'] = (first_run[0],
                                      "Production_transfered", first_run[2])
-                if cur == 0 and next == 1 and first_run[1] == "Production":
+                if cur == 0 and nex == 1 and first_run[1] == "Production":
                     mask[n] += 1
                     self.wells[number]['First_run'] = (first_run[0],
                                      "Production_transfered", first_run[2])
@@ -296,7 +300,6 @@ class WellStorage(object):
         return avg_prod_pres, avg_inj_pres
 
     def add_First_Year(self, number):   # HARD REWORK
-        import re
         mask = list(self.mask)
         if not number in self.wells:
             self.wells[number] = {}
@@ -370,6 +373,7 @@ class WellStorage(object):
         self.parameters.clear()
         self.mask = []
         self.minimal_year = 0
+
 
 def pairs(lst):  # list generator
     i = iter(lst)

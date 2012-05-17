@@ -7,6 +7,7 @@ src/build/
 *.log
 *.rsm
 *.bak
+*.bat
 *.xls
 *.profile
 *.project

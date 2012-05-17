@@ -11,9 +11,10 @@ Created on 03.04.2012
 from __future__ import division
 import sys
 #import locale
-from WellStorage import *
+from WellStorage import WellStorage
 from PySide import QtGui, QtCore
 from fontaine_ui import Ui_MainWindow
+
 
 class _Constants:   # this class store initial data and constants
     class ConstError(TypeError):
@@ -36,6 +37,7 @@ class _Constants:   # this class store initial data and constants
 
 def timer(f):  # time benchmark
     from time import time
+
     def tmp(*args, **kwargs):
         t = time()
         res = f(*args, **kwargs)
@@ -68,7 +70,7 @@ def wells_init(filename):
     result = {}
     try:
         f = open(filename, "r+")
-    except IOError as e:
+    except IOError as unused_e:
         print "Category file not found proceeding"
         return
     buf = mmap.mmap(f.fileno(), 0)  # add filename check
@@ -88,11 +90,10 @@ def wells_init(filename):
 
 
 @timer
-def getline(file, **kwargs):
+def getline(filename, **kwargs):
     import re
     import mmap
     import math  # maybe in other place?
-    line = ''
     lateral = kwargs.get('lateral')
     initialization(file)
 
@@ -164,7 +165,7 @@ def getline(file, **kwargs):
             data = buf.readline()
         return result
 
-    f = open(file, "r+")
+    f = open(filename, "r+")
     buf = mmap.mmap(f.fileno(), 0)  # add filename check
     filesize = buf.size()
     n = 0
@@ -179,8 +180,8 @@ def getline(file, **kwargs):
         buf.seek(n)  # WHY???
         n += 1
         buf.seek(m)
-        str = buf.readline()
-        if re.findall(r"\b(W[O|G|W][I|P]T|WBPN|WBHP|FPRP?)\b", str):
+        cur_str = buf.readline()
+        if re.findall(r"\b(W[O|G|W][I|P]T|WBPN|WBHP|FPRP?)\b", cur_str):
             block = parseBlock(m)
             for key, well_num in enumerate(block['numbers']):
                 data = [i[key] for i in block['data']]
@@ -193,7 +194,8 @@ def getline(file, **kwargs):
                             fl = float(factor)
                             fk = math.pow(10.0, fl)
                             data = [float(i) * fk for i in data]
-                    storage.add_well(well_num, parameter, data, lateral=lateral)
+                    storage.add_well(well_num, parameter,
+                                        data, lateral=lateral)
 
                 if re.match(r"^(FPRP?)$", parameter):
                     welldata = []
@@ -260,13 +262,14 @@ def initialization(filename):
             commentaryline = num
             firstdataline = buf.tell()
         elif re.findall(r"\s(DATE)", line):  # WHY???
-            header = num
+#            header = num
+            pass
         line = buf.readline()
     buf.seek(firstdataline)
     dataline = buf.readline()
     d_pattern, r_pattern = dateformatcheck(dataline)
     dataheight = num - commentaryline
-    for i in range(dataheight):  # получение массива дат
+    for unused_i in range(dataheight):  # получение массива дат
 #        locale.setlocale(locale.LC_ALL, 'en_US.utf8')
         cur_date = datetime.strptime(re.findall(r_pattern, dataline)[0],
                                                             d_pattern)
@@ -316,7 +319,7 @@ def renderData(filename, **kwargs):
     wb = xlwt.Workbook()
     ws = wb.add_sheet(u'gosplan_input')
 
-    oil_PR = storage.production_rate('WOPT')
+    oil_PR = storage.production_rate('WOPT')  # TODO: save to list
     oil_PR_tons = [x * oil_density / 1000000 for x in oil_PR]
     water_PR = storage.production_rate('WWPT')
     water_PR_tons = [x * water_density / 1000000 for x in water_PR]
@@ -335,7 +338,7 @@ def renderData(filename, **kwargs):
                                   storage.parameters.get('NOPT', mask)))
 
     n = 0
-    for unused_years in oil_PR:
+    for unused_years in oil_PR:  # TODO: Short this mess
         n += 1
         cell1 = rowcol_to_cell(10, n)
         cell2 = rowcol_to_cell(11, n)
@@ -499,7 +502,8 @@ def renderData(filename, **kwargs):
         wb.save(filename)
         ui.informationMessage(u"Завершено")
     except:
-        ui.informationMessage(u"<p>Не удалось сохранить файл</p>")
+        ui.informationMessage(u"<p>Не удалось сохранить файл</p>",
+                              caption=u"Ошибка сохранения")
 
 
 if __name__ == "__main__":
@@ -511,6 +515,7 @@ if __name__ == "__main__":
     mainwindow = QtGui.QMainWindow()
     progress = QtGui.QProgressDialog(u"Подготовка отчета...",
                                         u"Отмена", 0, 100)
+    progress.setWindowTitle(QtGui.QApplication.translate("Progress", "Fontaine", None, QtGui.QApplication.UnicodeUTF8))
     progress.setWindowModality(QtCore.Qt.WindowModal)
     ui = Ui_MainWindow()
     ui.setupUi(mainwindow)
@@ -530,13 +535,15 @@ if __name__ == "__main__":
 
         if filename and savefile:
             getline(filename, lateral=ui.tracks.isChecked())
-            renderData(savefile, debug = ui.debug.isChecked(),
+            renderData(savefile, debug=ui.debug.isChecked(),
                        lateral=ui.tracks.isChecked())
             storage.clear()
         elif not filename:
-            ui.informationMessage(u"Выберите файл для обработки")
+            ui.informationMessage(u"Выберите файл для обработки",
+                                  caption=u"Ошибка запуска")
         else:
-            ui.informationMessage(u"Выберите файл для сохранения")
+            ui.informationMessage(u"Выберите файл для сохранения",
+                                  caption=u"Ошибка запуска")
         info_file.close()
         error_file.close()
     ui.pushButton_2.clicked.connect(ignition)
