@@ -102,7 +102,7 @@ class WellStorage(object):
             if not "First_run" in self.wells[number]:
                 self.wells[number]['First_run'] = ('N/A', "Exploratory", 0)
 
-        if re.match(r"^(WBPN|WBHP)$", well_code):
+        if re.match(r"^(WBPN|WBHP|W[O|G|W|L][I|P]R)$", well_code):
             welldata = []
             for year in sorted(self.dates.values()):
                 welldata.append(float(data[year]))
@@ -166,6 +166,26 @@ class WellStorage(object):
         else:
             return False
 
+    def well_classification3(self, number):  # BAD MASK
+        if number in self.wells:
+#            oil_prod = self.recieveLine(number, 'WOPR')
+#            gas_prod = self.recieveLine(number, 'WGPR')
+#            water_prod = self.recieveLine(number, 'WWPR')
+            liq_prod = self.recieveLine(number, 'WLPR')
+            oil_inj = self.recieveLine(number, 'WOIR')
+            water_inj = self.recieveLine(number, 'WWIR')
+            gas_inj = self.recieveLine(number, 'WGIR')
+            output = [0 for unused_well in liq_prod]
+            for year, (liq_p, water_i, oil_i, gas_i) in enumerate(
+                        zip(liq_prod, oil_inj, water_inj, gas_inj)):
+                if (water_i + oil_i + gas_i) > 0:
+                        output[year] += 1
+                elif (liq_p) > 0:
+                        output[year] += 2
+            self.wells[number]['cls_mask_rate_jan'] = output
+        else:
+            return False
+
     def get_well(self, wellname):
         if wellname in self.wells:
             return self.wells[wellname]
@@ -202,11 +222,11 @@ class WellStorage(object):
                   (well in self.parameters["L_Borholes"]):
                     continue
 
-                if self.wells[well]['cls_mask_dec'][year] == code:
+                if self.wells[well]['cls_mask_rate_jan'][year] == code:
                     wells_fond[year] += 1
                 elif 'Lateral' in self.wells[well]:
                     for wells in self.wells[well]['Lateral']:
-                        if self.wells[wells]['cls_mask_dec'][year] == code:
+                        if self.wells[wells]['cls_mask_rate_jan'][year] == code:
                             wells_fond[year] += 1
                             break
         return wells_fond
@@ -341,7 +361,7 @@ class WellStorage(object):
                 mask[i] += 1
                 if ("L_Borholes" in self.parameters) and \
                   (number in self.parameters["L_Borholes"]):
-                    self.add_parameter('NLB', mask)  
+                    self.add_parameter('NLB', mask)
                 else:
                     self.add_parameter('NIW', mask)
                 return

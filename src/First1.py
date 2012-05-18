@@ -95,7 +95,7 @@ def getline(filename, **kwargs):
     import mmap
     import math  # maybe in other place?
     lateral = kwargs.get('lateral')
-    initialization(file)
+    initialization(filename)
 
     def parseBlock(pointer):
         result = {}
@@ -103,7 +103,7 @@ def getline(filename, **kwargs):
         buf.seek(pointer)
         header_str = buf.readline()
         headers = re.findall(r"([A-Z0-9]+)", header_str)
-        result['headers'] = re.findall(r"\b(W[O|G|W][I|P]T|WBPN|WBHP|FPRP?)\b",
+        result['headers'] = re.findall(r"\b(W[O|G|W|L][I|P][T|R]|WBPN|WBHP|FPRP?)\b",
                                                               header_str)
 
         #Comparision of the headers
@@ -181,13 +181,13 @@ def getline(filename, **kwargs):
         n += 1
         buf.seek(m)
         cur_str = buf.readline()
-        if re.findall(r"\b(W[O|G|W][I|P]T|WBPN|WBHP|FPRP?)\b", cur_str):
+        if re.findall(r"\b(W[O|G|W|L][I|P][T|R]|WBPN|WBHP|FPRP?)\b", cur_str):
             block = parseBlock(m)
             for key, well_num in enumerate(block['numbers']):
                 data = [i[key] for i in block['data']]
                 parameter = block['headers'][key]
 
-                if re.match(r"^(W[O|G|W][I|P]T)|(WBPN|WBHP)$", parameter):
+                if re.match(r"^(W[O|G|W|L][I|P][T|R])|(WBPN|WBHP)$", parameter):
                     if block['factor']:
                         factor = block['factor'][key]
                         if factor:
@@ -384,6 +384,7 @@ def renderData(filename, **kwargs):
     for wellname in storage.wells:  # initiating classification of wells
         storage.well_classification(wellname)
         storage.well_classification2(wellname)
+        storage.well_classification3(wellname)
 
     reservoir_pres = storage.avg_pressure('WBPN')
     bottomhole_pres = storage.avg_pressure('WBHP')
