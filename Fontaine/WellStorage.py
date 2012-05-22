@@ -31,6 +31,16 @@ class WellStorage(object):  # FIXME: More docstrings
     mask = []
     minimal_year = 0
 
+    import logging
+    cls_logger = logging.getLogger('Well_storage')
+#    # create console handler with a higher log level
+#    ch = logging.StreamHandler()
+#    ch.setLevel(logging.INFO)
+#    # create formatter and add it to the handlers
+#    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+#    ch.setFormatter(formatter)
+#    cls_logger.addHandler(ch)
+
     def add_well(self, number, well_code, data, **kwargs):
         import re
         lateral = kwargs.get('lateral')
@@ -47,6 +57,8 @@ class WellStorage(object):  # FIXME: More docstrings
             return m
         if not number in self.wells:
             self.wells[number] = {}
+            self.cls_logger.info(number)
+            self.cls_logger.info('pass')
         if lateral:
             shrt_num = re.findall(r"^([0-9A-Z]+)(?=BS|[_-])", number)
             if shrt_num:
@@ -105,7 +117,7 @@ class WellStorage(object):  # FIXME: More docstrings
                 welldata.append(float(data[year]))
             welldata.pop(0)  # december pattern
             self.wells[number][well_code] = welldata
-
+        
     def add_worktime(self, number, data):
         if not number in self.wells:
             self.wells[number] = {}
@@ -305,8 +317,9 @@ class WellStorage(object):  # FIXME: More docstrings
                 avg_inj_pres[num] += pres_inj / count_inj
         return avg_prod_pres, avg_inj_pres
 
-    def add_First_Year(self, number):   # HARD REWORK
+    def add_First_Year(self, number, **kwargs):   # HARD REWORK
         mask = list(self.mask)
+        over = kwargs.get('year')
         if not number in self.wells:
             self.wells[number] = {}
         self.wells[number]['First_run'] = ()
@@ -320,6 +333,9 @@ class WellStorage(object):  # FIXME: More docstrings
             self.wells[number]['First_run'] = ('N/A', "Dummy", 0)
             return
         for i, key in enumerate(self.wells[number]['In_work']):
+            if over:
+                i = over - self.minimal_year
+                key = self.wells[number]['In_work'][i]
             if (oil_inj[i] + water_inj[i] + gas_inj[i]) > 0:
                 self.wells[number]['First_run'] = (i + self.minimal_year,
                                                    "Injection",

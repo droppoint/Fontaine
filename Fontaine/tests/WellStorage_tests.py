@@ -5,9 +5,11 @@ Created on 18.05.2012
 @author: APartilov
 '''
 import unittest
-import os, sys
+import os
+import sys
 sys.path.append(os.path.join(os.getcwd(), os.path.pardir))
 from Fontaine.WellStorage import WellStorage
+
 
 class Test(unittest.TestCase):
 

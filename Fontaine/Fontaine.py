@@ -71,7 +71,7 @@ def wells_init(filename):
     try:
         f = open(filename, "r+")
     except IOError as unused_e:
-        print "Category file not found proceeding"
+        print "Category file not found, proceeding"
         return
     buf = mmap.mmap(f.fileno(), 0)  # add filename check
     filesize = buf.size()
@@ -89,6 +89,37 @@ def wells_init(filename):
     storage.category = result
 
 
+def wells_input_override(filename):
+    import mmap
+    import re
+
+    result = {}
+    try:
+        f = open(filename, "r+")
+    except IOError as unused_e:
+        print "Wells input override file not found, proceeding"
+        return
+    buf = mmap.mmap(f.fileno(), 0)  # add filename check
+    filesize = buf.size()
+    n = 0
+    buf.seek(n)
+    date_pattern = "%d/%m/%Y"
+    while True:
+        if buf.tell() == filesize:
+            break
+        data = buf.readline()
+        while re.match(r"^\s*#", data):
+            data = buf.readline()
+        raw = re.match(r"^([0-9]+[A-Z]?(?:[-_]?\w*)?)\s+"
+                             "((?:0[1-9]|[1-2][0-9]|3[0|1])/"
+                             "(?:0[1-9]|1[0-2])/"
+                             "(?:(?:19|20|21|22)\d{2}))", data)
+        if raw:
+            well = raw.groups()
+            result.update(dict([well]))
+    storage.override = result
+
+
 @timer
 def getline(filename, **kwargs):
     import re
@@ -103,7 +134,8 @@ def getline(filename, **kwargs):
         buf.seek(pointer)
         header_str = buf.readline()
         headers = re.findall(r"([A-Z0-9]+)", header_str)
-        result['headers'] = re.findall(r"\b(W[O|G|W|L][I|P][T|R]|WBPN|WBHP|FPRP?)\b",
+        result['headers'] = re.findall(
+                            r"\b(W[O|G|W|L][I|P][T|R]|WBPN|WBHP|FPRP?)\b",
                                                               header_str)
 
         #Comparision of the headers
@@ -187,7 +219,8 @@ def getline(filename, **kwargs):
                 data = [i[key] for i in block['data']]
                 parameter = block['headers'][key]
 
-                if re.match(r"^(W[O|G|W|L][I|P][T|R])|(WBPN|WBHP)$", parameter):
+                if re.match(r"^(W[O|G|W|L][I|P][T|R])|(WBPN|WBHP)$",
+                            parameter):
                     if block['factor']:
                         factor = block['factor'][key]
                         if factor:
@@ -231,18 +264,18 @@ def initialization(filename):
         regex_pattern = ""
         if re.findall(r"\s((?:0[1-9]|[1-2][0-9]|3[0|1])/"
                              "(?:0[1-9]|1[0-2])/"
-                             "(?:(?:19|20|21)\d{2}))\s", dataline):
+                             "(?:(?:19|20|21|22)\d{2}))\s", dataline):
             date_pattern = "%d/%m/%Y"
             regex_pattern = ("\s((?:0[1-9]|[1-2][0-9]|3[0|1])/"
                                  "(?:0[1-9]|1[0-2])/"
-                                 "(?:(?:19|20|21)\d{2}))\s")
+                                 "(?:(?:19|20|21|22)\d{2}))\s")
         elif re.findall(r"\s((?:0[1-9]|[1-2][0-9]|3[0|1])-"
                                "(?:[ADFJMNOS][A-Za-z]{2})-"
                                "(?:(?:19|20|21)\d{2}))\s", dataline):
             date_pattern = "%d-%b-%Y"
             regex_pattern = ("\s((?:0[1-9]|[1-2][0-9]|3[0|1])-"
                                   "(?:[ADFJMNOS][A-Za-z]{2})-"
-                                  "(?:(?:19|20|21)\d{2}))\s")
+                                  "(?:(?:19|20|21|22)\d{2}))\s")
         else:
             print "unknown date type"
             raise ValueError
@@ -289,6 +322,8 @@ def initialization(filename):
 @timer
 def renderData(filename, **kwargs):
     import xlwt
+    from datetime import datetime
+    
     from xlwt.Utils import rowcol_to_cell
     lateral = kwargs.get('lateral')
     debug = kwargs.get('debug')
@@ -326,8 +361,16 @@ def renderData(filename, **kwargs):
     liq_PR_tons = list(map(lambda x, y: x + y, oil_PR_tons, water_PR_tons))
     water_IR = storage.production_rate('WWIT')
     water_IR_tons = [x / 1000 for x in water_IR]
+#            datetime.strptime(storage.override[well], "%d/%m/%Y")
     for well in storage.wells:
         storage.add_First_Year(well)
+        if hasattr(storage, 'override'):
+            if well in storage.override:
+                # logger override well
+                date = datetime.strptime(storage.override[well], "%d/%m/%Y")
+                storage.add_First_Year(well, year=date.year)
+
+        
     new_wells_liq_tons = list(map(lambda x, y: (x * oil_density + y *
                                                 water_density) / 1000000,
                              storage.parameters.get('NOPT', mask),
@@ -529,6 +572,7 @@ if __name__ == "__main__":
         config.reset()
         config_init('config.ini')
         wells_init(well_filename)
+        wells_input_override('input.ini')
 
         if filename and savefile:
             getline(filename, lateral=ui.tracks.isChecked())
