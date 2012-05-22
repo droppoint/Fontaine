@@ -20,7 +20,7 @@ class Singleton(type):
         return cls.instance
 
 
-class WellStorage(object):
+class WellStorage(object):  # FIXME: More docstrings
     '''
     Storage for wellfield and wells data.
     Store data in dicts "wells" and "parameters"
@@ -50,8 +50,7 @@ class WellStorage(object):
         if lateral:
             shrt_num = re.findall(r"^([0-9A-Z]+)(?=BS|[_-])", number)
             if shrt_num:
-#                print "lateral", number, well_code, shrt_num[0]
-                if not shrt_num[0] in self.wells:
+                if not shrt_num[0] in self.wells:   # FIXME: conditions
                     self.wells[shrt_num[0]] = {}
                 if not "Lateral" in self.wells[shrt_num[0]]:
                     self.wells[shrt_num[0]]["Lateral"] = []
@@ -61,11 +60,9 @@ class WellStorage(object):
                     self.parameters["L_Borholes"] = []
                 if not number in self.parameters["L_Borholes"]:
                     self.parameters["L_Borholes"].append(number)
-#                number = shrt_num[0]
         if not self.mask:
             self.mask = [0 for unused_item in self.dates]
         if re.match(r"^(W[O|G|W][I|P]T)$", well_code):
-#            firstYear = True
             welldata = []
             worktime = []
             welldata_dec = []
@@ -79,7 +76,7 @@ class WellStorage(object):
                 worktime.append(m)
             self.add_worktime(number, worktime)
 
-            dec_dates = sorted(self.dates)  # baaaaaad
+            dec_dates = sorted(self.dates)
             dec_dates.pop(0)
             for cur in dec_dates:  # december pattern
                 if self.dates[cur] == 0:
@@ -122,7 +119,7 @@ class WellStorage(object):
 
     def well_classification(self, number):  # BAD MASK
         if number in self.wells:
-            oil_inj = self.recieveLine(number, 'WOIT')
+            oil_inj = self.recieveLine(number, 'WOIT')  # FIXME: To array
             oil_prod = self.recieveLine(number, 'WOPT')
             gas_prod = self.recieveLine(number, 'WGPT')
             water_prod = self.recieveLine(number, 'WWPT')
@@ -131,10 +128,6 @@ class WellStorage(object):
             output = [0 for unused_well in oil_prod]
             for year, (oil_p, water_p, gas_p, water_i, oil_i, gas_i) in enumerate(
                         zip(oil_prod, water_prod, gas_prod, oil_inj, water_inj, gas_inj)):
-#                if (oil_p + water_p + gas_p) < (water_i + oil_i + gas_i):
-#                        output[year] += 1
-#                elif (oil_p + water_p + gas_p) > (water_i + oil_i + gas_i):
-#                        output[year] += 2
                 if (water_i + oil_i + gas_i) > 0:
                         output[year] += 1
                 elif (oil_p + water_p + gas_p) > 0:
@@ -145,7 +138,7 @@ class WellStorage(object):
 
     def well_classification2(self, number):  # FIXME: BAD MASK
         if number in self.wells:
-            oil_inj = self.recieveLine(number, 'decWOIT')
+            oil_inj = self.recieveLine(number, 'decWOIT')   # FIXME: To array
             oil_prod = self.recieveLine(number, 'decWOPT')
             gas_prod = self.recieveLine(number, 'decWGPT')
             water_prod = self.recieveLine(number, 'decWWPT')
@@ -154,10 +147,6 @@ class WellStorage(object):
             output = [0 for unused_well in oil_prod]
             for year, (oil_p, water_p, gas_p, water_i, oil_i, gas_i) in enumerate(
                         zip(oil_prod, water_prod, gas_prod, oil_inj, water_inj, gas_inj)):
-#                if (oil_p + water_p + gas_p) < (water_i + oil_i + gas_i):
-#                        output[year] += 1
-#                elif (oil_p + water_p + gas_p) > (water_i + oil_i + gas_i):
-#                        output[year] += 2
                 if (water_i + oil_i + gas_i) > 0:
                         output[year] += 1
                 elif (oil_p + water_p + gas_p) > 0:
@@ -168,10 +157,7 @@ class WellStorage(object):
 
     def well_classification3(self, number):  # BAD MASK
         if number in self.wells:
-#            oil_prod = self.recieveLine(number, 'WOPR')
-#            gas_prod = self.recieveLine(number, 'WGPR')
-#            water_prod = self.recieveLine(number, 'WWPR')
-            liq_prod = self.recieveLine(number, 'WLPR')
+            liq_prod = self.recieveLine(number, 'WLPR') # FIXME: To array
             oil_inj = self.recieveLine(number, 'WOIR')
             water_inj = self.recieveLine(number, 'WWIR')
             gas_inj = self.recieveLine(number, 'WGIR')
@@ -245,7 +231,7 @@ class WellStorage(object):
             return False
         if not number in self.wells:
             return False
-        oil_prod = self.recieveLine(number, 'WOPT')  # too many lines
+        oil_prod = self.recieveLine(number, 'WOPT')  # FIXME: To array
         water_prod = self.recieveLine(number, 'WWPT')
         gas_prod = self.recieveLine(number, 'WGPT')
         water_inj = self.recieveLine(number, 'WWIT')
@@ -324,7 +310,7 @@ class WellStorage(object):
         if not number in self.wells:
             self.wells[number] = {}
         self.wells[number]['First_run'] = ()
-        oil_prod = self.recieveLine(number, 'WOPT')
+        oil_prod = self.recieveLine(number, 'WOPT')  # FIXME: To array
         water_prod = self.recieveLine(number, 'WWPT')
         gas_prod = self.recieveLine(number, 'WGPT')
         water_inj = self.recieveLine(number, 'WWIT')
@@ -334,26 +320,6 @@ class WellStorage(object):
             self.wells[number]['First_run'] = ('N/A', "Dummy", 0)
             return
         for i, key in enumerate(self.wells[number]['In_work']):
-#            if (oil_prod[i] + water_prod[i] + gas_prod[i] >
-#                    oil_inj[i] + water_inj[i] + gas_inj[i]):
-#                self.wells[number]['First_run'] = (i + self.minimal_year,
-#                                                   "Production",
-#                                                   key)
-#                mask[i] += 1
-#                self.add_parameter('NPW', mask)
-#
-#                mask = list(self.mask)
-#                mask[i] += oil_prod[i]
-#                self.add_parameter("NOPT", mask)  # bad code
-#
-#                mask = list(self.mask)
-#                mask[i] += water_prod[i]
-#                self.add_parameter("NWPT", mask)  # new wells
-#
-#                return
-
-#            if (oil_prod[i] + water_prod[i] + gas_prod[i] <
-#                    oil_inj[i] + water_inj[i] + gas_inj[i]):
             if (oil_inj[i] + water_inj[i] + gas_inj[i]) > 0:
                 self.wells[number]['First_run'] = (i + self.minimal_year,
                                                    "Injection",

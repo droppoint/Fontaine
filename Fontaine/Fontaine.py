@@ -282,14 +282,12 @@ def initialization(filename):
     config.filetype = filetype
     config.breaker = breaker
     config.r_pattern = r_pattern
-#    config.dataheight = dataheight
     storage.minimal_year = min(storage.dates.keys())
 
 
 #Excel write module
 @timer
 def renderData(filename, **kwargs):
-#    import json
     import xlwt
     from xlwt.Utils import rowcol_to_cell
     lateral = kwargs.get('lateral')
@@ -496,8 +494,6 @@ def renderData(filename, **kwargs):
     printRow(u'Время работы нагнетательных скважин',
                                     inj, 55)
     progress.setValue(100)
-#    s = json.dumps(storage.wells)
-#    print s
     print storage.wells.keys()
     try:
         wb.save(filename)
