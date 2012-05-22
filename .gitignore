@@ -2,8 +2,6 @@
 *.pyc
 *.pyo
 .idea/
-dist/
-build/
 *.log
 *.rsm
 *.bak
@@ -13,3 +11,5 @@ build/
 *.project
 *.pydevproject
 .settings/
+Fontaine/build
+Fontaine/dist
