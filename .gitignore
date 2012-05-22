@@ -2,8 +2,8 @@
 *.pyc
 *.pyo
 .idea/
-src/dist/
-src/build/
+dist/
+build/
 *.log
 *.rsm
 *.bak
