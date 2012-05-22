@@ -7,7 +7,7 @@ Created on 18.05.2012
 import unittest
 import os, sys
 sys.path.append(os.path.join(os.getcwd(), os.path.pardir))
-from Fontaine.src.WellStorage import WellStorage
+from Fontaine.WellStorage import WellStorage
 
 class Test(unittest.TestCase):
 
