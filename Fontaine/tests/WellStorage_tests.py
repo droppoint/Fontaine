@@ -7,7 +7,7 @@ Created on 18.05.2012
 import unittest
 import os, sys
 sys.path.append(os.path.join(os.getcwd(), os.path.pardir))
-from Fontaine import WellStorage
+from Fontaine.src.WellStorage import WellStorage
 
 class Test(unittest.TestCase):
 
@@ -18,7 +18,7 @@ class Test(unittest.TestCase):
         del(self.storage)
 
     def test_add_well(self):
-        self.storage.add_well('402', 'WOPT', [1, 0], lateral=True, adsfasd=False)
+        self.storage.add_well('402', 'WOPT', [1, 0])
         self.assertTrue(self.storage.wells)
         self.assertTrue(self.storage.wells['402'])
 
