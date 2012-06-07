@@ -57,8 +57,8 @@ class WellStorage(object):  # FIXME: More docstrings
             return m
         if not number in self.wells:
             self.wells[number] = {}
-            self.cls_logger.info(number)
-            self.cls_logger.info('pass')
+#            self.cls_logger.info(number)
+#            self.cls_logger.info('pass')
         if lateral:
             shrt_num = re.findall(r"^([0-9A-Z]+)(?=BS|[_-])", number)
             if shrt_num:
@@ -117,7 +117,7 @@ class WellStorage(object):  # FIXME: More docstrings
                 welldata.append(float(data[year]))
             welldata.pop(0)  # december pattern
             self.wells[number][well_code] = welldata
-        
+
     def add_worktime(self, number, data):
         if not number in self.wells:
             self.wells[number] = {}
@@ -330,7 +330,11 @@ class WellStorage(object):  # FIXME: More docstrings
         oil_inj = self.recieveLine(number, 'WOIT')
         gas_inj = self.recieveLine(number, 'WGIT')
         if not 'In_work' in self.wells[number]:
-            self.wells[number]['First_run'] = ('N/A', "Dummy", 0)
+#            self.wells[number]['First_run'] = ('N/A', "Dummy", 0)
+            for wells in self.wells[number]["Lateral"]:   # new well check
+                self.wells[number]['First_run'] = (self.wells[wells]['First_run'][0],
+                                                   "Dummy",
+                                                   self.wells[wells]['First_run'][2])
             return
         for i, key in enumerate(self.wells[number]['In_work']):
 #            if over:

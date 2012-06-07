@@ -377,7 +377,7 @@ def renderData(filename, **kwargs):
         storage.add_First_Year(well)
         if hasattr(storage, 'override'):
             if well in storage.override:
-                # logger override well
+                # TODO: logger override well
                 date = datetime.strptime(storage.override[well], "%d/%m/%Y")
                 storage.add_First_Year(well, year=date.year)
 
@@ -419,7 +419,7 @@ def renderData(filename, **kwargs):
     index_output_well = list(storage.output_well(well)
                              for well in storage.wells
                              if storage.output_well(well))
-    print index_output_well
+#    print index_output_well
     all_output_well = list(mask)
     output_wells_prod = list(mask)
     output_wells_inj = list(mask)
