@@ -17,7 +17,20 @@ from fontaine_ui import Ui_MainWindow
 
 
 class _Constants:   # this class store initial data and constants
+
     class ConstError(TypeError):
+        pass
+
+    def __init__(self):
+#        import logging
+#        logging.basicConfig(level=logging.DEBUG,
+#                    format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+#                    datefmt='%m-%d %H:%M',
+#                    filemode='w')
+#        self.logger = logging.getLogger('Constants_class')
+#        console = logging.StreamHandler()
+#        console.setLevel(logging.INFO)
+#        self.logger.info('Creating instance of constants class')
         pass
 
     def __setitem__(self, name, value):
@@ -32,7 +45,7 @@ class _Constants:   # this class store initial data and constants
 
     def reset(self):
         self.__dict__.clear()
-#        log.info('Constants cleared')  # TODO: logger
+#        self.logger.info('Constants cleared')
 
 
 def timer(f):  # time benchmark
@@ -54,13 +67,13 @@ def config_init(filename):
             return
         for options in config.options(section_name):
             const[options] = config.get(section_name, options)
-#    try:                                    # unblock this after debug
-    config = ConfigParser.ConfigParser()
-    config.read(filename)
-    for sections in config.sections():
-        parseSection(sections)
-#    except:
-#        print "Configuration file not found"
+    try:
+        config = ConfigParser.ConfigParser()
+        config.read(filename)
+        for sections in config.sections():
+            parseSection(sections)
+    except:
+        print "Configuration file not found"
 
 
 def wells_init(filename):
@@ -133,7 +146,7 @@ def getline(filename, **kwargs):
         #Reading header
         buf.seek(pointer)
         header_str = buf.readline()
-        headers = re.findall(r"([A-Z0-9]+)", header_str)
+        headers = re.findall(r"([A-Z0-9_]+)", header_str)
         result['headers'] = re.findall(
                             r"\b(W[O|G|W|L][I|P][T|R]|WBPN|WBHP|FPRP?)\b",
                                                               header_str)
@@ -323,7 +336,7 @@ def initialization(filename):
 def renderData(filename, **kwargs):
     import xlwt
     from datetime import datetime
-    
+
     from xlwt.Utils import rowcol_to_cell
     lateral = kwargs.get('lateral')
     debug = kwargs.get('debug')
@@ -370,7 +383,6 @@ def renderData(filename, **kwargs):
                 date = datetime.strptime(storage.override[well], "%d/%m/%Y")
                 storage.add_First_Year(well, year=date.year)
 
-        
     new_wells_liq_tons = list(map(lambda x, y: (x * oil_density + y *
                                                 water_density) / 1000000,
                              storage.parameters.get('NOPT', mask),
@@ -562,9 +574,9 @@ if __name__ == "__main__":
 
     def ignition():
         info_file = open("info.log", "w")
-#        sys.stdout = info_file
+        sys.stdout = info_file
         error_file = open("error.log", "w")
-#        sys.stderr = error_file
+        sys.stderr = error_file
         filename = ui.lineEdit.text()
         well_filename = ui.lineEdit_2.text()
         savefile = ui.setSaveFileName()

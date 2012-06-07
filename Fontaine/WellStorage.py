@@ -333,9 +333,9 @@ class WellStorage(object):  # FIXME: More docstrings
             self.wells[number]['First_run'] = ('N/A', "Dummy", 0)
             return
         for i, key in enumerate(self.wells[number]['In_work']):
-            if over:
-                i = over - self.minimal_year
-                key = self.wells[number]['In_work'][i]
+#            if over:
+#                i = over - self.minimal_year
+#                key = self.wells[number]['In_work'][i]
             if (oil_inj[i] + water_inj[i] + gas_inj[i]) > 0:
                 self.wells[number]['First_run'] = (i + self.minimal_year,
                                                    "Injection",
