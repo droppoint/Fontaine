@@ -6,8 +6,6 @@ Created on 03.04.2012
 @author: Alexei Partilov
 '''
 
-#TODO : december pattern for cls_mask
-
 from __future__ import division
 import sys
 #import locale
@@ -391,35 +389,33 @@ def renderData(filename, **kwargs):
                                   storage.parameters.get('NOPT', mask)))
 
     n = 0
-    for unused_years in oil_PR:  # TODO: Short this mess
+    for unused_years in oil_PR:
         n += 1
-        cell1 = rowcol_to_cell(10, n)
-        cell2 = rowcol_to_cell(11, n)
-        ws.write(14, n, xlwt.Formula(
-                "IF(%s=0;0;(%s-%s)/%s*100)" % (cell2, cell2, cell1, cell2))
-                 )
-
-        cell3 = rowcol_to_cell(23, n)
-        cell4 = rowcol_to_cell(24, n)
-        ws.write(25, n, xlwt.Formula(
-                "IF(%s=0;0;(%s-%s)/%s*100)" % (cell4, cell4, cell3, cell4))
-                 )
-
-        cell5 = rowcol_to_cell(38, n)
-        cell6 = rowcol_to_cell(39, n)
-        ws.write(37, n, xlwt.Formula("(%s+%s)" % (cell5, cell6)))
-
-        cell7 = rowcol_to_cell(23, n)
-        cell8 = rowcol_to_cell(28, n)
-        ws.write(26, n, xlwt.Formula(
-                "IF(%s=0;0;(%s/%s)/30.25*1000)" % (cell8, cell7, cell8))
-                 )
-
-        cell9 = rowcol_to_cell(24, n)
-        cell0 = rowcol_to_cell(28, n)
-        ws.write(27, n, xlwt.Formula(
-                "IF(%s=0;0;(%s/%s)/30.25*1000)" % (cell0, cell9, cell0))
-                 )
+        ws.write(14, n, xlwt.Formula(   # Watercut
+                "IF(%(liquid)s=0;0;(%(liquid)s-%(oil)s)/%(liquid)s*100)"
+                % {"liquid": rowcol_to_cell(11, n),
+                   "oil":    rowcol_to_cell(10, n)}
+                 ))
+        ws.write(25, n, xlwt.Formula(   # New wells watercut
+                "IF(%(liquid)s=0;0;(%(liquid)s-%(oil)s)/%(liquid)s*100)"
+                % {"liquid": rowcol_to_cell(24, n),
+                   "oil":    rowcol_to_cell(23, n)}
+                ))
+        ws.write(37, n, xlwt.Formula(   # Wells from drilling
+                "(%s+%s)"
+                % (rowcol_to_cell(38, n),   # Production wells
+                   rowcol_to_cell(39, n))   # Injection wells
+                ))
+        ws.write(26, n, xlwt.Formula(   # oil rate of new wells
+                "IF(%(worktime)s=0;0;(%(oil)s/%(worktime)s)/30.25*1000)"
+                % {"worktime": rowcol_to_cell(28, n),
+                   "oil":   rowcol_to_cell(23, n)}
+                ))
+        ws.write(27, n, xlwt.Formula(   # fluid rate of new wells
+                "IF(%(worktime)s=0;0;(%(fluid)s/%(worktime)s)/30.25*1000)"
+                % {"worktime": rowcol_to_cell(28, n),
+                   "fluid":   rowcol_to_cell(24, n)}
+                ))
     index_output_well = list(storage.output_well(well)
                              for well in storage.wells
                              if storage.output_well(well))
