@@ -380,13 +380,7 @@ def renderData(filename, **kwargs):
                 # TODO: logger override well
                 date = datetime.strptime(storage.override[well], "%d/%m/%Y")
                 storage.add_First_Year(well, year=date.year)
-    storage.dummyCheck()           
-    new_wells_liq_tons = list(map(lambda x, y: (x * oil_density + y *
-                                                water_density) / 1000000,
-                             storage.parameters.get('NOPT', mask),
-                             storage.parameters.get('NWPT', mask)))
-    new_wells_oil_tons = list(map(lambda x: x * oil_density / 1000000,
-                                  storage.parameters.get('NOPT', mask)))
+    
 
     n = 0
     for unused_years in oil_PR:
@@ -469,7 +463,14 @@ def renderData(filename, **kwargs):
                 prod[years] += storage.wells[wells]['In_work'][years]
             if storage.wells[wells]['cls_mask'][years] == 1:
                 inj[years] += storage.wells[wells]['In_work'][years]
-
+                
+    storage.dummyCheck()
+    new_wells_liq_tons = list(map(lambda x, y: (x * oil_density + y *
+                                                water_density) / 1000000,
+                             storage.parameters.get('NOPT', mask),
+                             storage.parameters.get('NWPT', mask)))
+    new_wells_oil_tons = list(map(lambda x: x * oil_density / 1000000,
+                                  storage.parameters.get('NOPT', mask)))
     
 
     def printRow(name, data, y):
@@ -572,9 +573,9 @@ if __name__ == "__main__":
 
     def ignition():
         info_file = open("info.log", "w")
-        sys.stdout = info_file
+#        sys.stdout = info_file
         error_file = open("error.log", "w")
-        sys.stderr = error_file
+#        sys.stderr = error_file
         filename = ui.lineEdit.text()
         well_filename = ui.lineEdit_2.text()
         savefile = ui.setSaveFileName()
