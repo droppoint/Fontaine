@@ -380,7 +380,7 @@ def renderData(filename, **kwargs):
                 # TODO: logger override well
                 date = datetime.strptime(storage.override[well], "%d/%m/%Y")
                 storage.add_First_Year(well, year=date.year)
-
+    storage.dummyCheck()           
     new_wells_liq_tons = list(map(lambda x, y: (x * oil_density + y *
                                                 water_density) / 1000000,
                              storage.parameters.get('NOPT', mask),
@@ -469,6 +469,8 @@ def renderData(filename, **kwargs):
                 prod[years] += storage.wells[wells]['In_work'][years]
             if storage.wells[wells]['cls_mask'][years] == 1:
                 inj[years] += storage.wells[wells]['In_work'][years]
+
+    
 
     def printRow(name, data, y):
         x = 0

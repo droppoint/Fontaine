@@ -169,7 +169,7 @@ class WellStorage(object):  # FIXME: More docstrings
 
     def well_classification3(self, number):  # BAD MASK
         if number in self.wells:
-            liq_prod = self.recieveLine(number, 'WLPR') # FIXME: To array
+            liq_prod = self.recieveLine(number, 'WLPR')  # FIXME: To array
             oil_inj = self.recieveLine(number, 'WOIR')
             water_inj = self.recieveLine(number, 'WWIR')
             gas_inj = self.recieveLine(number, 'WGIR')
@@ -332,9 +332,11 @@ class WellStorage(object):  # FIXME: More docstrings
         if not 'In_work' in self.wells[number]:
 #            self.wells[number]['First_run'] = ('N/A', "Dummy", 0)
             for wells in self.wells[number]["Lateral"]:   # new well check
-                self.wells[number]['First_run'] = (self.wells[wells]['First_run'][0],
-                                                   "Dummy",
-                                                   self.wells[wells]['First_run'][2])
+                if (self.wells[wells]['First_run'][0] < self.wells[number]['First_run']) and \
+                    self.wells[wells]['First_run'][0] > 0:
+                    self.wells[number]['First_run'] = (self.wells[wells]['First_run'][0],
+                                                       "Dummy",
+                                                       self.wells[wells]['First_run'][2])
             return
         for i, key in enumerate(self.wells[number]['In_work']):
 #            if over:
@@ -373,6 +375,20 @@ class WellStorage(object):  # FIXME: More docstrings
                 return
 
         self.wells[number]['First_run'] = ('N/A', "Exploratory", 0)
+
+    def dummyCheck(self):
+        for well in self.wells:
+            if not self.wells[well]['First_run'][1] == 'Dummy':
+                continue
+            if not "Lateral" in self.wells[well]:
+                continue
+            for lateral in self.wells[well]["Lateral"]:
+                year = self.wells[well]['First_run'][0]
+                index = year - self.minimal_year
+                worktime = self.wells[well]['First_run'][2]
+                self.parameters["NOPT"][index] += self.wells[lateral]['WOPT'][index]
+                self.parameters["NWPT"][index] += self.wells[lateral]['WWPT'][index]
+                self.parameters["NPW"][index] += 1
 
     def clear(self):
         self.wells.clear()
