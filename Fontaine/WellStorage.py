@@ -111,7 +111,7 @@ class WellStorage(object):  # FIXME: More docstrings
             if not "First_run" in self.wells[number]:
                 self.wells[number]['First_run'] = ('N/A', "Exploratory", 0)
 
-        if re.match(r"^(WBPN|WBHP|W[O|G|W|L][I|P]R)$", well_code):
+        if re.match(r"^(WBPN|WBHP|W[O|G|W|L][I|P][R|N])$", well_code):
             welldata = []
             for year in sorted(self.dates.values()):
                 welldata.append(float(data[year]))
@@ -170,12 +170,12 @@ class WellStorage(object):  # FIXME: More docstrings
     def well_classification3(self, number):  # BAD MASK
         if number in self.wells:
             liq_prod = self.recieveLine(number, 'WLPR')  # FIXME: To array
-            oil_inj = self.recieveLine(number, 'WOIR')
-            water_inj = self.recieveLine(number, 'WWIR')
-            gas_inj = self.recieveLine(number, 'WGIR')
+            oil_inj = self.recieveLine(number, 'WOIN')
+            water_inj = self.recieveLine(number, 'WWIN')
+            gas_inj = self.recieveLine(number, 'WGIN')
             output = [0 for unused_well in liq_prod]
             for year, (liq_p, water_i, oil_i, gas_i) in enumerate(
-                        zip(liq_prod, oil_inj, water_inj, gas_inj)):
+                        zip(liq_prod, water_inj, oil_inj, gas_inj)):
                 if (water_i + oil_i + gas_i) > 0:
                         output[year] += 1
                 elif (liq_p) > 0:
@@ -269,9 +269,13 @@ class WellStorage(object):  # FIXME: More docstrings
         for year in reversed(range(len(oil_prod))):  # change to mask
             if water_inj[year] + oil_inj[year] + gas_inj[year] > 0:
                 welltype = True
+                if "In_work" in self.wells[number]:
+                    self.wells[number]["Last_call"] = [ year + self.minimal_year, "Injection", self.wells[number]['In_work'][year]] 
                 break
             elif oil_prod[year] + water_prod[year] + gas_prod[year] > 0:
                 welltype = False
+                if "In_work" in self.wells[number]:
+                    self.wells[number]["Last_call"] = [ year + self.minimal_year, "Production", self.wells[number]['In_work'][year]] 
                 break
         if year == len(oil_prod) - 1:
             return False
@@ -391,6 +395,15 @@ class WellStorage(object):  # FIXME: More docstrings
                 self.parameters["NOPT"][index] += self.wells[lateral]['WOPT'][index]
                 self.parameters["NWPT"][index] += self.wells[lateral]['WWPT'][index]
                 self.parameters["NPW"][index] += 1
+
+    def cutter(self, number, start_p, end_p):
+        if "Last_call" not in self.wells[number]:
+            return False
+        jan_mask = self.wells[number]["cls_mask_rate_jan"]
+        start_p = start_p - self.minimal_year
+        end_p = end_p - self.minimal_year
+        jan_mask = jan_mask[start_p:end_p]
+        return jan_mask
 
     def clear(self):
         self.wells.clear()

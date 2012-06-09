@@ -146,7 +146,7 @@ def getline(filename, **kwargs):
         header_str = buf.readline()
         headers = re.findall(r"([A-Z0-9_]+)", header_str)
         result['headers'] = re.findall(
-                            r"\b(W[O|G|W|L][I|P][T|R]|WBPN|WBHP|FPRP?)\b",
+                            r"\b(W[O|G|W|L][I|P][T|R|N]|WBPN|WBHP|FPRP?)\b",
                                                               header_str)
 
         #Comparision of the headers
@@ -224,13 +224,13 @@ def getline(filename, **kwargs):
         n += 1
         buf.seek(m)
         cur_str = buf.readline()
-        if re.findall(r"\b(W[O|G|W|L][I|P][T|R]|WBPN|WBHP|FPRP?)\b", cur_str):
+        if re.findall(r"\b(W[O|G|W|L][I|P][T|R|N]|WBPN|WBHP|FPRP?)\b", cur_str):
             block = parseBlock(m)
             for key, well_num in enumerate(block['numbers']):
                 data = [i[key] for i in block['data']]
                 parameter = block['headers'][key]
 
-                if re.match(r"^(W[O|G|W|L][I|P][T|R])|(WBPN|WBHP)$",
+                if re.match(r"^(W[O|G|W|L][I|P][T|R|N])|(WBPN|WBHP)$",
                             parameter):
                     if block['factor']:
                         factor = block['factor'][key]
@@ -380,8 +380,6 @@ def renderData(filename, **kwargs):
                 # TODO: logger override well
                 date = datetime.strptime(storage.override[well], "%d/%m/%Y")
                 storage.add_First_Year(well, year=date.year)
-    
-
     n = 0
     for unused_years in oil_PR:
         n += 1
@@ -454,6 +452,17 @@ def renderData(filename, **kwargs):
             work_time[wells['First_run'][0] - storage.minimal_year] += \
                      wells['First_run'][2]
 
+    inactive_fond = list(storage.mask)
+    for well in storage.wells:
+        if "Last_call" in storage.wells[well]:
+            cut = storage.cutter(well, storage.wells[well]["First_run"][0],
+                                 storage.wells[well]["Last_call"][0])
+            for index, status in enumerate(cut):
+                if status == 0:
+                    year_index = int(storage.wells[well]["First_run"][0])- int(storage.minimal_year) + index
+                    inactive_fond[year_index] += 1
+                    print str(int(storage.wells[well]["First_run"][0])+ index) + " WELL " + well + " inactive"
+
     storage.mask.pop(0)
     inj = list(storage.mask)
     prod = list(storage.mask)
@@ -463,7 +472,7 @@ def renderData(filename, **kwargs):
                 prod[years] += storage.wells[wells]['In_work'][years]
             if storage.wells[wells]['cls_mask'][years] == 1:
                 inj[years] += storage.wells[wells]['In_work'][years]
-                
+
     storage.dummyCheck()
     new_wells_liq_tons = list(map(lambda x, y: (x * oil_density + y *
                                                 water_density) / 1000000,
@@ -471,7 +480,6 @@ def renderData(filename, **kwargs):
                              storage.parameters.get('NWPT', mask)))
     new_wells_oil_tons = list(map(lambda x: x * oil_density / 1000000,
                                   storage.parameters.get('NOPT', mask)))
-    
 
     def printRow(name, data, y):
         x = 0
@@ -547,6 +555,12 @@ def renderData(filename, **kwargs):
                                     prod, 54)
     printRow(u'Время работы нагнетательных скважин',
                                     inj, 55)
+
+    printRow(u'Бездействующий фонд', inactive_fond, 57)
+#    printRow(u'   Перевод в б/д доб.', inactivity_trans_prod, 58)
+#    printRow(u'   Перевод в б/д наг.', inactivity_trans_inj, 59)
+#    printRow(u'   Вывод из бездействия доб.', active_trans_prod, 60)
+#    printRow(u'   Вывод из бездействия наг.', active_trans_inj, 61)
     progress.setValue(100)
     print storage.wells.keys()
     try:
@@ -573,9 +587,9 @@ if __name__ == "__main__":
 
     def ignition():
         info_file = open("info.log", "w")
-#        sys.stdout = info_file
+        sys.stdout = info_file
         error_file = open("error.log", "w")
-#        sys.stderr = error_file
+        sys.stderr = error_file
         filename = ui.lineEdit.text()
         well_filename = ui.lineEdit_2.text()
         savefile = ui.setSaveFileName()
