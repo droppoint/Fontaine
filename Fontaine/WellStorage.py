@@ -4,20 +4,7 @@ Created on 24.04.2012
 @author: APartilov
 '''
 
-
-class Singleton(type):
-    '''
-    Singleton class for creating 1 uniquie instance with
-    1 input point
-    '''
-    def __init__(cls, name, bases, dictationary):
-        super(Singleton, cls).__init__(name, bases, dictationary)
-        cls.instance = None
-
-    def __call__(cls, *args, **kw):
-        if cls.instance is None:
-            cls.instance = super(Singleton, cls).__call__(*args, **kw)
-        return cls.instance
+from Fontaine import Singleton
 
 
 class WellStorage(object):  # FIXME: More docstrings
@@ -30,16 +17,6 @@ class WellStorage(object):  # FIXME: More docstrings
     parameters = {}
     mask = []
     minimal_year = 0
-
-    import logging
-    cls_logger = logging.getLogger('Well_storage')
-#    # create console handler with a higher log level
-#    ch = logging.StreamHandler()
-#    ch.setLevel(logging.INFO)
-#    # create formatter and add it to the handlers
-#    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-#    ch.setFormatter(formatter)
-#    cls_logger.addHandler(ch)
 
     def add_well(self, number, well_code, data, **kwargs):
         import re
