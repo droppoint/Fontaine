@@ -17,9 +17,11 @@ Created on 18.06.2012
 #        Constructor
 #        '''
 
+
 def config_init(filename):
     import ConfigParser
     const = {}
+    
     def parseConfigSection(section_name):
         if not section_name in config.sections():
             return

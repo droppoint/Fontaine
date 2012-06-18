@@ -19,6 +19,7 @@ class Singleton(type):
             cls.instance = super(Singleton, cls).__call__(*args, **kw)
         return cls.instance
 
+
 class WellStorage(object):  # FIXME: More docstrings
     '''
     Storage for wellfield and wells data.
@@ -259,12 +260,19 @@ class WellStorage(object):  # FIXME: More docstrings
             if water_inj[year] + oil_inj[year] + gas_inj[year] > 0:
                 welltype = True
                 if "In_work" in self.wells[number]:
-                    self.wells[number]["Last_call"] = [ year + self.minimal_year, "Injection", self.wells[number]['In_work'][year]] 
+                    self.wells[number]["Last_call"] = [
+                                            year + self.minimal_year,
+                                            "Injection",
+                                            self.wells[number]['In_work'][year]
+                                            ]
                 break
             elif oil_prod[year] + water_prod[year] + gas_prod[year] > 0:
                 welltype = False
                 if "In_work" in self.wells[number]:
-                    self.wells[number]["Last_call"] = [ year + self.minimal_year, "Production", self.wells[number]['In_work'][year]] 
+                    self.wells[number]["Last_call"] = [
+                                        year + self.minimal_year,
+                                        "Production",
+                                        self.wells[number]['In_work'][year]]
                 break
         if year == len(oil_prod) - 1:
             return False
@@ -379,7 +387,8 @@ class WellStorage(object):  # FIXME: More docstrings
                 year = self.wells[lateral]['First_run'][0]
                 index = int(year) - self.minimal_year
                 worktime = self.wells[well]['First_run'][2]
-#                if ((year <  self.wells[well]['First_run'][0]) and self.wells[well]['First_run'][0] > 0) \
+#                if ((year <  self.wells[well]['First_run'][0])
+#                        and self.wells[well]['First_run'][0] > 0) \
 #                    or (self.wells[well]['First_run'][0] == "N/A"):
                 self.parameters["NOPT"][index] += self.wells[lateral]['WOPT'][index]
                 self.parameters["NWPT"][index] += self.wells[lateral]['WWPT'][index]

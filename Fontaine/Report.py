@@ -14,7 +14,7 @@ class Report(object):
     Report writing and render
     '''
 
-    def __init__(selfparams):
+    def __init__(self):
         '''
         Constructor
         '''
@@ -27,7 +27,7 @@ class Report(object):
     def addLineToReport(self, legend, data, linenumber):
         pass
 
-    def compilation(storage, filename, **kwargs):
+    def compilation(self, storage, filename, **kwargs):
 #        storage = WellStorage()
         lateral = kwargs.get('lateral')
         debug = kwargs.get('debug')
@@ -48,9 +48,9 @@ class Report(object):
                             map(lambda x: x * k, storage.wells[wells][p]))
 
         mask = list(storage.mask)
-        
-        oil_density = int(const.oil_density)
-        water_density = int(const.water_density)
+
+        oil_density = int(self.const.oil_density)
+        water_density = int(self.const.water_density)
 
         oil_PR = storage.production_rate('WOPT')  # TODO: save to list
         oil_PR_tons = [x * oil_density / 1000000 for x in oil_PR]
@@ -121,9 +121,11 @@ class Report(object):
                                      storage.wells[well]["Last_call"][0])
                 for index, status in enumerate(cut):
                     if status == 0:
-                        year_index = int(storage.wells[well]["First_run"][0])- int(storage.minimal_year) + index
+                        year_index = int(storage.wells[well]["First_run"][0]) \
+                                           - int(storage.minimal_year) + index
                         inactive_fond[year_index] += 1
-                        print str(int(storage.wells[well]["First_run"][0])+ index) + " WELL " + well + " inactive"
+                        print str(int(storage.wells[well]["First_run"][0]) +
+                                  index) + " WELL " + well + " inactive"
 
         storage.mask.pop(0)
         inj = list(storage.mask)
@@ -143,8 +145,7 @@ class Report(object):
         new_wells_oil_tons = list(map(lambda x: x * oil_density / 1000000,
                                       storage.parameters.get('NOPT', mask)))
 
-
-    def render(filename, **kwargs):  # отдать объект для рендера
+    def render(self, storage, filename, **kwargs):  # отдать объект для рендера
         import xlwt
         from xlwt.Utils import rowcol_to_cell
         font0 = xlwt.Font()
@@ -179,7 +180,6 @@ class Report(object):
                     % {"worktime": rowcol_to_cell(28, n),
                        "fluid":   rowcol_to_cell(24, n)}
                     ))
-
 
         def printRow(name, data, y):
             x = 0

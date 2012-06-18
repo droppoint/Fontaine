@@ -6,16 +6,16 @@ Created on 18.06.2012
 @author: APartilov
 '''
 
-class MyClass(object):
-    '''
-    classdocs
-    '''
-
-
-    def __init__(selfparams):
-        '''
-        Constructor
-        '''
+#class MyClass(object):
+#    '''
+#    classdocs
+#    '''
+#
+#
+#    def __init__(selfparams):
+#        '''
+#        Constructor
+#        '''
 
 #        import logging
 #        logging.basicConfig(level=logging.DEBUG,
