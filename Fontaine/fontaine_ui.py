@@ -9,7 +9,6 @@
 
 from PySide import QtCore, QtGui
 import sys
-#from First import parseData
 
 
 class Ui_MainWindow(object):
@@ -66,48 +65,69 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Fontaine", None, QtGui.QApplication.UnicodeUTF8))
-        self.pushButton.setText(QtGui.QApplication.translate("MainWindow", "Обзор", None, QtGui.QApplication.UnicodeUTF8))
-        self.pushButton_3.setText(QtGui.QApplication.translate("MainWindow", "Обзор", None, QtGui.QApplication.UnicodeUTF8))
-        self.pushButton_2.setText(QtGui.QApplication.translate("MainWindow", "Преобразовать", None, QtGui.QApplication.UnicodeUTF8))
-        self.label.setText(QtGui.QApplication.translate("MainWindow", "Выберите файл  *.rsm", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_2.setText(QtGui.QApplication.translate("MainWindow", "Выберите файл категории запасов", None, QtGui.QApplication.UnicodeUTF8))
-        
-    def setOpenFileName(self):    
+        MainWindow.setWindowTitle(
+            QtGui.QApplication.translate("MainWindow", "Fontaine", None,
+                                         QtGui.QApplication.UnicodeUTF8))
+        self.pushButton.setText(
+            QtGui.QApplication.translate("MainWindow", "Обзор", None,
+                                         QtGui.QApplication.UnicodeUTF8))
+        self.pushButton_3.setText(
+            QtGui.QApplication.translate("MainWindow", "Обзор", None,
+                                         QtGui.QApplication.UnicodeUTF8))
+        self.pushButton_2.setText(
+            QtGui.QApplication.translate("MainWindow", "Преобразовать", None,
+                                         QtGui.QApplication.UnicodeUTF8))
+        self.label.setText(
+            QtGui.QApplication.translate("MainWindow", "Выберите файл  *.rsm",
+                                         None,
+                                         QtGui.QApplication.UnicodeUTF8))
+        self.label_2.setText(
+            QtGui.QApplication.translate("MainWindow",
+                                         "Выберите файл категории запасов",
+                                         None,
+                                         QtGui.QApplication.UnicodeUTF8))
+
+    def setOpenFileName(self):
         options = QtGui.QFileDialog.Options()
         if not self.native.isChecked():
             options |= QtGui.QFileDialog.DontUseNativeDialog
-        fileName, filtr = QtGui.QFileDialog.getOpenFileName(self.pushButton, 
+        fileName, unused_filtr = QtGui.QFileDialog.getOpenFileName(
+                    self.pushButton,
                     u"Открыть",
                     "",
-                    "Eclipse RSM File (*.rsm);;All Files (*)","",options)
+                    "Eclipse RSM File (*.rsm);;All Files (*)",
+                    "",
+                    options)
         if fileName:
             self.lineEdit.setText(fileName)
-    
-    def setFileName(self):    
+
+    def setFileName(self):
         options = QtGui.QFileDialog.Options()
         if not self.native.isChecked():
             options |= QtGui.QFileDialog.DontUseNativeDialog
-        fileName, filtr = QtGui.QFileDialog.getOpenFileName(self.pushButton, 
+        fileName, unused_filtr = QtGui.QFileDialog.getOpenFileName(
+                    self.pushButton,
                     u"Открыть",
                     "",
-                    "All Files (*)","",options)
+                    "All Files (*)",
+                    "",
+                    options)
         if fileName:
             self.lineEdit_2.setText(fileName)
-            
-    def setSaveFileName(self):    
+
+    def setSaveFileName(self):
         options = QtGui.QFileDialog.Options()
         if not self.native.isChecked():
             options |= QtGui.QFileDialog.DontUseNativeDialog
-        fileName, ok = QtGui.QFileDialog.getSaveFileName(self.pushButton_2,
+        fileName, unused_ok = QtGui.QFileDialog.getSaveFileName(
+                self.pushButton_2,
                 u"Сохранить",
                 "",
                 "Excel File (*.xls);;All Files (*)", "", options)
         if fileName:
             return fileName
-        
-    
-    def informationMessage(self, message, caption="Fontaine"):    
+
+    def informationMessage(self, message, caption="Fontaine"):
         reply = QtGui.QMessageBox.information(self.pushButton_2,
                 caption, message)
 
@@ -115,5 +135,3 @@ class Ui_MainWindow(object):
 #            self.informationLabel.setText("OK")
 #        else:
 #            self.informationLabel.setText("Escape")
-            
-        
