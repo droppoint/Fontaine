@@ -27,7 +27,7 @@ class Report(object):
     def addLineToReport(self, legend, data, linenumber):
         pass
 
-    def compilation(filename, **kwargs):
+    def compilation(storage, filename, **kwargs):
 #        storage = WellStorage()
         lateral = kwargs.get('lateral')
         debug = kwargs.get('debug')
@@ -48,6 +48,7 @@ class Report(object):
                             map(lambda x: x * k, storage.wells[wells][p]))
 
         mask = list(storage.mask)
+        
         oil_density = int(const.oil_density)
         water_density = int(const.water_density)
 
@@ -206,56 +207,57 @@ class Report(object):
                     printDebugRow(parameter, storage.wells[well][parameter], n)
                     n += 1
 
-        printRow(u'Годы', sorted(storage.dates.iterkeys()), 0)
+#        printRow(u'Годы', sorted(storage.dates.iterkeys()), 0)
+#
+#        printRow(u'Годовые показатели', [], 9)
+#        printRow(u'   Годовая добыча нефти, тыс.т', oil_PR_tons, 10)
+#        printRow(u'   Годовая добыча жидкости, тыс.т', liq_PR_tons, 11)
+#        printRow(u'   Годовая добыча газа, млн.м3', gas_PR_mln, 12)
+#        printRow(u'   Годовая закачка воды, тыс.м3', water_IR_tons, 13)
+#        printRow(u'   Обводненность,%', [], 14)
+#
+#        printRow(u'Показатели новых скважин', [], 22)
+#        printRow(u'   Добыча нефти, тыс.т/год', new_wells_oil_tons, 23)
+#        printRow(u'   Добыча жидкости, тыс.т/год', new_wells_liq_tons, 24)
+#        printRow(u'   Обводненность,%', [], 25)
+#        printRow(u'   Дебит нефти, т/сут', [], 26)
+#        printRow(u'   Дебит жидкости, т/сут', [], 27)
+#        printRow(u'   Время работы', work_time, 28)
+#
+#        printRow(u'Действ. фонд скважин', [], 33)
+#        printRow(u'   добывающих', prod_wells, 34)
+#        printRow(u'   нагнетательных', inj_wells, 35)
+#
+#        printRow(u'Ввод скважин из бурения', [], 37)
+#        printRow(u'   добывающих', storage.parameters.get('NPW', mask), 38)
+#        printRow(u'   нагнетательных', storage.parameters.get('NIW', mask), 39)
+#        if lateral:
+#            printRow(u'   боковые стволы', storage.parameters.get('NLB', mask), 40)
+#
+#        printRow(u'Перевод из доб. в нагн.', inj_transfer, 41)
+#
+#        printRow(u'Выбытие скважин', all_output_well, 43)
+#        printRow(u'   добывающих', output_wells_prod, 44)
+#        printRow(u'      в т.ч. под закачку', inj_transfer, 45)
+#        printRow(u'   нагнетательных', output_wells_inj, 46)
+#
+#        printRow(u'Ср. взв. пластовое давление, атм',
+#                        storage.parameters.get('FPRP', mask), 48)  # FPRP or FPR
+#        printRow(u'   в зоне отбора, атм', reservoir_pres[0], 49)
+#        printRow(u'   в зоне закачки, атм', reservoir_pres[1], 50)
+#
+#        printRow(u'Ср. забойное давление доб. скважин, атм',
+#                                        bottomhole_pres[0], 52)
+#        printRow(u'Ср. забойное давление нагн. скважин, атм',
+#                                        bottomhole_pres[1], 53)
+#
+#        printRow(u'Время работы добывающих скважин',
+#                                        prod, 54)
+#        printRow(u'Время работы нагнетательных скважин',
+#                                        inj, 55)
+#
+#        printRow(u'Бездействующий фонд', inactive_fond, 57)
 
-        printRow(u'Годовые показатели', [], 9)
-        printRow(u'   Годовая добыча нефти, тыс.т', oil_PR_tons, 10)
-        printRow(u'   Годовая добыча жидкости, тыс.т', liq_PR_tons, 11)
-        printRow(u'   Годовая добыча газа, млн.м3', gas_PR_mln, 12)
-        printRow(u'   Годовая закачка воды, тыс.м3', water_IR_tons, 13)
-        printRow(u'   Обводненность,%', [], 14)
-
-        printRow(u'Показатели новых скважин', [], 22)
-        printRow(u'   Добыча нефти, тыс.т/год', new_wells_oil_tons, 23)
-        printRow(u'   Добыча жидкости, тыс.т/год', new_wells_liq_tons, 24)
-        printRow(u'   Обводненность,%', [], 25)
-        printRow(u'   Дебит нефти, т/сут', [], 26)
-        printRow(u'   Дебит жидкости, т/сут', [], 27)
-        printRow(u'   Время работы', work_time, 28)
-
-        printRow(u'Действ. фонд скважин', [], 33)
-        printRow(u'   добывающих', prod_wells, 34)
-        printRow(u'   нагнетательных', inj_wells, 35)
-
-        printRow(u'Ввод скважин из бурения', [], 37)
-        printRow(u'   добывающих', storage.parameters.get('NPW', mask), 38)
-        printRow(u'   нагнетательных', storage.parameters.get('NIW', mask), 39)
-        if lateral:
-            printRow(u'   боковые стволы', storage.parameters.get('NLB', mask), 40)
-
-        printRow(u'Перевод из доб. в нагн.', inj_transfer, 41)
-
-        printRow(u'Выбытие скважин', all_output_well, 43)
-        printRow(u'   добывающих', output_wells_prod, 44)
-        printRow(u'      в т.ч. под закачку', inj_transfer, 45)
-        printRow(u'   нагнетательных', output_wells_inj, 46)
-
-        printRow(u'Ср. взв. пластовое давление, атм',
-                        storage.parameters.get('FPRP', mask), 48)  # FPRP or FPR
-        printRow(u'   в зоне отбора, атм', reservoir_pres[0], 49)
-        printRow(u'   в зоне закачки, атм', reservoir_pres[1], 50)
-
-        printRow(u'Ср. забойное давление доб. скважин, атм',
-                                        bottomhole_pres[0], 52)
-        printRow(u'Ср. забойное давление нагн. скважин, атм',
-                                        bottomhole_pres[1], 53)
-
-        printRow(u'Время работы добывающих скважин',
-                                        prod, 54)
-        printRow(u'Время работы нагнетательных скважин',
-                                        inj, 55)
-
-        printRow(u'Бездействующий фонд', inactive_fond, 57)
     #    printRow(u'   Перевод в б/д доб.', inactivity_trans_prod, 58)
     #    printRow(u'   Перевод в б/д наг.', inactivity_trans_inj, 59)
     #    printRow(u'   Вывод из бездействия доб.', active_trans_prod, 60)

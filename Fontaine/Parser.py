@@ -56,6 +56,7 @@ class Parser(object):
     def reset(self):
         """Reset this instance.  Loses all unprocessed data."""
         self.data = {}
+        self.config = {}
 
     def error(self, message):
         raise ParseError(message)
@@ -64,12 +65,88 @@ class Parser(object):
         """Handle any buffered data."""
         self.goahead(1)
 
+    def initialization(self, filename):
+        """Return primary parameters of RSM file,
+        such as RSM filetype, height of data table,
+        masks and other"""
+        from datetime import datetime
+        import mmap
+
+        def fileTypeDetermination(buf):
+            n = 0
+            buf.seek(n)
+            breaker = buf.readline()
+            if breaker == "1\r\n":
+                filetype = "tempest"
+            elif breaker == "\r\n":
+                filetype = "eclipse"
+            else:
+                raise IOError
+            return filetype, breaker
+
+        def dateFormatDetermination(dataline):
+            date_pattern = ""  # date format check
+            regex_pattern = ""
+            if re.findall(r"\s((?:0[1-9]|[1-2][0-9]|3[0|1])/"
+                                 "(?:0[1-9]|1[0-2])/"
+                                 "(?:(?:19|20|21|22)\d{2}))\s", dataline):
+                date_pattern = "%d/%m/%Y"
+                regex_pattern = ("\s((?:0[1-9]|[1-2][0-9]|3[0|1])/"
+                                     "(?:0[1-9]|1[0-2])/"
+                                     "(?:(?:19|20|21|22)\d{2}))\s")
+            elif re.findall(r"\s((?:0[1-9]|[1-2][0-9]|3[0|1])-"
+                                   "(?:[ADFJMNOS][A-Za-z]{2})-"
+                                   "(?:(?:19|20|21)\d{2}))\s", dataline):
+                date_pattern = "%d-%b-%Y"
+                regex_pattern = ("\s((?:0[1-9]|[1-2][0-9]|3[0|1])-"
+                                      "(?:[ADFJMNOS][A-Za-z]{2})-"
+                                      "(?:(?:19|20|21|22)\d{2}))\s")
+            else:
+                print "unknown date type"
+                raise ValueError
+            return date_pattern, regex_pattern
+
+        dates = []
+        mod_dates = {}
+        f = open(filename, "r+")   # add filename check
+        buf = mmap.mmap(f.fileno(), 0)
+        filetype, breaker = fileTypeDetermination(buf)
+        line = buf.readline()
+        num = 0
+        firstdataline = 0
+        while not re.search(r"^%s$" % (breaker), line):
+            num += 1
+            if re.search(r"^\s*[-]*\r\n$", line):
+                commentaryline = num
+                firstdataline = buf.tell()
+            elif re.findall(r"\s(DATE)", line):  # WHY???
+    #            header = num
+                pass
+            line = buf.readline()
+        buf.seek(firstdataline)
+        dataline = buf.readline()
+        d_pattern, r_pattern = dateFormatDetermination(dataline)
+        dataheight = num - commentaryline
+        for unused_i in range(dataheight):  # получение массива дат
+    #        locale.setlocale(locale.LC_ALL, 'en_US.utf8')
+            cur_date = datetime.strptime(re.findall(r_pattern, dataline)[0],
+                                                                d_pattern)
+            dataline = buf.readline()
+            dates.append(cur_date)
+        for date in dates:
+            if date.month == 1:
+                mod_dates[date.year] = dates.index(date)
+#        storage.dates = mod_dates
+        self.config.filetype = filetype
+        self.config.breaker = breaker
+        self.config.r_pattern = r_pattern
+#        storage.minimal_year = min(storage.dates.keys())
+
     def parse_file(self, filename, **kwargs):
         import mmap
         import math  # maybe in other place?
         lateral = kwargs.get('lateral')
-        initialization(filename)
-        storage = WellStorage()
+        self.initialization(filename)
 
         def parseBlock(pointer):
             result = {}
@@ -79,7 +156,7 @@ class Parser(object):
             headers = re.findall(r"([A-Z0-9_]+)", header_str)
             result['headers'] = regex_necessary_headers.findall(header_str)
 
-            #Comparision of the headers
+            #Comparsion of the headers
             def indices(mylist, value):
                 return [i for i, x in enumerate(mylist) if x == value]
             index = []
@@ -93,7 +170,7 @@ class Parser(object):
             line = buf.readline()
             factor = []
             while not re.search(r"\s([0-9]+[A-Z]?(?:[-_]?\w*)?)\s", line):  # ???
-                if re.search(config.r_pattern, line):
+                if re.search(self.config.r_pattern, line):
                     break
                 if regex_factor.search(line):
                     temp_num = line[14:]   # bad block of code
@@ -125,11 +202,11 @@ class Parser(object):
                 numbers = ["N/A" for unused_i in range(len(headers) - 1)]
             result['numbers'] = [numbers[i - 1] for i in index if numbers]
             #Reading data
-            while not re.search(config.r_pattern, line):
+            while not re.search(self.config.r_pattern, line):
                 line = buf.readline()
             data = line
             result['data'] = []
-            while not data == config.breaker:  # parsing the data
+            while not data == self.config.breaker:  # parsing the data
                 dataline = regex_data_line.findall(data)
                 result['data'].append([dataline[i - 1] for i in index])
                 if buf.tell() == filesize:

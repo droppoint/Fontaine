@@ -12,23 +12,10 @@ import sys
 from WellStorage import WellStorage
 import Report
 import Parser
+import Initialization as Init
 from PySide import QtGui, QtCore
 from fontaine_ui import Ui_MainWindow
 
-
-class Singleton(type):
-    '''
-    Singleton class for creating 1 uniquie instance with
-    1 input point
-    '''
-    def __init__(cls, name, bases, dictationary):
-        super(Singleton, cls).__init__(name, bases, dictationary)
-        cls.instance = None
-
-    def __call__(cls, *args, **kw):
-        if cls.instance is None:
-            cls.instance = super(Singleton, cls).__call__(*args, **kw)
-        return cls.instance
 
 class _Constants:   # this class store initial data and constants
 
@@ -62,11 +49,11 @@ def timer(f):  # time benchmark
 
 if __name__ == "__main__":
     const = _Constants()
-    config = _Constants()
     storage = WellStorage()
     category = _Constants()
     app = QtGui.QApplication(sys.argv)
     mainwindow = QtGui.QMainWindow()
+    p = Parser()
 #    progress = QtGui.QProgressDialog(u"Подготовка отчета...",
 #                                        u"Отмена", 0, 100)
 #    progress.setWindowTitle(QtGui.QApplication.translate("Progress",
@@ -77,20 +64,21 @@ if __name__ == "__main__":
 
     def ignition():
         info_file = open("info.log", "w")
-        sys.stdout = info_file
+#        sys.stdout = info_file
         error_file = open("error.log", "w")
-        sys.stderr = error_file
+#        sys.stderr = error_file
         filename = ui.lineEdit.text()
         well_filename = ui.lineEdit_2.text()
         savefile = ui.setSaveFileName()
-        const.reset()  # Блок try не помешал бы
-        config.reset()
-        config_init('config.ini')
-        wells_init(well_filename)
-        wells_input_override('input.ini')
+#        const.reset()  # Блок try не помешал бы
+#        config.reset()
+        const = Init.config_init('config.ini')
+        storage.category = Init.wells_init(well_filename)
+        storage.override = Init.wells_input_override('input.ini')
 
         if filename and savefile:
-            Parser.parseFile(filename, lateral=ui.tracks.isChecked())
+            p.inititalization(filename)
+            p.parseFile(filename, lateral=ui.tracks.isChecked())
             Report.render(savefile, debug=ui.debug.isChecked(),
                        lateral=ui.tracks.isChecked())
             storage.clear()

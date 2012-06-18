@@ -4,8 +4,20 @@ Created on 24.04.2012
 @author: APartilov
 '''
 
-from Fontaine import Singleton
 
+class Singleton(type):
+    '''
+    Singleton class for creating 1 uniquie instance with
+    1 input point
+    '''
+    def __init__(cls, name, bases, dictationary):
+        super(Singleton, cls).__init__(name, bases, dictationary)
+        cls.instance = None
+
+    def __call__(cls, *args, **kw):
+        if cls.instance is None:
+            cls.instance = super(Singleton, cls).__call__(*args, **kw)
+        return cls.instance
 
 class WellStorage(object):  # FIXME: More docstrings
     '''
