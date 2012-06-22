@@ -272,7 +272,8 @@ class WellStorage(object):  # FIXME: More docstrings
                     self.wells[number]["Last_call"] = [
                                         year + self.minimal_year,
                                         "Production",
-                                        self.wells[number]['In_work'][year]]
+                                        self.wells[number]['In_work'][year]
+                                        ]
                 break
         if year == len(oil_prod) - 1:
             return False

@@ -22,6 +22,12 @@ regex_numbers = re.compile(r"\s([0-9]+[A-Z]?(?:[-_]?\w*)?)\s")
 regex_data_line = re.compile(r"\s((?:[-+]?[0-9]*\.[0-9]*E?-?[0-9]*)|0)\s")
 regex_all_numbers = re.compile(r"^([\w-]+)\b")
 regex_factor = re.compile(r"(?:\*10\*\*(\d))")
+regex_date_numeric = re.compile(r"\s((?:0[1-9]|[1-2][0-9]|3[0|1])/"
+                 "(?:0[1-9]|1[0-2])/"
+                "(?:(?:19|20|21|22)\d{2}))\s")
+regex_date_alphabetic = re.compile(r"\s((?:0[1-9]|[1-2][0-9]|3[0|1])-"
+                                      "(?:[ADFJMNOS][A-Za-z]{2})-"
+                                      "(?:(?:19|20|21|22)\d{2}))\s")
 
 
 class ParseError(Exception):
@@ -87,20 +93,12 @@ class Parser(object):
         def dateFormatDetermination(dataline):
             date_pattern = ""  # date format check
             regex_pattern = ""
-            if re.findall(r"\s((?:0[1-9]|[1-2][0-9]|3[0|1])/"
-                                 "(?:0[1-9]|1[0-2])/"
-                                 "(?:(?:19|20|21|22)\d{2}))\s", dataline):
+            if regex_date_numeric.findall(dataline):
                 date_pattern = "%d/%m/%Y"
-                regex_pattern = ("\s((?:0[1-9]|[1-2][0-9]|3[0|1])/"
-                                     "(?:0[1-9]|1[0-2])/"
-                                     "(?:(?:19|20|21|22)\d{2}))\s")
-            elif re.findall(r"\s((?:0[1-9]|[1-2][0-9]|3[0|1])-"
-                                   "(?:[ADFJMNOS][A-Za-z]{2})-"
-                                   "(?:(?:19|20|21)\d{2}))\s", dataline):
+                regex_pattern = regex_date_numeric
+            elif regex_date_alphabetic.findall(dataline):
                 date_pattern = "%d-%b-%Y"
-                regex_pattern = ("\s((?:0[1-9]|[1-2][0-9]|3[0|1])-"
-                                      "(?:[ADFJMNOS][A-Za-z]{2})-"
-                                      "(?:(?:19|20|21|22)\d{2}))\s")
+                regex_pattern = regex_date_alphabetic
             else:
                 print "unknown date type"
                 raise ValueError
@@ -129,7 +127,7 @@ class Parser(object):
         dataheight = num - commentaryline
         for unused_i in range(dataheight):  # получение массива дат
     #        locale.setlocale(locale.LC_ALL, 'en_US.utf8')
-            cur_date = datetime.strptime(re.findall(r_pattern, dataline)[0],
+            cur_date = datetime.strptime(r_pattern.findall(dataline)[0],
                                                                 d_pattern)
             dataline = buf.readline()
             dates.append(cur_date)
@@ -137,9 +135,9 @@ class Parser(object):
             if date.month == 1:
                 mod_dates[date.year] = dates.index(date)
 #        storage.dates = mod_dates
-        self.config.filetype = filetype
-        self.config.breaker = breaker
-        self.config.r_pattern = r_pattern
+        self.config['filetype'] = filetype
+        self.config['breaker'] = breaker
+        self.config['r_pattern'] = r_pattern
 #        storage.minimal_year = min(storage.dates.keys())
 
     def parse_file(self, filename, **kwargs):
@@ -170,7 +168,7 @@ class Parser(object):
             line = buf.readline()
             factor = []
             while not re.search(r"\s([0-9]+[A-Z]?(?:[-_]?\w*)?)\s", line):  # ???
-                if re.search(self.config.r_pattern, line):
+                if re.search(self.config['r_pattern'], line):
                     break
                 if regex_factor.search(line):
                     temp_num = line[14:]   # bad block of code
@@ -202,11 +200,11 @@ class Parser(object):
                 numbers = ["N/A" for unused_i in range(len(headers) - 1)]
             result['numbers'] = [numbers[i - 1] for i in index if numbers]
             #Reading data
-            while not re.search(self.config.r_pattern, line):
+            while not re.search(self.config['r_pattern'], line):
                 line = buf.readline()
             data = line
             result['data'] = []
-            while not data == self.config.breaker:  # parsing the data
+            while not data == self.config['breaker']:  # parsing the data
                 dataline = regex_data_line.findall(data)
                 result['data'].append([dataline[i - 1] for i in index])
                 if buf.tell() == filesize:
@@ -243,13 +241,15 @@ class Parser(object):
                                 fl = float(factor)
                                 fk = math.pow(10.0, fl)
                                 data = [float(i) * fk for i in data]
-                        storage.add_well(well_num, parameter,
-                                            data, lateral=lateral)
+#                        storage.add_well(well_num, parameter,
+#                                            data, lateral=lateral)
+                        print (well_num, parameter, data)
 
                     if regex_field_properties.match(parameter):
-                        welldata = []
-                        for year in sorted(storage.dates.values()):
-                            welldata.append(float(data[year]))
-                        storage.add_parameter(parameter, welldata)
+#                        welldata = []
+#                        for year in sorted(storage.dates.values()):
+#                            welldata.append(float(data[year]))
+                        print (well_num, parameter, data)
+#                        storage.add_parameter(parameter, welldata)
 
         f.close()
