@@ -53,7 +53,7 @@ if __name__ == "__main__":
     category = _Constants()
     app = QtGui.QApplication(sys.argv)
     mainwindow = QtGui.QMainWindow()
-    p = Parser()
+    p = Parser.Parser()
 #    progress = QtGui.QProgressDialog(u"Подготовка отчета...",
 #                                        u"Отмена", 0, 100)
 #    progress.setWindowTitle(QtGui.QApplication.translate("Progress",
@@ -77,10 +77,15 @@ if __name__ == "__main__":
         storage.override = Init.wells_input_override('input.ini')
 
         if filename and savefile:
-            p.inititalization(filename)
-            p.parseFile(filename, lateral=ui.tracks.isChecked())
-            Report.render(savefile, debug=ui.debug.isChecked(),
-                       lateral=ui.tracks.isChecked())
+            p.initialization(filename)
+            iterat = p.parse_file(filename, lateral=ui.tracks.isChecked())
+            for rows in iterat:
+                print iterat.next()
+#            r = Report.Report()
+#            r.compilation()
+#            r.render()
+#            Report.render(savefile, debug=ui.debug.isChecked(),
+#                       lateral=ui.tracks.isChecked())
             storage.clear()
         elif not filename:
             ui.informationMessage(u"Выберите файл для обработки",
