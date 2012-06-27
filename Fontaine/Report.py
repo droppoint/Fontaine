@@ -14,6 +14,25 @@ class Report(object):
     Report writing and render
     '''
     
+    class ReportLines(object):
+        '''
+        Lines for report
+        '''
+        
+        def __init__(self, number, *args):
+            '''
+            Constructor
+            '''
+            self.reset()
+            self.number = number
+            # wrong type of args problem
+            
+        def reset(self):
+            self.caption = ""
+            self.number = 0
+            self.data = []
+            
+        
     def __init__(self, input):
         '''
         Constructor
@@ -25,9 +44,6 @@ class Report(object):
         """Reset this instance.  Loses all unprocessed data."""
         self.data = {}
         self.lines = {}
-
-    def addLineToReport(self, legend, data, linenumber):
-        pass
 
     def compilation(self, const, **kwargs):
         
@@ -71,7 +87,6 @@ class Report(object):
                              for well in self.data.wells
                              if self.data.output_well(well))
 
-        #    print index_output_well
         all_output_well = list(mask)
         output_wells_prod = list(mask)
         output_wells_inj = list(mask)
@@ -122,8 +137,8 @@ class Report(object):
                         year_index = int(self.data.wells[well]["First_run"][0]) \
                                            - int(self.data.minimal_year) + index
                         inactive_fond[year_index] += 1
-                        print str(int(self.data.wells[well]["First_run"][0]) +
-                                  index) + " WELL " + well + " inactive"
+#                        print str(int(self.data.wells[well]["First_run"][0]) +
+#                                  index) + " WELL " + well + " inactive"
 
         self.data.mask.pop(0)
         inj = list(self.data.mask)
@@ -147,41 +162,50 @@ class Report(object):
         import xlwt
         from xlwt.Utils import rowcol_to_cell
         
+        if self.lines == {}:
+            # Nothing to render
+            return None
+        
         lateral = kwargs.get('lateral')
-        debug = kwargs.get('debug')
         
         font0 = xlwt.Font()
         font0.name = 'Times New Roman'
         wb = xlwt.Workbook()
         ws = wb.add_sheet(u'gosplan_input')
         n = 0
-        for unused_years in self.data.mask:
-            n += 1
-            ws.write(14, n, xlwt.Formula(   # Watercut
-                    "IF(%(liquid)s=0;0;(%(liquid)s-%(oil)s)/%(liquid)s*100)"
-                    % {"liquid": rowcol_to_cell(11, n),
-                       "oil":    rowcol_to_cell(10, n)}
-                     ))
-            ws.write(25, n, xlwt.Formula(   # New wells watercut
-                    "IF(%(liquid)s=0;0;(%(liquid)s-%(oil)s)/%(liquid)s*100)"
-                    % {"liquid": rowcol_to_cell(24, n),
-                       "oil":    rowcol_to_cell(23, n)}
-                    ))
-            ws.write(37, n, xlwt.Formula(   # Wells from drilling
-                    "(%s+%s)"
-                    % (rowcol_to_cell(38, n),   # Production wells
-                       rowcol_to_cell(39, n))   # Injection wells
-                    ))
-            ws.write(26, n, xlwt.Formula(   # oil rate of new wells
-                    "IF(%(worktime)s=0;0;(%(oil)s/%(worktime)s)/30.25*1000)"
-                    % {"worktime": rowcol_to_cell(28, n),
-                       "oil":   rowcol_to_cell(23, n)}
-                    ))
-            ws.write(27, n, xlwt.Formula(   # fluid rate of new wells
-                    "IF(%(worktime)s=0;0;(%(fluid)s/%(worktime)s)/30.25*1000)"
-                    % {"worktime": rowcol_to_cell(28, n),
-                       "fluid":   rowcol_to_cell(24, n)}
-                    ))
+        
+        for line in lines:
+            ws.write()
+            #  line = {caption:---,number:---,data:[---]}
+            pass
+        
+#        for unused_years in self.data.mask:
+#            n += 1
+#            ws.write(14, n, xlwt.Formula(   # Watercut
+#                    "IF(%(liquid)s=0;0;(%(liquid)s-%(oil)s)/%(liquid)s*100)"
+#                    % {"liquid": rowcol_to_cell(11, n),
+#                       "oil":    rowcol_to_cell(10, n)}
+#                     ))
+#            ws.write(25, n, xlwt.Formula(   # New wells watercut
+#                    "IF(%(liquid)s=0;0;(%(liquid)s-%(oil)s)/%(liquid)s*100)"
+#                    % {"liquid": rowcol_to_cell(24, n),
+#                       "oil":    rowcol_to_cell(23, n)}
+#                    ))
+#            ws.write(37, n, xlwt.Formula(   # Wells from drilling
+#                    "(%s+%s)"
+#                    % (rowcol_to_cell(38, n),   # Production wells
+#                       rowcol_to_cell(39, n))   # Injection wells
+#                    ))
+#            ws.write(26, n, xlwt.Formula(   # oil rate of new wells
+#                    "IF(%(worktime)s=0;0;(%(oil)s/%(worktime)s)/30.25*1000)"
+#                    % {"worktime": rowcol_to_cell(28, n),
+#                       "oil":   rowcol_to_cell(23, n)}
+#                    ))
+#            ws.write(27, n, xlwt.Formula(   # fluid rate of new wells
+#                    "IF(%(worktime)s=0;0;(%(fluid)s/%(worktime)s)/30.25*1000)"
+#                    % {"worktime": rowcol_to_cell(28, n),
+#                       "fluid":   rowcol_to_cell(24, n)}
+#                    ))
 
         def printRow(name, data, y):
             x = 0
@@ -209,61 +233,61 @@ class Report(object):
                     printDebugRow(parameter, self.data.wells[well][parameter], n)
                     n += 1
 
-        printRow(u'Годы', sorted(self.data.dates.iterkeys()), 0)
-
-        printRow(u'Годовые показатели', [], 9)
-        printRow(u'   Годовая добыча нефти, тыс.т', oil_PR_tons, 10)
-        printRow(u'   Годовая добыча жидкости, тыс.т', liq_PR_tons, 11)
-        printRow(u'   Годовая добыча газа, млн.м3', gas_PR_mln, 12)
-        printRow(u'   Годовая закачка воды, тыс.м3', water_IR_tons, 13)
-        printRow(u'   Обводненность,%', [], 14)
-
-        printRow(u'Показатели новых скважин', [], 22)
-        printRow(u'   Добыча нефти, тыс.т/год', new_wells_oil_tons, 23)
-        printRow(u'   Добыча жидкости, тыс.т/год', new_wells_liq_tons, 24)
-        printRow(u'   Обводненность,%', [], 25)
-        printRow(u'   Дебит нефти, т/сут', [], 26)
-        printRow(u'   Дебит жидкости, т/сут', [], 27)
-        printRow(u'   Время работы', work_time, 28)
-
-        printRow(u'Действ. фонд скважин', [], 33)
-        printRow(u'   добывающих', prod_wells, 34)
-        printRow(u'   нагнетательных', inj_wells, 35)
-
-        printRow(u'Ввод скважин из бурения', [], 37)
-        printRow(u'   добывающих', self.data.parameters.get('NPW', mask), 38)
-        printRow(u'   нагнетательных', self.data.parameters.get('NIW', mask), 39)
-        if lateral:
-            printRow(u'   боковые стволы', self.data.parameters.get('NLB', mask), 40)
-
-        printRow(u'Перевод из доб. в нагн.', inj_transfer, 41)
-
-        printRow(u'Выбытие скважин', all_output_well, 43)
-        printRow(u'   добывающих', output_wells_prod, 44)
-        printRow(u'      в т.ч. под закачку', inj_transfer, 45)
-        printRow(u'   нагнетательных', output_wells_inj, 46)
-
-        printRow(u'Ср. взв. пластовое давление, атм',
-                        self.data.parameters.get('FPRP', mask), 48)  # FPRP or FPR
-        printRow(u'   в зоне отбора, атм', reservoir_pres[0], 49)
-        printRow(u'   в зоне закачки, атм', reservoir_pres[1], 50)
-
-        printRow(u'Ср. забойное давление доб. скважин, атм',
-                                        bottomhole_pres[0], 52)
-        printRow(u'Ср. забойное давление нагн. скважин, атм',
-                                        bottomhole_pres[1], 53)
-
-        printRow(u'Время работы добывающих скважин',
-                                        prod, 54)
-        printRow(u'Время работы нагнетательных скважин',
-                                        inj, 55)
-
-        printRow(u'Бездействующий фонд', inactive_fond, 57)
-
-        printRow(u'   Перевод в б/д доб.', inactivity_trans_prod, 58)
-        printRow(u'   Перевод в б/д наг.', inactivity_trans_inj, 59)
-        printRow(u'   Вывод из бездействия доб.', active_trans_prod, 60)
-        printRow(u'   Вывод из бездействия наг.', active_trans_inj, 61)
-    #    progress.setValue(100)
+#        printRow(u'Годы', sorted(self.data.dates.iterkeys()), 0)
+#
+#        printRow(u'Годовые показатели', [], 9)
+#        printRow(u'   Годовая добыча нефти, тыс.т', oil_PR_tons, 10)
+#        printRow(u'   Годовая добыча жидкости, тыс.т', liq_PR_tons, 11)
+#        printRow(u'   Годовая добыча газа, млн.м3', gas_PR_mln, 12)
+#        printRow(u'   Годовая закачка воды, тыс.м3', water_IR_tons, 13)
+#        printRow(u'   Обводненность,%', [], 14)
+#
+#        printRow(u'Показатели новых скважин', [], 22)
+#        printRow(u'   Добыча нефти, тыс.т/год', new_wells_oil_tons, 23)
+#        printRow(u'   Добыча жидкости, тыс.т/год', new_wells_liq_tons, 24)
+#        printRow(u'   Обводненность,%', [], 25)
+#        printRow(u'   Дебит нефти, т/сут', [], 26)
+#        printRow(u'   Дебит жидкости, т/сут', [], 27)
+#        printRow(u'   Время работы', work_time, 28)
+#
+#        printRow(u'Действ. фонд скважин', [], 33)
+#        printRow(u'   добывающих', prod_wells, 34)
+#        printRow(u'   нагнетательных', inj_wells, 35)
+#
+#        printRow(u'Ввод скважин из бурения', [], 37)
+#        printRow(u'   добывающих', self.data.parameters.get('NPW', mask), 38)
+#        printRow(u'   нагнетательных', self.data.parameters.get('NIW', mask), 39)
+#        if lateral:
+#            printRow(u'   боковые стволы', self.data.parameters.get('NLB', mask), 40)
+#
+#        printRow(u'Перевод из доб. в нагн.', inj_transfer, 41)
+#
+#        printRow(u'Выбытие скважин', all_output_well, 43)
+#        printRow(u'   добывающих', output_wells_prod, 44)
+#        printRow(u'      в т.ч. под закачку', inj_transfer, 45)
+#        printRow(u'   нагнетательных', output_wells_inj, 46)
+#
+#        printRow(u'Ср. взв. пластовое давление, атм',
+#                        self.data.parameters.get('FPRP', mask), 48)  # FPRP or FPR
+#        printRow(u'   в зоне отбора, атм', reservoir_pres[0], 49)
+#        printRow(u'   в зоне закачки, атм', reservoir_pres[1], 50)
+#
+#        printRow(u'Ср. забойное давление доб. скважин, атм',
+#                                        bottomhole_pres[0], 52)
+#        printRow(u'Ср. забойное давление нагн. скважин, атм',
+#                                        bottomhole_pres[1], 53)
+#
+#        printRow(u'Время работы добывающих скважин',
+#                                        prod, 54)
+#        printRow(u'Время работы нагнетательных скважин',
+#                                        inj, 55)
+#
+#        printRow(u'Бездействующий фонд', inactive_fond, 57)
+#
+#        printRow(u'   Перевод в б/д доб.', inactivity_trans_prod, 58)
+#        printRow(u'   Перевод в б/д наг.', inactivity_trans_inj, 59)
+#        printRow(u'   Вывод из бездействия доб.', active_trans_prod, 60)
+#        printRow(u'   Вывод из бездействия наг.', active_trans_inj, 61)
+#    #    progress.setValue(100)
 
         wb.save(filename)
