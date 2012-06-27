@@ -13,65 +13,63 @@ class Report(object):
     '''
     Report writing and render
     '''
-
-    def __init__(self):
+    
+    def __init__(self, input):
         '''
         Constructor
         '''
         self.reset()
+        self.data = input
 
     def reset(self):
         """Reset this instance.  Loses all unprocessed data."""
+        self.data = {}
         self.lines = {}
 
     def addLineToReport(self, legend, data, linenumber):
         pass
 
-    def compilation(self, storage, filename, **kwargs):
-#        storage = WellStorage()
-        lateral = kwargs.get('lateral')
-        debug = kwargs.get('debug')
+    def compilation(self, const, **kwargs):
+        
     #    if progress.wasCanceled():   # Вернуть закрывашку
     #            return
-
-        if hasattr(storage, 'category'):  # cut if not in category
+        if hasattr(self.data, 'category'):  # cut if not in category
             pat = ['WOPT', 'WWPT', 'WGPT', 'WOIT', 'WWIT', 'WGIT']
-            tmp = list(storage.wells)
+            tmp = list(self.data.wells)
             for wells in tmp:
-                if not wells in storage.category:
-                    del(storage.wells[wells])
-            for wells in storage.wells:  # bad intendation
-                k = float(storage.category[wells])
+                if not wells in self.data.category:
+                    del(self.data.wells[wells])
+            for wells in self.data.wells:  # bad intendation
+                k = float(self.data.category[wells])
                 for p in pat:
-                    if p in storage.wells[wells]:
-                        storage.wells[wells][p] = list(
-                            map(lambda x: x * k, storage.wells[wells][p]))
+                    if p in self.data.wells[wells]:
+                        self.data.wells[wells][p] = list(
+                            map(lambda x: x * k, self.data.wells[wells][p]))
 
-        mask = list(storage.mask)
+        mask = list(self.data.mask)
 
-        oil_density = int(self.const.oil_density)
-        water_density = int(self.const.water_density)
-
-        oil_PR = storage.production_rate('WOPT')  # TODO: save to list
+        oil_density = int(const['oil_density'])
+        water_density = int(const['water_density'])
+        oil_PR = self.data.production_rate('WOPT')  # TODO: save to list
         oil_PR_tons = [x * oil_density / 1000000 for x in oil_PR]
-        water_PR = storage.production_rate('WWPT')
+        water_PR = self.data.production_rate('WWPT')
         water_PR_tons = [x * water_density / 1000000 for x in water_PR]
-        gas_PR = storage.production_rate('WGPT')
+        gas_PR = self.data.production_rate('WGPT')
         gas_PR_mln = [x / 1000000 for x in gas_PR]
         liq_PR_tons = list(map(lambda x, y: x + y, oil_PR_tons, water_PR_tons))
-        water_IR = storage.production_rate('WWIT')
+        water_IR = self.data.production_rate('WWIT')
         water_IR_tons = [x / 1000 for x in water_IR]
-    #            datetime.strptime(storage.override[well], "%d/%m/%Y")
-        for well in storage.wells:
-            storage.add_First_Year(well)
-            if hasattr(storage, 'override'):
-                if well in storage.override:
+    #            datetime.strptime(self.data.override[well], "%d/%m/%Y")
+        for well in self.data.wells:
+            self.data.add_First_Year(well)
+            if hasattr(self.data, 'override'):
+                if well in self.data.override:
                     # TODO: logger override well
-                    date = datetime.strptime(storage.override[well], "%d/%m/%Y")
-                    storage.add_First_Year(well, year=date.year)
-        index_output_well = list(storage.output_well(well)
-                             for well in storage.wells
-                             if storage.output_well(well))
+                    date = datetime.strptime(self.data.override[well], "%d/%m/%Y")
+                    self.data.add_First_Year(well, year=date.year)
+        index_output_well = list(self.data.output_well(well)
+                             for well in self.data.wells
+                             if self.data.output_well(well))
 
         #    print index_output_well
         all_output_well = list(mask)
@@ -84,76 +82,80 @@ class Report(object):
             else:
                 output_wells_prod[year] += 1
 
-        for wellname in storage.wells:  # initiating classification of wells
-            storage.well_classification(wellname)
-            storage.well_classification2(wellname)
-            storage.well_classification3(wellname)
+        for wellname in self.data.wells:  # initiating classification of wells
+            self.data.well_classification(wellname)
+            self.data.well_classification2(wellname)
+            self.data.well_classification3(wellname)
 
-        reservoir_pres = storage.avg_pressure('WBPN')
-        bottomhole_pres = storage.avg_pressure('WBHP')
-        prod_wells = storage.well_fond(2)
-        inj_wells = storage.well_fond(1)
+        reservoir_pres = self.data.avg_pressure('WBPN')
+        bottomhole_pres = self.data.avg_pressure('WBHP')
+        prod_wells = self.data.well_fond(2)
+        inj_wells = self.data.well_fond(1)
         inj_transfer = []
-        for wellname in storage.wells:
-            if "First_run" in storage.wells[wellname]:
-                check = storage.inj_transfer_check(wellname)
+        for wellname in self.data.wells:
+            if "First_run" in self.data.wells[wellname]:
+                check = self.data.inj_transfer_check(wellname)
             else:
                 check = list(mask)
             if not inj_transfer:
                 inj_transfer = list(check)
             else:
                 inj_transfer = list(map(lambda x, y: x + y, inj_transfer, check))
-            if storage.wells[wellname]['First_run'][1] == 'Production_transfered':
+            if self.data.wells[wellname]['First_run'][1] == 'Production_transfered':
                 output_wells_prod = list(map(lambda x, y: x + y, check,
                                               output_wells_prod))
 
-        work_time = list(storage.mask)  # bad
-        for wells in storage.wells.values():
+        work_time = list(self.data.mask)  # bad
+        for wells in self.data.wells.values():
             if not (wells['First_run'][1] == "Exploratory" or
                 wells['First_run'][1] == "Dummy"):
-                work_time[wells['First_run'][0] - storage.minimal_year] += \
+                work_time[wells['First_run'][0] - self.data.minimal_year] += \
                          wells['First_run'][2]
 
-        inactive_fond = list(storage.mask)
-        for well in storage.wells:
-            if "Last_call" in storage.wells[well]:
-                cut = storage.cutter(well, storage.wells[well]["First_run"][0],
-                                     storage.wells[well]["Last_call"][0])
+        inactive_fond = list(self.data.mask)
+        for well in self.data.wells:
+            if "Last_call" in self.data.wells[well]:
+                cut = self.data.cutter(well, self.data.wells[well]["First_run"][0],
+                                     self.data.wells[well]["Last_call"][0])
                 for index, status in enumerate(cut):
                     if status == 0:
-                        year_index = int(storage.wells[well]["First_run"][0]) \
-                                           - int(storage.minimal_year) + index
+                        year_index = int(self.data.wells[well]["First_run"][0]) \
+                                           - int(self.data.minimal_year) + index
                         inactive_fond[year_index] += 1
-                        print str(int(storage.wells[well]["First_run"][0]) +
+                        print str(int(self.data.wells[well]["First_run"][0]) +
                                   index) + " WELL " + well + " inactive"
 
-        storage.mask.pop(0)
-        inj = list(storage.mask)
-        prod = list(storage.mask)
-        for years, unused_val in enumerate(storage.mask):
-            for wells in storage.wells:
-                if storage.wells[wells]['cls_mask'][years] == 2:
-                    prod[years] += storage.wells[wells]['In_work'][years]
-                if storage.wells[wells]['cls_mask'][years] == 1:
-                    inj[years] += storage.wells[wells]['In_work'][years]
+        self.data.mask.pop(0)
+        inj = list(self.data.mask)
+        prod = list(self.data.mask)
+        for years, unused_val in enumerate(self.data.mask):
+            for wells in self.data.wells:
+                if self.data.wells[wells]['cls_mask'][years] == 2:
+                    prod[years] += self.data.wells[wells]['In_work'][years]
+                if self.data.wells[wells]['cls_mask'][years] == 1:
+                    inj[years] += self.data.wells[wells]['In_work'][years]
 
-        storage.dummyCheck()
+        self.data.dummyCheck()
         new_wells_liq_tons = list(map(lambda x, y: (x * oil_density + y *
                                                     water_density) / 1000000,
-                                 storage.parameters.get('NOPT', mask),
-                                 storage.parameters.get('NWPT', mask)))
+                                 self.data.parameters.get('NOPT', mask),
+                                 self.data.parameters.get('NWPT', mask)))
         new_wells_oil_tons = list(map(lambda x: x * oil_density / 1000000,
-                                      storage.parameters.get('NOPT', mask)))
+                                      self.data.parameters.get('NOPT', mask)))
 
-    def render(self, storage, filename, **kwargs):  # отдать объект для рендера
+    def render(self, filename, **kwargs):  # отдать объект для рендера
         import xlwt
         from xlwt.Utils import rowcol_to_cell
+        
+        lateral = kwargs.get('lateral')
+        debug = kwargs.get('debug')
+        
         font0 = xlwt.Font()
         font0.name = 'Times New Roman'
         wb = xlwt.Workbook()
         ws = wb.add_sheet(u'gosplan_input')
         n = 0
-        for unused_years in oil_PR:
+        for unused_years in self.data.mask:
             n += 1
             ws.write(14, n, xlwt.Formula(   # Watercut
                     "IF(%(liquid)s=0;0;(%(liquid)s-%(oil)s)/%(liquid)s*100)"
@@ -200,68 +202,68 @@ class Report(object):
                     debuglist.write(y, x, key)
                     x += 1
             n = 0
-            for well in storage.wells:
+            for well in self.data.wells:
                 printDebugRow(well, [], n)
                 n += 1
-                for parameter in storage.wells[well]:
-                    printDebugRow(parameter, storage.wells[well][parameter], n)
+                for parameter in self.data.wells[well]:
+                    printDebugRow(parameter, self.data.wells[well][parameter], n)
                     n += 1
 
-#        printRow(u'Годы', sorted(storage.dates.iterkeys()), 0)
-#
-#        printRow(u'Годовые показатели', [], 9)
-#        printRow(u'   Годовая добыча нефти, тыс.т', oil_PR_tons, 10)
-#        printRow(u'   Годовая добыча жидкости, тыс.т', liq_PR_tons, 11)
-#        printRow(u'   Годовая добыча газа, млн.м3', gas_PR_mln, 12)
-#        printRow(u'   Годовая закачка воды, тыс.м3', water_IR_tons, 13)
-#        printRow(u'   Обводненность,%', [], 14)
-#
-#        printRow(u'Показатели новых скважин', [], 22)
-#        printRow(u'   Добыча нефти, тыс.т/год', new_wells_oil_tons, 23)
-#        printRow(u'   Добыча жидкости, тыс.т/год', new_wells_liq_tons, 24)
-#        printRow(u'   Обводненность,%', [], 25)
-#        printRow(u'   Дебит нефти, т/сут', [], 26)
-#        printRow(u'   Дебит жидкости, т/сут', [], 27)
-#        printRow(u'   Время работы', work_time, 28)
-#
-#        printRow(u'Действ. фонд скважин', [], 33)
-#        printRow(u'   добывающих', prod_wells, 34)
-#        printRow(u'   нагнетательных', inj_wells, 35)
-#
-#        printRow(u'Ввод скважин из бурения', [], 37)
-#        printRow(u'   добывающих', storage.parameters.get('NPW', mask), 38)
-#        printRow(u'   нагнетательных', storage.parameters.get('NIW', mask), 39)
-#        if lateral:
-#            printRow(u'   боковые стволы', storage.parameters.get('NLB', mask), 40)
-#
-#        printRow(u'Перевод из доб. в нагн.', inj_transfer, 41)
-#
-#        printRow(u'Выбытие скважин', all_output_well, 43)
-#        printRow(u'   добывающих', output_wells_prod, 44)
-#        printRow(u'      в т.ч. под закачку', inj_transfer, 45)
-#        printRow(u'   нагнетательных', output_wells_inj, 46)
-#
-#        printRow(u'Ср. взв. пластовое давление, атм',
-#                        storage.parameters.get('FPRP', mask), 48)  # FPRP or FPR
-#        printRow(u'   в зоне отбора, атм', reservoir_pres[0], 49)
-#        printRow(u'   в зоне закачки, атм', reservoir_pres[1], 50)
-#
-#        printRow(u'Ср. забойное давление доб. скважин, атм',
-#                                        bottomhole_pres[0], 52)
-#        printRow(u'Ср. забойное давление нагн. скважин, атм',
-#                                        bottomhole_pres[1], 53)
-#
-#        printRow(u'Время работы добывающих скважин',
-#                                        prod, 54)
-#        printRow(u'Время работы нагнетательных скважин',
-#                                        inj, 55)
-#
-#        printRow(u'Бездействующий фонд', inactive_fond, 57)
+        printRow(u'Годы', sorted(self.data.dates.iterkeys()), 0)
 
-    #    printRow(u'   Перевод в б/д доб.', inactivity_trans_prod, 58)
-    #    printRow(u'   Перевод в б/д наг.', inactivity_trans_inj, 59)
-    #    printRow(u'   Вывод из бездействия доб.', active_trans_prod, 60)
-    #    printRow(u'   Вывод из бездействия наг.', active_trans_inj, 61)
+        printRow(u'Годовые показатели', [], 9)
+        printRow(u'   Годовая добыча нефти, тыс.т', oil_PR_tons, 10)
+        printRow(u'   Годовая добыча жидкости, тыс.т', liq_PR_tons, 11)
+        printRow(u'   Годовая добыча газа, млн.м3', gas_PR_mln, 12)
+        printRow(u'   Годовая закачка воды, тыс.м3', water_IR_tons, 13)
+        printRow(u'   Обводненность,%', [], 14)
+
+        printRow(u'Показатели новых скважин', [], 22)
+        printRow(u'   Добыча нефти, тыс.т/год', new_wells_oil_tons, 23)
+        printRow(u'   Добыча жидкости, тыс.т/год', new_wells_liq_tons, 24)
+        printRow(u'   Обводненность,%', [], 25)
+        printRow(u'   Дебит нефти, т/сут', [], 26)
+        printRow(u'   Дебит жидкости, т/сут', [], 27)
+        printRow(u'   Время работы', work_time, 28)
+
+        printRow(u'Действ. фонд скважин', [], 33)
+        printRow(u'   добывающих', prod_wells, 34)
+        printRow(u'   нагнетательных', inj_wells, 35)
+
+        printRow(u'Ввод скважин из бурения', [], 37)
+        printRow(u'   добывающих', self.data.parameters.get('NPW', mask), 38)
+        printRow(u'   нагнетательных', self.data.parameters.get('NIW', mask), 39)
+        if lateral:
+            printRow(u'   боковые стволы', self.data.parameters.get('NLB', mask), 40)
+
+        printRow(u'Перевод из доб. в нагн.', inj_transfer, 41)
+
+        printRow(u'Выбытие скважин', all_output_well, 43)
+        printRow(u'   добывающих', output_wells_prod, 44)
+        printRow(u'      в т.ч. под закачку', inj_transfer, 45)
+        printRow(u'   нагнетательных', output_wells_inj, 46)
+
+        printRow(u'Ср. взв. пластовое давление, атм',
+                        self.data.parameters.get('FPRP', mask), 48)  # FPRP or FPR
+        printRow(u'   в зоне отбора, атм', reservoir_pres[0], 49)
+        printRow(u'   в зоне закачки, атм', reservoir_pres[1], 50)
+
+        printRow(u'Ср. забойное давление доб. скважин, атм',
+                                        bottomhole_pres[0], 52)
+        printRow(u'Ср. забойное давление нагн. скважин, атм',
+                                        bottomhole_pres[1], 53)
+
+        printRow(u'Время работы добывающих скважин',
+                                        prod, 54)
+        printRow(u'Время работы нагнетательных скважин',
+                                        inj, 55)
+
+        printRow(u'Бездействующий фонд', inactive_fond, 57)
+
+        printRow(u'   Перевод в б/д доб.', inactivity_trans_prod, 58)
+        printRow(u'   Перевод в б/д наг.', inactivity_trans_inj, 59)
+        printRow(u'   Вывод из бездействия доб.', active_trans_prod, 60)
+        printRow(u'   Вывод из бездействия наг.', active_trans_inj, 61)
     #    progress.setValue(100)
 
         wb.save(filename)

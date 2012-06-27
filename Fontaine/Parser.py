@@ -15,8 +15,7 @@ regex_all_headers = re.compile(r"([A-Z0-9_]+)")
 regex_necessary_headers = re.compile(
                 r"\b(W[O|G|W|L][I|P][T|R|N]|WBPN|WBHP|FPRP?)\b")
 regex_header = re.compile(r"^(W[O|G|W|L][I|P][T|R|N])|(WBPN|WBHP)$")
-regex_well_properties = re.compile(r"^(W[O|G|W|L][I|P][T|R|N])|(WBPN|WBHP)$")
-regex_field_properties = re.compile(r"^(FPRP?)$")
+regex_properties = re.compile(r"^(W[O|G|W|L][I|P][T|R|N])|(WBPN|WBHP)|(FPRP?)$")
 regex_numbers = re.compile(r"\s([0-9]+[A-Z]?(?:[-_]?\w*)?)\s")
 regex_data_line = re.compile(r"\s((?:[-+]?[0-9]*\.[0-9]*E?-?[0-9]*)|0)\s")
 regex_all_numbers = re.compile(r"^([\w-]+)\b")
@@ -68,7 +67,7 @@ class Parser(object):
 
     def close(self):
         """Handle any buffered data."""
-        self.goahead(1)
+        self.reset()
 
     def initialization(self, filename):
         """Return primary parameters of RSM file,
@@ -133,12 +132,14 @@ class Parser(object):
         for date in dates:
             if date.month == 1:
                 mod_dates[date.year] = dates.index(date)
-#        storage.dates = mod_dates
+        self.config['dates'] = mod_dates
         self.config['filetype'] = filetype
         self.config['breaker'] = breaker
         self.config['r_pattern'] = r_pattern
-#        storage.minimal_year = min(storage.dates.keys())
-
+    
+    def get_dates_list(self):
+        return self.config['dates']
+    
     def parse_file(self, filename, **kwargs):
         import mmap
         import math  # maybe in other place?
@@ -223,7 +224,6 @@ class Parser(object):
     #        progress.setValue(int((n / filesize) * 100))
             n = buf.find("SUMMARY", n)
             m = buf.find("DATE", n)
-            buf.seek(n)  # WHY???
             n += 1
             buf.seek(m)
             cur_str = buf.readline()
@@ -232,18 +232,18 @@ class Parser(object):
                 for key, well_num in enumerate(block['numbers']):
                     data = [i[key] for i in block['data']]
                     parameter = block['headers'][key]
-
-                    if regex_well_properties.match(parameter):
-                        if block['factor']:
+                    parsed_data = {}
+                    if regex_properties.match(parameter):
+                        if block['factor']:   # FIX: maybe repeated conditions
                             factor = block['factor'][key]
                             if factor:
                                 fl = float(factor)
                                 fk = math.pow(10.0, fl)
                                 data = [float(i) * fk for i in data]
-                        yield(well_num, parameter, data)
-
-                    if regex_field_properties.match(parameter):
-                        yield(well_num, parameter, data)
+                        parsed_data['number'] = well_num
+                        parsed_data['parameter_code'] = parameter
+                        parsed_data['welldata'] = data     
+                        yield parsed_data
 
 
         f.close()

@@ -30,7 +30,11 @@ class WellStorage(object):  # FIXME: More docstrings
     parameters = {}
     mask = []
     minimal_year = 0
-
+    
+    def set_dates_list(self, dates):
+        self.dates = dates
+        self.minimal_year = min(self.dates.keys())
+        
     def add_well(self, number, well_code, data, **kwargs):
         import re
         lateral = kwargs.get('lateral')

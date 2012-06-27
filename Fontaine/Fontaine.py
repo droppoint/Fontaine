@@ -53,7 +53,6 @@ if __name__ == "__main__":
     category = _Constants()
     app = QtGui.QApplication(sys.argv)
     mainwindow = QtGui.QMainWindow()
-    p = Parser.Parser()
 #    progress = QtGui.QProgressDialog(u"Подготовка отчета...",
 #                                        u"Отмена", 0, 100)
 #    progress.setWindowTitle(QtGui.QApplication.translate("Progress",
@@ -73,19 +72,26 @@ if __name__ == "__main__":
 #        const.reset()  # Блок try не помешал бы
 #        config.reset()
         const = Init.config_init('config.ini')
-        storage.category = Init.wells_init(well_filename)
+        if well_filename:
+            storage.category = Init.wells_init(well_filename)
         storage.override = Init.wells_input_override('input.ini')
-
         if filename and savefile:
-            p.initialization(filename)
-            iterat = p.parse_file(filename, lateral=ui.tracks.isChecked())
-            for rows in iterat:
-                print iterat.next()
-#            r = Report.Report()
-#            r.compilation()
-#            r.render()
-#            Report.render(savefile, debug=ui.debug.isChecked(),
-#                       lateral=ui.tracks.isChecked())
+            p = Parser.Parser()
+            p.initialization(filename)   # FIX: remove initialization or rename
+            dates = p.get_dates_list()
+            storage.set_dates_list(dates)
+            parsed_data = p.parse_file(filename, lateral=ui.tracks.isChecked())
+            p.close()
+            for row in parsed_data:
+                if row['number'] == 'N/A':
+                    storage.add_parameter(row['parameter_code'], row['welldata'])
+                else:
+                    storage.add_well(row['number'], row['parameter_code'], row['welldata'])         
+            
+            r = Report.Report(storage)
+            r.compilation(const)
+            r.render(savefile, debug=ui.debug.isChecked(),
+                       lateral=ui.tracks.isChecked())
             storage.clear()
         elif not filename:
             ui.informationMessage(u"Выберите файл для обработки",
