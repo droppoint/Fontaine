@@ -26,12 +26,7 @@ class Well(object):
         #  self.parameters[] add parameter
         pass
 
-    def output_well(self):  # !!! Rework
-#        if ("L_Borholes" in self.parameters) and \
-#            (number in self.parameters["L_Borholes"]):
-#            return False
-#        if not number in self.wells:
-#            return False
+    def output_well(self):
         oil_prod = self.parameters['WOPT']  # FIXME: To array
         water_prod = self.parameters['WWPT']
         gas_prod = self.parameters['WGPT']
@@ -160,14 +155,6 @@ class Well(object):
             jan_mask = jan_mask[start_p:end_p]
             return jan_mask
 
-#        def recieveLine(self, number, code):
-#            if code in self.wells[number]:
-#                return self.wells[number][code]
-#            else:
-#                mask = list(self.mask)
-#                mask.remove(0)
-#                return list(mask)
-
         def well_classification(self, number):  # BAD MASK
             if number in self.wells:
                 oil_inj = self.recieveLine(number, 'WOIT')  # FIXME: To array
@@ -239,4 +226,18 @@ class Well(object):
 #                oil_inj = list(map(lambda x, y: x + y, oil_inj, oil_inj2))
 #                water_inj = list(map(lambda x, y: x + y,
 #                                     water_inj, water_inj2))
-#                gas_inj = list(map(lambda x, y: x + y, gas_inj, gas_inj2))        
+#                gas_inj = list(map(lambda x, y: x + y, gas_inj, gas_inj2))
+
+#        if ("L_Borholes" in self.parameters) and \
+#            (number in self.parameters["L_Borholes"]):
+#            return False
+#        if not number in self.wells:
+#            return False
+
+#        def recieveLine(self, number, code):
+#            if code in self.wells[number]:
+#                return self.wells[number][code]
+#            else:
+#                mask = list(self.mask)
+#                mask.remove(0)
+#                return list(mask)

@@ -6,7 +6,7 @@ Created on 18.06.2012
 @author: APartilov
 '''
 from datetime import datetime
-from WellStorage import WellStorage
+from Field import Field
 
 
 class Report(object):
@@ -19,7 +19,7 @@ class Report(object):
         Lines for report
         '''
 
-        def __init__(self, number, caption = "", data = []):
+        def __init__(self, number, caption="", data=[]):
             '''
             Constructor with unnecessary arguments
             '''
@@ -46,11 +46,10 @@ class Report(object):
         self.lines = {}
 
     def compilation(self, const, **kwargs):
-        
-        
-        def SM_to_tons (density, data):
+
+        def SM_to_tons(density, data):
             return [x * oil_density / 1000000 for x in data]
-        
+
     #    if progress.wasCanceled():   # Вернуть закрывашку
     #            return
         if hasattr(self.data, 'category'):  # cut if not in category
@@ -65,8 +64,7 @@ class Report(object):
                     if p in self.data.wells[wells]:
                         self.data.wells[wells][p] = list(
                             map(lambda x: x * k, self.data.wells[wells][p]))
-                        
-                        
+
         # annual production/injection
         oil_density = int(const['oil_density'])
         water_density = int(const['water_density'])
@@ -77,7 +75,6 @@ class Report(object):
         liq_PR_tons = list(map(lambda x, y: x + y, oil_PR_tons, water_PR_tons))
         water_IR = self.data.production_rate('WWIT')
         water_IR_SM3 = [x / 1000 for x in water_IR]
-        
 
         for well in self.data.wells:
             self.data.add_First_Year(well)

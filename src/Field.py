@@ -3,8 +3,9 @@ Created on 24.04.2012
 
 @author: APartilov
 '''
+import Well
 
-
+# FIXME: expressions
 class Singleton(type):
     '''
     Singleton class for creating 1 uniquie instance with
@@ -19,13 +20,14 @@ class Singleton(type):
             cls.instance = super(Singleton, cls).__call__(*args, **kw)
         return cls.instance
 
+
 class Field(object):  # FIXME: More docstrings
     '''
     Storage for wellfield and wells data.
     Store data in dicts "wells" and "parameters"
     '''
     __metaclass__ = Singleton
-    wells = {}
+    wells = []
     parameters = {}
     mask = []
     minimal_year = 0
@@ -36,6 +38,8 @@ class Field(object):  # FIXME: More docstrings
 
     def add_well(self, number, well_code, data, **kwargs):
         import re
+
+#        new Well()
         lateral = kwargs.get('lateral')
 
         def countMonth(pointer, data):
@@ -50,8 +54,6 @@ class Field(object):  # FIXME: More docstrings
             return m
         if not number in self.wells:
             self.wells[number] = {}
-#            self.cls_logger.info(number)
-#            self.cls_logger.info('pass')
         if lateral:
             shrt_num = re.findall(r"^([0-9A-Z]+)(?=BS|[_-])", number)
             if shrt_num:
