@@ -13,13 +13,13 @@ class Report(object):
     '''
     Report writing and render
     '''
-    
+
     class ReportLine(object):
         '''
         Lines for report
         '''
-        
-        def __init__(self, number, caption = "", data = []):   
+
+        def __init__(self, number, caption = "", data = []):
             '''
             Constructor with unnecessary arguments
             '''
@@ -27,13 +27,12 @@ class Report(object):
             self.number = number
             self.caption = caption
             self.data = data
-            
+
         def reset(self):
             self.caption = ""
             self.number = 0
             self.data = []
-            
-        
+
     def __init__(self, input):
         '''
         Constructor

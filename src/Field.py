@@ -19,7 +19,6 @@ class Singleton(type):
             cls.instance = super(Singleton, cls).__call__(*args, **kw)
         return cls.instance
 
-
 class Field(object):  # FIXME: More docstrings
     '''
     Storage for wellfield and wells data.

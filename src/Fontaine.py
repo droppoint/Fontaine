@@ -9,7 +9,7 @@ Created on 03.04.2012
 from __future__ import division
 import sys
 #import locale
-from WellStorage import WellStorage
+from Field import Field
 import Report
 import Parser
 import Initialization as Init
@@ -86,8 +86,8 @@ if __name__ == "__main__":
                 if row['number'] == 'N/A':
                     storage.add_parameter(row['parameter_code'], row['welldata'])
                 else:
-                    storage.add_well(row['number'], row['parameter_code'], row['welldata'])         
-            
+                    storage.add_well(row['number'], row['parameter_code'], row['welldata']
+
             r = Report.Report(storage)
             r.compilation(const)
             r.render(savefile, debug=ui.debug.isChecked(),
