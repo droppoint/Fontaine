@@ -14,18 +14,19 @@ class Report(object):
     Report writing and render
     '''
     
-    class ReportLines(object):
+    class ReportLine(object):
         '''
         Lines for report
         '''
         
-        def __init__(self, number, *args):
+        def __init__(self, number, caption = "", data = []):   
             '''
-            Constructor
+            Constructor with unnecessary arguments
             '''
             self.reset()
             self.number = number
-            # wrong type of args problem
+            self.caption = caption
+            self.data = data
             
         def reset(self):
             self.caption = ""
@@ -47,6 +48,10 @@ class Report(object):
 
     def compilation(self, const, **kwargs):
         
+        
+        def SM_to_tons (density, data):
+            return [x * oil_density / 1000000 for x in data]
+        
     #    if progress.wasCanceled():   # Вернуть закрывашку
     #            return
         if hasattr(self.data, 'category'):  # cut if not in category
@@ -61,21 +66,20 @@ class Report(object):
                     if p in self.data.wells[wells]:
                         self.data.wells[wells][p] = list(
                             map(lambda x: x * k, self.data.wells[wells][p]))
-
-        mask = list(self.data.mask)
-
+                        
+                        
+        # annual production/injection
         oil_density = int(const['oil_density'])
         water_density = int(const['water_density'])
-        oil_PR = self.data.production_rate('WOPT')  # TODO: save to list
-        oil_PR_tons = [x * oil_density / 1000000 for x in oil_PR]
-        water_PR = self.data.production_rate('WWPT')
-        water_PR_tons = [x * water_density / 1000000 for x in water_PR]
+        oil_PR_tons = (oil_density, self.data.production_rate('WOPT'))
+        water_PR_tons = (water_density, self.data.production_rate('WWPT'))
         gas_PR = self.data.production_rate('WGPT')
         gas_PR_mln = [x / 1000000 for x in gas_PR]
         liq_PR_tons = list(map(lambda x, y: x + y, oil_PR_tons, water_PR_tons))
         water_IR = self.data.production_rate('WWIT')
-        water_IR_tons = [x / 1000 for x in water_IR]
-    #            datetime.strptime(self.data.override[well], "%d/%m/%Y")
+        water_IR_SM3 = [x / 1000 for x in water_IR]
+        
+
         for well in self.data.wells:
             self.data.add_First_Year(well)
             if hasattr(self.data, 'override'):
