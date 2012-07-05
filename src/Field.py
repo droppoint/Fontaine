@@ -5,6 +5,7 @@ Created on 24.04.2012
 '''
 import Well
 
+
 # FIXME: expressions
 class Singleton(type):
     '''
@@ -40,84 +41,6 @@ class Field(object):  # FIXME: More docstrings
         import re
 
 #        new Well()
-        lateral = kwargs.get('lateral')
-
-        def countMonth(pointer, data):
-            m = 0
-            start = self.dates[pointer]
-            end = self.dates[pointer + 1]
-            k = 12 / (end - start)
-            for curr, nextt in pairs(range(end - start + 1)):
-                if (float(data[nextt + start]) -
-                        float(data[curr + start]) != 0):
-                    m += 1 * k
-            return m
-        if not number in self.wells:
-            self.wells[number] = {}
-        if lateral:
-            shrt_num = re.findall(r"^([0-9A-Z]+)(?=BS|[_-])", number)
-            if shrt_num:
-                if not shrt_num[0] in self.wells:   # FIXME: conditions
-                    self.wells[shrt_num[0]] = {}
-                if not "Lateral" in self.wells[shrt_num[0]]:
-                    self.wells[shrt_num[0]]["Lateral"] = []
-                if not number in self.wells[shrt_num[0]]["Lateral"]:
-                    self.wells[shrt_num[0]]["Lateral"].append(number)
-                if not "L_Borholes" in self.parameters:
-                    self.parameters["L_Borholes"] = []
-                if not number in self.parameters["L_Borholes"]:
-                    self.parameters["L_Borholes"].append(number)
-        if not self.mask:
-            self.mask = [0 for unused_item in self.dates]
-        if re.match(r"^(W[O|G|W][I|P]T)$", well_code):
-            welldata = []
-            worktime = []
-            welldata_dec = []
-            for cur, nex in pairs(sorted(self.dates)):
-                cur_line = self.dates[cur]
-                next_line = self.dates[nex]
-                welldata.append(
-                    float(data[next_line]) - \
-                        float(data[cur_line]))
-                m = countMonth(cur, data)
-                worktime.append(m)
-            self.add_worktime(number, worktime)
-
-            dec_dates = sorted(self.dates)
-            dec_dates.pop(0)
-            for cur in dec_dates:  # december pattern
-                if self.dates[cur] == 0:
-                    cur.next()
-                cur_line = self.dates[cur] - 1
-                next_line = self.dates[cur]
-                welldata_dec.append(
-                    float(data[next_line]) - \
-                        float(data[cur_line]))
-
-            if not well_code in self.wells[number]:
-                self.wells[number][well_code] = welldata
-                self.wells[number]["dec" + well_code] = welldata_dec
-            else:  # bad code
-                self.wells[number][well_code] = list(map(lambda x, y: x + y,
-                                self.wells[number][well_code], welldata))
-                self.wells[number]["dec" + well_code] = list(map(lambda x, y: x + y,
-                                self.wells[number]["dec" + well_code], welldata_dec))
-                print "lateral indeed", number, well_code
-            if not "First_run" in self.wells[number]:
-                self.wells[number]['First_run'] = ('N/A', "Exploratory", 0)
-
-        if re.match(r"^(WBPN|WBHP|W[O|G|W|L][I|P][R|N])$", well_code):
-            welldata = []
-            for year in sorted(self.dates.values()):
-                welldata.append(float(data[year]))
-            welldata.pop(0)  # december pattern
-            self.wells[number][well_code] = welldata
-
-    def get_well(self, wellname):
-        if wellname in self.wells:
-            return self.wells[wellname]
-        else:
-            return False
 
     def add_parameter(self, parameter, data):
         if parameter == "FPR":
@@ -202,11 +125,56 @@ class Field(object):  # FIXME: More docstrings
         self.parameters.clear()
         self.mask = []
         self.minimal_year = 0
-
-
-def pairs(lst):  # list generator
-    i = iter(lst)
-    prev = item = i.next()
-    for item in i:
-        yield prev, item
-        prev = item
+        
+#GARBAGE
+# lateral = kwargs.get('lateral')
+#
+#
+#        if not number in self.wells:
+#            self.wells[number] = {}
+#        if lateral:
+#            shrt_num = re.findall(r"^([0-9A-Z]+)(?=BS|[_-])", number)
+#            if shrt_num:
+#                if not shrt_num[0] in self.wells:   # FIXME: conditions
+#                    self.wells[shrt_num[0]] = {}
+#                if not "Lateral" in self.wells[shrt_num[0]]:
+#                    self.wells[shrt_num[0]]["Lateral"] = []
+#                if not number in self.wells[shrt_num[0]]["Lateral"]:
+#                    self.wells[shrt_num[0]]["Lateral"].append(number)
+#                if not "L_Borholes" in self.parameters:
+#                    self.parameters["L_Borholes"] = []
+#                if not number in self.parameters["L_Borholes"]:
+#                    self.parameters["L_Borholes"].append(number)
+#        if not self.mask:
+#            self.mask = [0 for unused_item in self.dates]
+#
+#
+#            dec_dates = sorted(self.dates)
+#            dec_dates.pop(0)
+#            for cur in dec_dates:  # december pattern
+#                if self.dates[cur] == 0:
+#                    cur.next()
+#                cur_line = self.dates[cur] - 1
+#                next_line = self.dates[cur]
+#                welldata_dec.append(
+#                    float(data[next_line]) - \
+#                        float(data[cur_line]))
+#
+#            if not well_code in self.wells[number]:
+#                self.wells[number][well_code] = welldata
+#                self.wells[number]["dec" + well_code] = welldata_dec
+#            else:  # bad code
+#                self.wells[number][well_code] = list(map(lambda x, y: x + y,
+#                                self.wells[number][well_code], welldata))
+#                self.wells[number]["dec" + well_code] = list(map(lambda x, y: x + y,
+#                                self.wells[number]["dec" + well_code], welldata_dec))
+#                print "lateral indeed", number, well_code
+#            if not "First_run" in self.wells[number]:
+#                self.wells[number]['First_run'] = ('N/A', "Exploratory", 0)
+#
+#        if re.match(r"^(WBPN|WBHP|W[O|G|W|L][I|P][R|N])$", well_code):
+#            welldata = []
+#            for year in sorted(self.dates.values()):
+#                welldata.append(float(data[year]))
+#            welldata.pop(0)  # december pattern
+#            self.wells[number][well_code] = welldata

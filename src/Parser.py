@@ -136,10 +136,10 @@ class Parser(object):
         self.config['filetype'] = filetype
         self.config['breaker'] = breaker
         self.config['r_pattern'] = r_pattern
-    
+
     def get_dates_list(self):
         return self.config['dates']
-    
+
     def parse_file(self, filename, **kwargs):
         import mmap
         import math  # maybe in other place?
@@ -242,7 +242,7 @@ class Parser(object):
                                 data = [float(i) * fk for i in data]
                         parsed_data['number'] = well_num
                         parsed_data['parameter_code'] = parameter
-                        parsed_data['welldata'] = data     
+                        parsed_data['welldata'] = data
                         yield parsed_data
 
 
