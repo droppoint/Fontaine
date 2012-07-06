@@ -49,7 +49,6 @@ def timer(f):  # time benchmark
 
 if __name__ == "__main__":
     const = _Constants()
-    storage = WellStorage()
     category = _Constants()
     app = QtGui.QApplication(sys.argv)
     mainwindow = QtGui.QMainWindow()
@@ -73,23 +72,26 @@ if __name__ == "__main__":
 #        config.reset()
         const = Init.config_init('config.ini')
         if well_filename:
-            storage.category = Init.wells_init(well_filename)
-        storage.override = Init.wells_input_override('input.ini')
+#            storage.category = Init.wells_init(well_filename)
+#        storage.override = Init.wells_input_override('input.ini')
+            pass
         if filename and savefile:
             p = Parser.Parser()
+
             p.initialization(filename)   # FIX: remove initialization or rename
             dates = p.get_dates_list()
+            storage = Field()
             storage.set_dates_list(dates)
+
             parsed_data = p.parse_file(filename, lateral=ui.tracks.isChecked())
             p.close()
             for row in parsed_data:
                 if row['number'] == 'N/A':
                     storage.add_parameter(row['parameter_code'], row['welldata'])
                 else:
-                    storage.add_well(row['number'], row['parameter_code'], row['welldata']
+                    storage.add_well(row['number'], row['parameter_code'], row['welldata'])
 
             r = Report.Report(storage)
-            r.compilation(const)
             r.render(savefile, debug=ui.debug.isChecked(),
                        lateral=ui.tracks.isChecked())
             storage.clear()

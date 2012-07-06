@@ -28,10 +28,13 @@ class Field(object):  # FIXME: More docstrings
     Store data in dicts "wells" and "parameters"
     '''
     __metaclass__ = Singleton
-    wells = []
-    parameters = {}
-    mask = []
-    minimal_year = 0
+
+    def __init__(self, name):
+        self.name = name
+        wells = []
+        parameters = {}
+        mask = []
+        minimal_year = 0
 
     def set_dates_list(self, dates):
         self.dates = dates
@@ -41,6 +44,7 @@ class Field(object):  # FIXME: More docstrings
         import re
 
 #        new Well()
+# if well exists add_parameter
 
     def add_parameter(self, parameter, data):
         if parameter == "FPR":
@@ -120,12 +124,30 @@ class Field(object):  # FIXME: More docstrings
                 self.parameters["NWPT"][index] += self.wells[lateral]['WWPT'][index]
                 self.parameters["NPW"][index] += 1
 
+    def countMonth(self, pointer, data):
+        m = 0
+        start = self.dates[pointer]
+        end = self.dates[pointer + 1]
+        k = 12 / (end - start)
+        for curr, nextt in pairs(range(end - start + 1)):
+            if (float(data[nextt + start]) -
+                    float(data[curr + start]) != 0):
+                m += 1 * k
+        return m
+
     def clear(self):
         self.wells.clear()
         self.parameters.clear()
         self.mask = []
         self.minimal_year = 0
-        
+
+def pairs(lst):  # list generator
+    i = iter(lst)
+    prev = item = i.next()
+    for item in i:
+        yield prev, item
+        prev = item
+
 #GARBAGE
 # lateral = kwargs.get('lateral')
 #

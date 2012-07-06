@@ -1,9 +1,11 @@
+# -*- coding: UTF-8 -*-
 '''
 Created on 04.07.2012
 
 @author: APartilov
 '''
 
+from Field import Field
 
 total_parameters = ['WOPT', 'WWPT', 'WGPT', 'WWIT', 'WOIT', 'WGIT']
 total_prod_parameters = ['WOPT', 'WWPT', 'WGPT']
@@ -43,47 +45,47 @@ class Well(object):
         Parameter length counter for class
         '''
         for datalist in data.values():
-            if datalist.length() > self.__class__.length:
-                self.__class__.dataline_length = datalist.length()
+            if len(datalist) > self.__class__.dataline_length:
+                self.__class__.dataline_length = len(datalist)
                 self.__class__.mask = [0] * self.__class__.dataline_length
 
     def add_parameter(self, data):
         self.parameters.update(data)
 
         for datalist in data.values():   # potentially to own def
-            if datalist.length() > self.__class__.length:
-                self.__class__.dataline_length = datalist.length()
+            if len(datalist) > self.__class__.dataline_length:
+                self.__class__.dataline_length = len(datalist)
                 self.__class__.mask = [0] * self.__class__.dataline_length
 
     def recieve_parameters(self, *args):
-        if not args:
-            return False
+        result = []  # и все-таки yield
         for arg in args:
-            yield self.parameters.get(arg, default=self.__class__.mask)
+            result.append(self.parameters.get(arg, self.__class__.mask))
+        return result
 
     def abandonment_year(self):
 #        for year in reversed(range(self.__class__.dataline_length)):
         #  Maybe this work
-        for year, work_time in reversed(enumerate(self.work_time)):
+        for year, work_time in enumerate(reversed(self.work_time)):
             if work_time > 0:
                 break
-        if year == self.work_time.length() - 1:
+        if year == 0:
             self.abandonment = "working"
             return False
-        self.last_call = year
-        return year
+        self.last_call = len(work_time) - year
+        return len(work_time) - year
         #  to last_call
 
     def completion_year(self):
         for year, work_time in enumerate(self.work_time):
             if work_time > 0:
                 break
-        # добавить тип скважины
-        if year == self.work_time.length() - 1:
+        # add oil well type
+        if year == len(self.work_time) + 1:
             self.first_run = "None"
             return False
-        self.first_run = year
-        return year
+        self.first_run = year - 1
+        return year - 1
 
     def well_classification(self):
         prod_parameters = self.recieve_parameters(*total_prod_parameters)
@@ -92,9 +94,12 @@ class Well(object):
         injection = list_sum(*inj_parameters)
         output = self.__class__.mask
         for year, (prod, inj) in enumerate(zip(production, injection)):
-            # условие бездействия
+            # inactiveness condition
             if inj + prod == 0 and  \
                year > self.first_run and year < self.abandonment:
+                output[year] += 4
+            elif inj + prod == 0 and \
+                year > self.first_run and self.abandonment == "working":
                 output[year] += 4
             elif inj > 0:
                     output[year] += 1
@@ -112,29 +117,28 @@ class Well(object):
                 pass
         return
 
-    def add_worktime(self, wellcode):    #  фуфуфу, сменить имя процедуры
-        def countMonth(pointer, data):
-            m = 0
-            start = self.dates[pointer]
-            end = self.dates[pointer + 1]
-            k = 12 / (end - start)
-            for curr, nextt in pairs(range(end - start + 1)):
-                if (float(data[nextt + start]) -
-                        float(data[curr + start]) != 0):
-                    m += 1 * k
-            return m
-
+    def add_worktime(self, data, wellcode):
         if wellcode in total_parameters:
-            welldata = []
-            worktime = []
+            self.work_time = []
             for cur, nex in pairs(sorted(self.dates)):
                 cur_line = self.dates[cur]
                 next_line = self.dates[nex]
-                welldata.append(
-                    float(data[next_line]) - \
-                        float(data[cur_line]))
-                m = countMonth(cur, data)
-                worktime.append(m)
+#                welldata.append(
+#                    float(data[next_line]) - \
+#                        float(data[cur_line]))
+                m = self.countMonth(cur, data)
+                self.work_time.append(m)
+
+    def countMonth(self, pointer, data):
+        m = 0
+        start = self.dates[pointer]
+        end = self.dates[pointer + 1]
+        k = 12 / (end - start)
+        for curr, nextt in pairs(range(end - start + 1)):
+            if (float(data[nextt + start]) -
+                    float(data[curr + start]) != 0):
+                m += 1 * k
+        return m
 
 
 
@@ -155,16 +159,20 @@ def pairs(lst):  # list generator
         prev = item
 
 
-def list_sum(*args):
-    length = args[0].length()
+def list_sum(*args):  # сделать элегантнее
+    length = len(args[0])
     for x in args:
-        if x.length() != length:
+        if len(x) != length:
             raise ValueError
     sum = []
     for x in range(length):
+        s = 0
         for y in args:
-            sum[x] += y
+            s += y[x]
+        sum.append(s)
     return sum
+
+
 
     #  GARBAGE,  а выбросить жалко
 #        if 'Lateral' in self.wells[number]:

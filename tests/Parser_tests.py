@@ -4,7 +4,7 @@ Created on 22.06.2012
 @author: APartilov
 '''
 import unittest
-import Fontaine.Parser as par
+import src.Parser as par
 
 
 class Test(unittest.TestCase):
