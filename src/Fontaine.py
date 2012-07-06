@@ -79,10 +79,7 @@ if __name__ == "__main__":
             p = Parser.Parser()
 
             p.initialization(filename)   # FIX: remove initialization or rename
-            dates = p.get_dates_list()
-            storage = Field()
-            storage.set_dates_list(dates)
-
+            storage = Field('test field', p.get_dates_list())
             parsed_data = p.parse_file(filename, lateral=ui.tracks.isChecked())
             p.close()
             for row in parsed_data:

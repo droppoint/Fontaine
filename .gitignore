@@ -1,6 +1,7 @@
 *.class
 *.pyc
 *.pyo
+*.pyd
 .idea/
 *.log
 *.rsm

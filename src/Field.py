@@ -1,9 +1,10 @@
+# -*- coding: UTF-8 -*-
 '''
 Created on 24.04.2012
 
 @author: APartilov
 '''
-import Well
+from Well import Well
 
 
 # FIXME: expressions
@@ -29,22 +30,28 @@ class Field(object):  # FIXME: More docstrings
     '''
     __metaclass__ = Singleton
 
-    def __init__(self, name):
+    def __init__(self, name, dates_list):
+
+        def set_dates_list(self, dates):
+            self.dates = dates
+            self.minimal_year = min(self.dates.keys())
+
         self.name = name
-        wells = []
-        parameters = {}
-        mask = []
-        minimal_year = 0
+        self.wells = []
+        self.parameters = {}
+        self.mask = []  # может по датам?
+        self.set_dates_list(dates_list)
 
-    def set_dates_list(self, dates):
-        self.dates = dates
-        self.minimal_year = min(self.dates.keys())
-
-    def add_well(self, number, well_code, data, **kwargs):
-        import re
-
-#        new Well()
-# if well exists add_parameter
+    def add_well(self, number, parameter_code, data, **kwargs):
+        if number in self.wells:  # ошибочка будет полюбому
+            self.wells[number].add_parameter(parameter_code, data)
+        else:
+            self.wells.append(
+                Well(number, parameter_code, data)  # может без parameter code?
+                              )
+#        shrt_num = re.findall(r"^([0-9A-Z]+)(?=BS|[_-])", number)
+#        if shrt_num:
+#            pass
 
     def add_parameter(self, parameter, data):
         if parameter == "FPR":
@@ -59,7 +66,7 @@ class Field(object):  # FIXME: More docstrings
 
     def production_rate(self, code):
         rate = []
-        for wells in self.wells.values():
+        for wells in self.wells.values():  #  без values
             if code in wells:
                 if not rate:
                     rate = list(wells[code])
@@ -67,15 +74,14 @@ class Field(object):  # FIXME: More docstrings
                     rate = list(map(lambda x, y: x + y, wells[code], rate))
         return rate
 
-    def well_fond(self, code):
+    def well_fond(self, code):   # коды состояний 0.1.2.4
         wells_fond = list(self.mask)
         wells_fond.remove(0)
         for year, unused_item in enumerate(wells_fond):
-            for well in self.wells:
+            for well in self.wells:  # rework
                 if ("L_Borholes" in self.parameters) and \
                   (well in self.parameters["L_Borholes"]):
                     continue
-
                 if self.wells[well]['cls_mask_rate_jan'][year] == code:
                     wells_fond[year] += 1
                 elif 'Lateral' in self.wells[well]:
@@ -88,7 +94,7 @@ class Field(object):  # FIXME: More docstrings
     def avg_pressure(self, pres_type):
         mask = list(self.mask)
         mask.remove(0)
-        avg_inj_pres = list(mask)
+        avg_inj_pres = list(mask)  # проверить маску
         avg_prod_pres = list(mask)
         for num in range(len(mask)):
             pres_prod, pres_inj = 0, 0
@@ -107,7 +113,7 @@ class Field(object):  # FIXME: More docstrings
                 avg_inj_pres[num] += pres_inj / count_inj
         return avg_prod_pres, avg_inj_pres
 
-    def dummyCheck(self):
+    def dummyCheck(self):   # rework
         for well in self.wells:
             if not self.wells[well]['First_run'][1] == 'Dummy':
                 continue
@@ -147,56 +153,3 @@ def pairs(lst):  # list generator
     for item in i:
         yield prev, item
         prev = item
-
-#GARBAGE
-# lateral = kwargs.get('lateral')
-#
-#
-#        if not number in self.wells:
-#            self.wells[number] = {}
-#        if lateral:
-#            shrt_num = re.findall(r"^([0-9A-Z]+)(?=BS|[_-])", number)
-#            if shrt_num:
-#                if not shrt_num[0] in self.wells:   # FIXME: conditions
-#                    self.wells[shrt_num[0]] = {}
-#                if not "Lateral" in self.wells[shrt_num[0]]:
-#                    self.wells[shrt_num[0]]["Lateral"] = []
-#                if not number in self.wells[shrt_num[0]]["Lateral"]:
-#                    self.wells[shrt_num[0]]["Lateral"].append(number)
-#                if not "L_Borholes" in self.parameters:
-#                    self.parameters["L_Borholes"] = []
-#                if not number in self.parameters["L_Borholes"]:
-#                    self.parameters["L_Borholes"].append(number)
-#        if not self.mask:
-#            self.mask = [0 for unused_item in self.dates]
-#
-#
-#            dec_dates = sorted(self.dates)
-#            dec_dates.pop(0)
-#            for cur in dec_dates:  # december pattern
-#                if self.dates[cur] == 0:
-#                    cur.next()
-#                cur_line = self.dates[cur] - 1
-#                next_line = self.dates[cur]
-#                welldata_dec.append(
-#                    float(data[next_line]) - \
-#                        float(data[cur_line]))
-#
-#            if not well_code in self.wells[number]:
-#                self.wells[number][well_code] = welldata
-#                self.wells[number]["dec" + well_code] = welldata_dec
-#            else:  # bad code
-#                self.wells[number][well_code] = list(map(lambda x, y: x + y,
-#                                self.wells[number][well_code], welldata))
-#                self.wells[number]["dec" + well_code] = list(map(lambda x, y: x + y,
-#                                self.wells[number]["dec" + well_code], welldata_dec))
-#                print "lateral indeed", number, well_code
-#            if not "First_run" in self.wells[number]:
-#                self.wells[number]['First_run'] = ('N/A', "Exploratory", 0)
-#
-#        if re.match(r"^(WBPN|WBHP|W[O|G|W|L][I|P][R|N])$", well_code):
-#            welldata = []
-#            for year in sorted(self.dates.values()):
-#                welldata.append(float(data[year]))
-#            welldata.pop(0)  # december pattern
-#            self.wells[number][well_code] = welldata
