@@ -23,30 +23,27 @@ class Well(object):
     dataline_length = 0
     mask = []
 
-    def __init__(self, number, data={}):  # number
+    def __init__(self, data=None):  # number
         '''
         Constructor
         '''
-        self.name = number
         self.parameters = {}
-        self.parameters.update(data)
-
         self.first_run = None
         self.abandonment = None
         self.work_time = None
         self.classification = None
+        if data:
+            self.add_parameter(data)
 
 #        for parameter in data:
 #            if parameter in total_parameters:
 #            self.add_worktime(parameter)
 
-        '''
-        Parameter length counter for class
-        '''
-        for datalist in data.values():
-            if len(datalist) > self.__class__.dataline_length:
-                self.__class__.dataline_length = len(datalist)
-                self.__class__.mask = [0] * self.__class__.dataline_length
+#    def __call__(self):
+#        return self.name
+
+#    def __repr__(self):
+#        return "Well('%s')" % (self.name)
 
     def is_lateral(self):
         pass
@@ -54,7 +51,7 @@ class Well(object):
     def compress_data(self):
         pass
 
-    def add_parameter(self, parameter_code, data):
+    def add_parameter(self, data):
         self.parameters.update(data)
 
         for datalist in data.values():   # potentially to own def
@@ -71,6 +68,7 @@ class Well(object):
     def abandonment_year(self):
 #        for year in reversed(range(self.__class__.dataline_length)):
         #  Maybe this work
+        print self.work_time
         for year, work_time in enumerate(reversed(self.work_time)):
             if work_time > 0:
                 break
@@ -89,8 +87,8 @@ class Well(object):
         if year == len(self.work_time) + 1:
             self.first_run = "None"
             return False
-        self.first_run = year - 1
-        return year - 1
+        self.first_run = year
+        return year
 
     def well_classification(self):
         prod_parameters = self.recieve_parameters(*total_prod_parameters)
@@ -122,28 +120,26 @@ class Well(object):
                 pass
         return
 
-    def add_worktime(self, data, wellcode):
-        if wellcode in total_parameters:
-            self.work_time = []
-            for cur, nex in pairs(sorted(self.dates)):
-                cur_line = self.dates[cur]
-                next_line = self.dates[nex]
-#                welldata.append(
-#                    float(data[next_line]) - \
-#                        float(data[cur_line]))
-                m = self.countMonth(cur, data)
-                self.work_time.append(m)
+    def add_worktime(self):
+        def countMonth(self, data):
+            m = 0
+            k = 12 / len(data)
+            for rate in data:
+                if rate > 0:
+                    m += 1 * k
+            return m
 
-    def countMonth(self, pointer, data):
-        m = 0
-        start = self.dates[pointer]
-        end = self.dates[pointer + 1]
-        k = 12 / (end - start)
-        for curr, nextt in pairs(range(end - start + 1)):
-            if (float(data[nextt + start]) -
-                    float(data[curr + start]) != 0):
-                m += 1 * k
-        return m
+        for wellcode in self.parameters:
+            if wellcode in total_parameters:
+                data = self.parameters[wellcode]
+                self.work_time = []
+                for cur, nex in pairs(sorted(self.dates)):
+                    cur_line = self.dates[cur]
+                    next_line = self.dates[nex]
+                    sliced_data = data[cur_line:next_line:]
+                    m = countMonth(cur, sliced_data)
+                    self.work_time.append(m)
+
 
 #        def cutter(self, number, start_p, end_p):  #  закомментировано до
 #выяснения обстоятельств

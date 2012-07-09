@@ -23,32 +23,53 @@ class Singleton(type):
         return cls.instance
 
 
+class FieldError(Exception):
+    """Exception raised for all parse errors."""
+
+    def __init__(self, msg, position=(None, None)):
+        assert msg
+        self.msg = msg
+        self.lineno = position[0]
+        self.offset = position[1]
+
+    def __str__(self):
+        result = self.msg
+        if self.lineno is not None:
+            result = result + ", at line %d" % self.lineno
+        if self.offset is not None:
+            result = result + ", column %d" % (self.offset + 1)
+        return result
+
+
 class Field(object):  # FIXME: More docstrings
     '''
     Storage for wellfield and wells data.
     Store data in dicts "wells" and "parameters"
     '''
-    __metaclass__ = Singleton
-
-    def __init__(self, name, dates_list):
+#    __metaclass__ = Singleton
+#    __slots__ = {'name', 'wells', 'parameters', 'mask'
+#                 'dates', 'minimal_year'}
+    def __init__(self, name, dates_dict):
 
         def set_dates_list(self, dates):
             self.dates = dates
             self.minimal_year = min(self.dates.keys())
+            self.mask = [0 for _ in self.dates]
 
         self.name = name
-        self.wells = []
+        self.wells = {}
         self.parameters = {}
-        self.mask = []  # может по датам?
-        self.set_dates_list(dates_list)
+        set_dates_list(self, dates_dict)
 
-    def add_well(self, number, parameter_code, data, **kwargs):
+    def __call__(self):
+        return self.name
+
+    def add_well(self, number, data={}, **kwargs):
         if number in self.wells:  # ошибочка будет полюбому
-            self.wells[number].add_parameter(parameter_code, data)
+            self.wells[number].add_parameter(data)
         else:
-            self.wells.append(
-                Well(number, parameter_code, data)  # может без parameter code?
-                              )
+            self.wells[number] = Well()
+            self.wells[number].add_parameter(data)
 #        shrt_num = re.findall(r"^([0-9A-Z]+)(?=BS|[_-])", number)
 #        if shrt_num:
 #            pass
@@ -61,17 +82,26 @@ class Field(object):  # FIXME: More docstrings
         if not parameter in self.parameters:
             self.parameters[parameter] = list(data)
         else:
-            self.parameters[parameter] = list(map(lambda x, y: x + y,
-                                     self.parameters[parameter], data))
+#            self.parameters[parameter] = list(map(lambda x, y: x + y,
+#                                     self.parameters[parameter], data))
+            raise FieldError("Repeated parameters")
+
+    def routine_operations(self):
+        print map(Well.add_worktime, self.wells.values())
+        print map(Well.abandonment_year, self.wells.values())
+        print map(Well.completion_year, self.wells.values())
+        print map(Well.classification, self.wells.values())
+        print map(Well.inj_transfer_check, self.wells.values())
+        print self.wells.values()
 
     def production_rate(self, code):
         rate = []
-        for wells in self.wells.values():  #  без values
-            if code in wells:
+        for well in self.wells.values():  #  без values
+            if code in well.parameters:
                 if not rate:
-                    rate = list(wells[code])
+                    rate = list(well.parameters[code])
                 else:
-                    rate = list(map(lambda x, y: x + y, wells[code], rate))
+                    rate = list(map(lambda x, y: x + y, well.parameters[code], rate))
         return rate
 
     def well_fond(self, code):   # коды состояний 0.1.2.4

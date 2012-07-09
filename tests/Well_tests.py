@@ -14,20 +14,30 @@ from src.Well import Well
 class Test(unittest.TestCase):
 
     def setUp(self):
-        self.well = Well('402', {'WOPT':[1, 0, 2]})
-        self.well.add_parameter({'WWPT':[1, 0, 2]})
-        self.well.dates = [0, 1, 2]
-        self.well.add_worktime([1, 1, 2],'WOPT')
-        self.well.completion_year()
-        self.well.abandonment_year()
-        self.well.well_classification()
+        self.well = Well(data={'WOPT': [1, 0, 2, 4]})
+        self.well.add_parameter({'WWPT': [1, 0, 2, 4]})
+        self.well.dates = {'1990': 0, '1991': 2, '1992': 4}
 
     def tearDown(self):
         del(self.well)
 
-    def test_add_well(self):
-        self.assertTrue(self.well)
-        self.assertEqual(self.well.classification, [2, 4, 2])
+#    def test_add_well(self):
+#        self.assertTrue(self.well)
+#        self.assertEqual(self.well.classification, [2, 4, 2])
+
+    def test_add_worktime(self):
+        self.well.add_worktime()
+        self.assertEqual(self.well.work_time, [6, 12])
+
+    def test_completion_year(self):
+        self.well.add_worktime()
+        self.well.completion_year()
+        self.assertEqual(self.well.first_run, 0)
+
+    def test_abandonment_year(self):
+        self.well.add_worktime()
+        self.well.abandonment_year()
+        self.assertEqual(self.well.abandonment, 'working')
 
 if __name__ == "__main__":
     sys.argv = ['', 'Test.testName']

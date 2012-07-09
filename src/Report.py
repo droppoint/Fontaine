@@ -161,24 +161,24 @@ class Report(object):
     def render(self, filename, **kwargs):  # отдать объект для рендера
         import xlwt
         from xlwt.Utils import rowcol_to_cell
-        
+
         if self.lines == {}:
             # Nothing to render
             return None
-        
+
         lateral = kwargs.get('lateral')
-        
+
         font0 = xlwt.Font()
         font0.name = 'Times New Roman'
         wb = xlwt.Workbook()
         ws = wb.add_sheet(u'gosplan_input')
         n = 0
-        
+
         for line in lines:
             ws.write()
             #  line = {caption:---,number:---,data:[---]}
             pass
-        
+
 #        for unused_years in self.data.mask:
 #            n += 1
 #            ws.write(14, n, xlwt.Formula(   # Watercut
