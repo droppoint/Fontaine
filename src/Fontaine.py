@@ -84,9 +84,12 @@ if __name__ == "__main__":
             p.close()
             for row in parsed_data:
                 if row['number'] == 'N/A':
-                    storage.add_parameter(row['parameter_code'], row['welldata'])
+                    storage.add_parameter(row['parameter_code'],
+                                          row['welldata'])
                 else:
-                    storage.add_well(row['number'], row['parameter_code'], row['welldata'])
+                    storage.add_well(row['number'],
+                        {row['parameter_code']: row['welldata']})
+            storage.routine_operations()
 
             r = Report.Report(storage)
             r.render(savefile, debug=ui.debug.isChecked(),
