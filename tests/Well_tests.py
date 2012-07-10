@@ -16,6 +16,7 @@ class Test(unittest.TestCase):
     def setUp(self):
         self.well = Well(data={'WOPT': [1, 0, 2, 4]})
         self.well.add_parameter({'WWPT': [1, 0, 2, 4]})
+        self.well.add_parameter({'WLPR': [1, 0, 1, 2]})
         self.well.dates = {'1990': 0, '1991': 2, '1992': 4}
 
     def tearDown(self):
@@ -38,6 +39,20 @@ class Test(unittest.TestCase):
         self.well.add_worktime()
         self.well.abandonment_year()
         self.assertEqual(self.well.abandonment, 'working')
+
+    def test_classification(self):
+        self.well.add_worktime()
+        self.well.completion_year()
+        self.well.abandonment_year()
+        self.well.well_classification()
+        self.assertEqual(self.well.classification, [2, 4, 2, 2])
+
+    def test_classification_rate(self):
+        self.well.add_worktime()
+        self.well.completion_year()
+        self.well.abandonment_year()
+        self.well.well_classification(mode='rate')
+        self.assertEqual(self.well.classification_by_rate, [2, 4, 2, 2])
 
 if __name__ == "__main__":
     sys.argv = ['', 'Test.testName']

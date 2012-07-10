@@ -6,6 +6,9 @@ Created on 06.07.2012
 '''
 
 #GARBAGE
+#if ("L_Borholes" in self.parameters) and \
+#                  (well in self.parameters["L_Borholes"]):
+#                    continue
 # lateral = kwargs.get('lateral')
 #
 #

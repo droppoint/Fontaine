@@ -12,8 +12,10 @@ class Test(unittest.TestCase):
 
     def setUp(self):
         self.field = Field('Test Tield', {'1990': 0, 1991: '1', 1992: '2'})
-        self.field.add_well('402', {'WOPT': [1, 0, 2]})
-        self.field.add_well('403', {'WOPT': [1, 0, 2]})
+        self.field.add_well('402', {'WOPT': [1, 0, 2, 4]})
+        self.field.add_well('403', {'WOPT': [1, 0, 2, 4]})
+        self.field.add_well('402', {'WLPR': [1, 0, 1, 2]})
+        self.field.add_well('403', {'WLPR': [1, 0, 1, 2]})
         self.field.wells['402'].dates = {'1990': 0, '1991': 2, '1992': 4}
         self.field.wells['403'].dates = {'1990': 0, '1991': 2, '1992': 4}
 
@@ -21,16 +23,16 @@ class Test(unittest.TestCase):
         self.field.clear()
         del(self.field)
 
-    @unittest.skip("demonstrating skipping")
     def testProduction_rate(self):
-        self.assertTrue(self.field.production_rate('WOPT'), [2, 0, 4])
+        self.field.routine_operations()
+        self.assertEqual(self.field.production_rate('WOPT'), [2, 0, 4, 8])
 
     def testRoutine_operations(self):
         self.field.routine_operations()
 
-    @unittest.skip("demonstrating skipping")
     def testWell_fond(self):
-        self.assertTrue(self.field.well_fond('1'), [2, 0, 2])
+        self.field.routine_operations()
+        self.assertEqual(self.field.well_fond(2), [2, 0, 2])
 
     @unittest.skip("demonstrating skipping")
     def testPressure_type(self):

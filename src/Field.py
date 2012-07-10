@@ -87,12 +87,13 @@ class Field(object):  # FIXME: More docstrings
             raise FieldError("Repeated parameters")
 
     def routine_operations(self):
-        print map(Well.add_worktime, self.wells.values())
-        print map(Well.abandonment_year, self.wells.values())
-        print map(Well.completion_year, self.wells.values())
-        print map(Well.classification, self.wells.values())
-        print map(Well.inj_transfer_check, self.wells.values())
-        print self.wells.values()
+        map(Well.add_worktime, self.wells.values())
+        map(Well.abandonment_year, self.wells.values())
+        map(Well.completion_year, self.wells.values())
+        map(Well.well_classification, self.wells.values())
+        map(lambda x: Well.well_classification(x, mode='rate'),
+             self.wells.values())
+        map(Well.inj_transfer_check, self.wells.values())
 
     def production_rate(self, code):
         rate = []
@@ -106,19 +107,11 @@ class Field(object):  # FIXME: More docstrings
 
     def well_fond(self, code):   # коды состояний 0.1.2.4
         wells_fond = list(self.mask)
-        wells_fond.remove(0)
-        for year, unused_item in enumerate(wells_fond):
-            for well in self.wells:  # rework
-                if ("L_Borholes" in self.parameters) and \
-                  (well in self.parameters["L_Borholes"]):
-                    continue
-                if self.wells[well]['cls_mask_rate_jan'][year] == code:
+#        wells_fond.remove(0)
+        for well in self.wells.values():
+            for year, _ in enumerate(wells_fond):
+                if well.classification_by_rate[year] == code:
                     wells_fond[year] += 1
-                elif 'Lateral' in self.wells[well]:
-                    for wells in self.wells[well]['Lateral']:
-                        if self.wells[wells]['cls_mask_rate_jan'][year] == code:
-                            wells_fond[year] += 1
-                            break
         return wells_fond
 
     def avg_pressure(self, pres_type):

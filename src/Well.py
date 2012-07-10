@@ -32,6 +32,7 @@ class Well(object):
         self.abandonment = None
         self.work_time = None
         self.classification = None
+        self.classification_by_rate = None
         if data:
             self.add_parameter(data)
 
@@ -68,7 +69,6 @@ class Well(object):
     def abandonment_year(self):
 #        for year in reversed(range(self.__class__.dataline_length)):
         #  Maybe this work
-        print self.work_time
         for year, work_time in enumerate(reversed(self.work_time)):
             if work_time > 0:
                 break
@@ -90,12 +90,18 @@ class Well(object):
         self.first_run = year
         return year
 
-    def well_classification(self):
-        prod_parameters = self.recieve_parameters(*total_prod_parameters)
+    def well_classification(self, mode='total'):
+        if mode == 'total':
+            prod_parameters = self.recieve_parameters(*total_prod_parameters)
+            inj_parameters = self.recieve_parameters(*total_inj_parameters)
+        elif mode == 'rate':
+            prod_parameters = self.recieve_parameters(*rate_prod_parameters)
+            inj_parameters = self.recieve_parameters(*rate_inj_parameters)
+        else:
+            raise ValueError
         production = list_sum(*prod_parameters)
-        inj_parameters = self.recieve_parameters(*total_inj_parameters)
         injection = list_sum(*inj_parameters)
-        output = self.__class__.mask
+        output = list(self.__class__.mask)
         for year, (prod, inj) in enumerate(zip(production, injection)):
             # inactiveness condition
             if inj + prod == 0 and  \
@@ -108,7 +114,12 @@ class Well(object):
                     output[year] += 1
             elif prod > 0:
                     output[year] += 2
-        self.classification = output
+        if mode == 'total':
+            self.classification = output
+        elif mode == 'rate':
+            self.classification_by_rate = output
+        else:
+            raise ValueError
 
     def inj_transfer_check(self):
         n = 0
