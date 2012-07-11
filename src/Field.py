@@ -95,16 +95,16 @@ class Field(object):  # FIXME: More docstrings
         map(lambda x: Well.well_classification(x, mode='rate'),
              self.wells.values())
         map(Well.inj_transfer_check, self.wells.values())
-        print self.production_rate('WOPT')
-        print self.production_rate('WWPT')
-        print self.production_rate('WGPT')
-        print self.production_rate('WWIT')
-        print self.production_rate('WOIT')
-        print self.well_fond(1)
-        print self.well_fond(2)
-        print self.well_fond(4)
-        print self.avg_pressure('WBPN')
-        print self.avg_pressure('WBHP')
+#        print self.production_rate('WOPT')
+#        print self.production_rate('WWPT')
+#        print self.production_rate('WGPT')
+#        print self.production_rate('WWIT')
+#        print self.production_rate('WOIT')
+#        print self.well_fond(1)
+#        print self.well_fond(2)
+#        print self.well_fond(4)
+#        print self.avg_pressure('WBPN')
+#        print self.avg_pressure('WBHP')
 
     def production_rate(self, code):
         rate = []
