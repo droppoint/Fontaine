@@ -87,13 +87,24 @@ class Field(object):  # FIXME: More docstrings
             raise FieldError("Repeated parameters")
 
     def routine_operations(self):
-        map(Well.add_worktime, self.wells.values())
+        map(lambda x: Well.add_worktime(x, dates=self.dates), self.wells.values())
+        map(lambda x: Well.compress_data(x, dates=self.dates), self.wells.values())
         map(Well.abandonment_year, self.wells.values())
         map(Well.completion_year, self.wells.values())
         map(Well.well_classification, self.wells.values())
         map(lambda x: Well.well_classification(x, mode='rate'),
              self.wells.values())
         map(Well.inj_transfer_check, self.wells.values())
+        print self.production_rate('WOPT')
+        print self.production_rate('WWPT')
+        print self.production_rate('WGPT')
+        print self.production_rate('WWIT')
+        print self.production_rate('WOIT')
+        print self.well_fond(1)
+        print self.well_fond(2)
+        print self.well_fond(4)
+        print self.avg_pressure('WBPN')
+        print self.avg_pressure('WBHP')
 
     def production_rate(self, code):
         rate = []
@@ -107,7 +118,7 @@ class Field(object):  # FIXME: More docstrings
 
     def well_fond(self, code):   # коды состояний 0.1.2.4
         wells_fond = list(self.mask)
-#        wells_fond.remove(0)
+        wells_fond.pop(0)
         for well in self.wells.values():
             for year, _ in enumerate(wells_fond):
                 if well.classification_by_rate[year] == code:
@@ -116,19 +127,19 @@ class Field(object):  # FIXME: More docstrings
 
     def avg_pressure(self, pres_type):
         mask = list(self.mask)
-        mask.remove(0)
+        mask.pop(0)
         avg_inj_pres = list(mask)  # проверить маску
         avg_prod_pres = list(mask)
         for num in range(len(mask)):
             pres_prod, pres_inj = 0, 0
             count_prod, count_inj = 0, 0
-            for well in self.wells.values():
-                if pres_type in well:
-                    if well['cls_mask'][num] == 2:
-                        pres_prod += well[pres_type][num]
+            for well in self.wells.values():  # деление на well_fond
+                if pres_type in well.parameters:
+                    if well.classification_by_rate[num] == 2:
+                        pres_prod += well.parameters[pres_type][num]
                         count_prod += 1
-                    elif well['cls_mask'][num] == 1:
-                        pres_inj += well[pres_type][num]
+                    elif well.classification_by_rate[num] == 1:
+                        pres_inj += well.parameters[pres_type][num]
                         count_inj += 1
             if count_prod != 0:
                 avg_prod_pres[num] += pres_prod / count_prod

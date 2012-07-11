@@ -36,10 +36,6 @@ class Well(object):
         if data:
             self.add_parameter(data)
 
-#        for parameter in data:
-#            if parameter in total_parameters:
-#            self.add_worktime(parameter)
-
 #    def __call__(self):
 #        return self.name
 
@@ -49,22 +45,34 @@ class Well(object):
     def is_lateral(self):
         pass
 
-    def compress_data(self):
-        pass
+    def compress_data(self, dates):  # уменьшить вложенность
+        for parameter in self.parameters:
+            compress = list(self.parameters[parameter])
+            self.parameters[parameter][:] = []
+            if parameter in total_parameters:
+                for cur_date, next_date in pairs(sorted(dates.values())):
+                    value = float(compress[next_date]) - float(compress[cur_date])
+                    self.parameters[parameter].append(value)
+            else:
+                s_dates = sorted(dates.values())
+                s_dates.pop(0)
+                self.__class__.short_mask = [0] * len(s_dates)
+                for date in s_dates:
+                    self.parameters[parameter].append(float(compress[date]))
 
     def add_parameter(self, data):
         self.parameters.update(data)
 
         for datalist in data.values():   # potentially to own def
+            len(datalist)
             if len(datalist) > self.__class__.dataline_length:
                 self.__class__.dataline_length = len(datalist)
+                self.__class__.mask[:] = []
                 self.__class__.mask = [0] * self.__class__.dataline_length
 
     def recieve_parameters(self, *args):
-        result = []  # и все-таки yield
         for arg in args:
-            result.append(self.parameters.get(arg, self.__class__.mask))
-        return result
+            yield self.parameters.get(arg, list(self.__class__.short_mask))
 
     def abandonment_year(self):
 #        for year in reversed(range(self.__class__.dataline_length)):
@@ -75,8 +83,8 @@ class Well(object):
         if year == 0:
             self.abandonment = "working"
             return False
-        self.last_call = len(work_time) - year
-        return len(work_time) - year
+        self.last_call = len(self.work_time) - 1 - year
+        return len(self.work_time) - 1 - year
         #  to last_call
 
     def completion_year(self):
@@ -92,8 +100,8 @@ class Well(object):
 
     def well_classification(self, mode='total'):
         if mode == 'total':
-            prod_parameters = self.recieve_parameters(*total_prod_parameters)
-            inj_parameters = self.recieve_parameters(*total_inj_parameters)
+            prod_parameters = [i for i in self.recieve_parameters(*total_prod_parameters)]
+            inj_parameters = [i for i in self.recieve_parameters(*total_inj_parameters)]
         elif mode == 'rate':
             prod_parameters = self.recieve_parameters(*rate_prod_parameters)
             inj_parameters = self.recieve_parameters(*rate_inj_parameters)
@@ -101,7 +109,7 @@ class Well(object):
             raise ValueError
         production = list_sum(*prod_parameters)
         injection = list_sum(*inj_parameters)
-        output = list(self.__class__.mask)
+        output = list(self.__class__.short_mask)
         for year, (prod, inj) in enumerate(zip(production, injection)):
             # inactiveness condition
             if inj + prod == 0 and  \
@@ -131,25 +139,35 @@ class Well(object):
                 pass
         return
 
-    def add_worktime(self):
+    def add_worktime(self, dates):
         def countMonth(self, data):
             m = 0
             k = 12 / len(data)
             for rate in data:
-                if rate > 0:
+                if float(rate) > 0:
                     m += 1 * k
             return m
-
+        s_dates = sorted(dates.values())    # не элегантно
+        s_dates.pop(0)
+        self.__class__.short_mask = [0] * len(s_dates)
+        well_work_time = list(self.__class__.short_mask)
         for wellcode in self.parameters:
             if wellcode in total_parameters:
                 data = self.parameters[wellcode]
-                self.work_time = []
-                for cur, nex in pairs(sorted(self.dates)):
-                    cur_line = self.dates[cur]
-                    next_line = self.dates[nex]
-                    sliced_data = data[cur_line:next_line:]
+                s_data = []
+                for cur_total, next_total in pairs(data):  #  не элегантно
+                    s_data.append(float(next_total) - float(cur_total))
+                work_time = []
+                for cur, nex in pairs(sorted(dates)):
+                    cur_line = dates[cur]
+                    next_line = dates[nex]
+                    sliced_data = s_data[cur_line:next_line:]
                     m = countMonth(cur, sliced_data)
-                    self.work_time.append(m)
+                    work_time.append(m)
+            for i, val in enumerate(work_time):
+                if val > well_work_time[i]:
+                    well_work_time[i] = val
+        self.work_time = well_work_time
 
 
 #        def cutter(self, number, start_p, end_p):  #  закомментировано до

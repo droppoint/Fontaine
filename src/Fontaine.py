@@ -92,8 +92,8 @@ if __name__ == "__main__":
             storage.routine_operations()
 
             r = Report.Report(storage)
-            r.render(savefile, debug=ui.debug.isChecked(),
-                       lateral=ui.tracks.isChecked())
+#            r.render(savefile, debug=ui.debug.isChecked(),
+#                       lateral=ui.tracks.isChecked())
             storage.clear()
         elif not filename:
             ui.informationMessage(u"Выберите файл для обработки",
