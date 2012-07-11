@@ -91,10 +91,17 @@ if __name__ == "__main__":
                         {row['parameter_code']: row['welldata']})
             storage.routine_operations()
 
-            r = Report.Report(storage)
-#            r.render(savefile, debug=ui.debug.isChecked(),
-#                       lateral=ui.tracks.isChecked())
+            r = Report.Report()
+            n = 0
+            for well in storage.wells:
+                r.add_line(n, well, [])
+                n += 1
+                r.add_line(n, 'WOPT', storage.wells[well].parameters['WOPT'])
+                n += 1
+            r.render(savefile, debug=ui.debug.isChecked(),
+                       lateral=ui.tracks.isChecked())
             storage.clear()
+            r.reset()
         elif not filename:
             ui.informationMessage(u"Выберите файл для обработки",
                                   caption=u"Ошибка запуска")

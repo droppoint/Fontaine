@@ -9,12 +9,7 @@ from datetime import datetime
 from Field import Field
 
 
-class Report(object):
-    '''
-    Report writing and render
-    '''
-
-    class ReportLine(object):
+class ReportLine(object):
         '''
         Lines for report
         '''
@@ -33,17 +28,24 @@ class Report(object):
             self.number = 0
             self.data = []
 
-    def __init__(self, input):
+
+class Report(object):
+    '''
+    Report writing and render
+    '''
+
+    def __init__(self):
         '''
         Constructor
         '''
         self.reset()
-        self.data = input
 
     def reset(self):
         """Reset this instance.  Loses all unprocessed data."""
-        self.data = {}
-        self.lines = {}
+        self.lines = []
+
+    def add_line(self, number, caption="", data=[]):
+        self.lines.append(ReportLine(number, caption, data))
 
     def compilation(self, const, **kwargs):
 
@@ -162,6 +164,14 @@ class Report(object):
         import xlwt
         from xlwt.Utils import rowcol_to_cell
 
+        def printRow(name, data, y):
+            x = 0
+            ws.write(y, x, name)
+            x += 1
+            for key in data:
+                ws.write(y, x, key)
+                x += 1
+
         if self.lines == {}:
             # Nothing to render
             return None
@@ -174,10 +184,10 @@ class Report(object):
         ws = wb.add_sheet(u'gosplan_input')
         n = 0
 
-        for line in lines:
-            ws.write()
-            #  line = {caption:---,number:---,data:[---]}
-            pass
+        for line in self.lines:
+            printRow(line.caption, line.data, line.number)
+
+
 
 #        for unused_years in self.data.mask:
 #            n += 1
@@ -207,31 +217,23 @@ class Report(object):
 #                       "fluid":   rowcol_to_cell(24, n)}
 #                    ))
 
-        def printRow(name, data, y):
-            x = 0
-            ws.write(y, x, name)
-            x += 1
-            for key in data:
-                ws.write(y, x, key)
-                x += 1
-
-        if debug:
-            debuglist = wb.add_sheet(u'debug')
-
-            def printDebugRow(name, data, y):
-                x = 0
-                debuglist.write(y, x, name)
-                x += 1
-                for key in data:
-                    debuglist.write(y, x, key)
-                    x += 1
-            n = 0
-            for well in self.data.wells:
-                printDebugRow(well, [], n)
-                n += 1
-                for parameter in self.data.wells[well]:
-                    printDebugRow(parameter, self.data.wells[well][parameter], n)
-                    n += 1
+#        if debug:
+#            debuglist = wb.add_sheet(u'debug')
+#
+#            def printDebugRow(name, data, y):
+#                x = 0
+#                debuglist.write(y, x, name)
+#                x += 1
+#                for key in data:
+#                    debuglist.write(y, x, key)
+#                    x += 1
+#            n = 0
+#            for well in self.data.wells:
+#                printDebugRow(well, [], n)
+#                n += 1
+#                for parameter in self.data.wells[well]:
+#                    printDebugRow(parameter, self.data.wells[well][parameter], n)
+#                    n += 1
 
 #        printRow(u'Годы', sorted(self.data.dates.iterkeys()), 0)
 #
