@@ -6,17 +6,6 @@ Created on 18.06.2012
 @author: APartilov
 '''
 
-#class MyClass(object):
-#    '''
-#    classdocs
-#    '''
-#
-#
-#    def __init__(selfparams):
-#        '''
-#        Constructor
-#        '''
-
 
 def config_init(filename):
     import ConfigParser

@@ -134,9 +134,9 @@ class Well(object):
         for cur, nex in pairs(self.classification):
             n += 1
             if cur == 2 and nex == 1:
-                pass
+                break
             if cur == 4 and nex == 1 and self.type == "Production":
-                pass
+                break
         return
 
     def add_worktime(self, dates):

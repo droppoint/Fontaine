@@ -95,26 +95,30 @@ class Field(object):  # FIXME: More docstrings
         map(lambda x: Well.well_classification(x, mode='rate'),
              self.wells.values())
         map(Well.inj_transfer_check, self.wells.values())
-#        print self.production_rate('WOPT')
-#        print self.production_rate('WWPT')
-#        print self.production_rate('WGPT')
-#        print self.production_rate('WWIT')
-#        print self.production_rate('WOIT')
-#        print self.well_fond(1)
-#        print self.well_fond(2)
-#        print self.well_fond(4)
-#        print self.avg_pressure('WBPN')
-#        print self.avg_pressure('WBHP')
 
-    def production_rate(self, code):
+    def production_rate(self, code, density=1, degree=0):
         rate = []
         for well in self.wells.values():  #  без values
             if code in well.parameters:
                 if not rate:
                     rate = list(well.parameters[code])
                 else:
-                    rate = list(map(lambda x, y: x + y, well.parameters[code], rate))
-        return rate
+                    rate = list(map(
+                        lambda x, y: x + y, well.parameters[code], rate
+                                ))
+        return [x * density * (10 ** degree) for x in rate]
+
+    def abandoned_wells(self, code='all'):
+        output = list(self.mask)
+        for well in self.wells.values():
+            if code == 'all':
+                output[well.last_call] += 1
+            elif well.classification[well.last_call] == code:
+                output[well.last_call] += 1
+        return output
+
+    def transfered_wells(self):
+        pass
 
     def well_fond(self, code):   # коды состояний 0.1.2.4
         wells_fond = list(self.mask)

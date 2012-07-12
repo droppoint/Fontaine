@@ -8,7 +8,6 @@ Created on 03.04.2012
 
 from __future__ import division
 import sys
-#import locale
 from Field import Field
 import Report
 import Parser
@@ -61,15 +60,9 @@ if __name__ == "__main__":
     ui.setupUi(mainwindow)
 
     def ignition():
-        info_file = open("info.log", "w")
-#        sys.stdout = info_file
-        error_file = open("error.log", "w")
-#        sys.stderr = error_file
         filename = ui.lineEdit.text()
         well_filename = ui.lineEdit_2.text()
         savefile = ui.setSaveFileName()
-#        const.reset()  # Блок try не помешал бы
-#        config.reset()
         const = Init.config_init('config.ini')
         if well_filename:
 #            storage.category = Init.wells_init(well_filename)
@@ -89,15 +82,50 @@ if __name__ == "__main__":
                 else:
                     storage.add_well(row['number'],
                         {row['parameter_code']: row['welldata']})
-            storage.routine_operations()
-
             r = Report.Report()
             n = 0
+##############################
+
+            # annual production/injection
+            oil_density = int(const['oil_density'])
+            water_density = int(const['water_density'])
+            oil_PR_tons = storage.production_rate('WOPT', density=oil_density, degree=-6)
+            water_PR_tons = storage.production_rate('WWPT', density=water_density, degree=-6)
+            gas_PR_mln = storage.production_rate('WGPT', degree=-6)
+            liq_PR_tons = list(map(lambda x, y: x + y, oil_PR_tons, water_PR_tons))
+            water_IR_SM3 = storage.production_rate('WWIT', degree=-3)
+
+            all_output_well = storage.abandoned_wells()   # abandon_wells
+            output_wells_prod = storage.abandoned_wells(code=2)
+            output_wells_inj = storage.abandoned_wells(code=1)
+
+            reservoir_pres = storage.avg_pressure('WBPN')
+            bottomhole_pres = storage.avg_pressure('WBHP')
+
+            # можно и без переменных
+            inactive_fond = storage.well_fond(4)
+            prod_wells = storage.well_fond(2)
+            inj_wells = storage.well_fond(1)
+            inj_transfer = []   # injection_transfer_check
+
+            new_wells_work_time = list(storage.mask)  # new_well_work_time
+
+            storage.mask.pop(0)
+            inj = list(storage.mask)
+            prod = list(storage.mask) #  work_time prod inj
+
+            storage.dummyCheck() # whyyyyyyyy????
+            # показатели новых скважин
+
+#            if debug:
+#                debuglist = wb.add_sheet(u'debug')
+
             for well in storage.wells:
                 r.add_line(n, well, [])
                 n += 1
                 r.add_line(n, 'WOPT', storage.wells[well].parameters['WOPT'])
                 n += 1
+#######################################
             r.render(savefile, debug=ui.debug.isChecked(),
                        lateral=ui.tracks.isChecked())
             storage.clear()
@@ -108,8 +136,6 @@ if __name__ == "__main__":
         else:
             ui.informationMessage(u"Выберите файл для сохранения",
                                   caption=u"Ошибка запуска")
-        info_file.close()
-        error_file.close()
     ui.pushButton_2.clicked.connect(ignition)
 
     mainwindow.show()
