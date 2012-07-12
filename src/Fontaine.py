@@ -85,7 +85,6 @@ if __name__ == "__main__":
             r = Report.Report()
             n = 0
 ##############################
-
             # annual production/injection
             oil_density = int(const['oil_density'])
             water_density = int(const['water_density'])
@@ -106,16 +105,17 @@ if __name__ == "__main__":
             inactive_fond = storage.well_fond(4)
             prod_wells = storage.well_fond(2)
             inj_wells = storage.well_fond(1)
-            inj_transfer = []   # injection_transfer_check
 
-            new_wells_work_time = list(storage.mask)  # new_well_work_time
+            inj_transfer = storage.transfered_wells()
 
-            storage.mask.pop(0)
-            inj = list(storage.mask)
-            prod = list(storage.mask) #  work_time prod inj
+            new_wells_work_time = list(storage.mask)
 
-            storage.dummyCheck() # whyyyyyyyy????
-            # показатели новых скважин
+            inj = storage.work_time(code=1)
+            prod = storage.work_time(code=2)
+
+            storage.dummyCheck() # whyyyyyyyy????  because
+            #####
+            # new_well_rate
 
 #            if debug:
 #                debuglist = wb.add_sheet(u'debug')

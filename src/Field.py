@@ -108,6 +108,13 @@ class Field(object):  # FIXME: More docstrings
                                 ))
         return [x * density * (10 ** degree) for x in rate]
 
+    def new_well_rate(self, code, density=1, degree=0):
+        rate = list(self.mask)
+        for well in self.wells.values():  #  без values
+            if code in well.parameters:
+                rate[well.first_run] += well.parameters[code][well.first_run]
+        return [x * density * (10 ** degree) for x in rate]
+
     def abandoned_wells(self, code='all'):
         output = list(self.mask)
         for well in self.wells.values():
@@ -118,7 +125,25 @@ class Field(object):  # FIXME: More docstrings
         return output
 
     def transfered_wells(self):
-        pass
+        output = list(self.mask)
+        for well in self.wells.values():
+            n = well.inj_transfer_check()
+            if n:
+                output[n] += 1
+        return output
+
+    def work_time(self, code='all'):  # не элегантно
+        output = list(self.mask)
+        for well in self.wells.values():
+            if code == 'new':
+                output[well.first_run] += well.work_time[well.first_run]
+            else:
+                for year, worktime in enumerate(well.work_time):
+                    if code == 'all':
+                        output[year] += worktime
+                    elif well.classification[year] == code:
+                        output[year] += worktime
+        return output
 
     def well_fond(self, code):   # коды состояний 0.1.2.4
         wells_fond = list(self.mask)

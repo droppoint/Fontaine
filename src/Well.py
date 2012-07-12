@@ -131,13 +131,16 @@ class Well(object):
 
     def inj_transfer_check(self):
         n = 0
+        output = False
         for cur, nex in pairs(self.classification):
             n += 1
             if cur == 2 and nex == 1:
+                output = n
                 break
-            if cur == 4 and nex == 1 and self.type == "Production":
+            if cur == 4 and nex == 1 and self.classification[self.first_run] == 2:
+                output = n
                 break
-        return
+        return output
 
     def add_worktime(self, dates):
         def countMonth(self, data):
