@@ -63,7 +63,7 @@ if __name__ == "__main__":
         filename = ui.lineEdit.text()
         well_filename = ui.lineEdit_2.text()
         savefile = ui.setSaveFileName()
-        const = Init.config_init('config.ini')
+        const = Init.config_init('../config.ini')
         if well_filename:
 #            storage.category = Init.wells_init(well_filename)
 #        storage.override = Init.wells_input_override('input.ini')
@@ -94,6 +94,8 @@ if __name__ == "__main__":
             liq_PR_tons = list(map(lambda x, y: x + y, oil_PR_tons, water_PR_tons))
             water_IR_SM3 = storage.production_rate('WWIT', degree=-3)
 
+            storage.routine_operations()
+
             all_output_well = storage.abandoned_wells()   # abandon_wells
             output_wells_prod = storage.abandoned_wells(code=2)
             output_wells_inj = storage.abandoned_wells(code=1)
@@ -113,18 +115,17 @@ if __name__ == "__main__":
             inj = storage.work_time(code=1)
             prod = storage.work_time(code=2)
 
-            storage.dummyCheck() # whyyyyyyyy????  because
-            #####
+#            storage.dummyCheck()
             # new_well_rate
 
 #            if debug:
 #                debuglist = wb.add_sheet(u'debug')
-
-            for well in storage.wells:
-                r.add_line(n, well, [])
-                n += 1
-                r.add_line(n, 'WOPT', storage.wells[well].parameters['WOPT'])
-                n += 1
+            r.add_line(0, u'Годы', sorted(storage.dates.keys()))
+#            for well in storage.wells:
+#                r.add_line(n, well, [])
+#                n += 1
+#                r.add_line(n, 'WOPT', storage.wells[well].parameters['WOPT'])
+#                n += 1
 #######################################
             r.render(savefile, debug=ui.debug.isChecked(),
                        lateral=ui.tracks.isChecked())

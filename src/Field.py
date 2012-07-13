@@ -104,7 +104,7 @@ class Field(object):  # FIXME: More docstrings
                     rate = list(well.parameters[code])
                 else:
                     rate = list(map(
-                        lambda x, y: x + y, well.parameters[code], rate
+                        lambda x, y: float(x) + float(y), well.parameters[code], rate
                                 ))
         return [x * density * (10 ** degree) for x in rate]
 
@@ -118,6 +118,7 @@ class Field(object):  # FIXME: More docstrings
     def abandoned_wells(self, code='all'):
         output = list(self.mask)
         for well in self.wells.values():
+            print well
             if code == 'all':
                 output[well.last_call] += 1
             elif well.classification[well.last_call] == code:
