@@ -49,7 +49,7 @@ class Report(object):
 
     def render(self, filename, **kwargs):  # отдать объект для рендера
         import xlwt
-        from xlwt.Utils import rowcol_to_cell
+#        from xlwt.Utils import rowcol_to_cell
 
         def printRow(name, data, y):
             x = 0

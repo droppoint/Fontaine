@@ -77,13 +77,14 @@ class Field(object):  # FIXME: More docstrings
     def add_parameter(self, parameter, data):
         if parameter == "FPR":
             parameter = "FPRP"
-        if parameter == "FPRP":
-            data.pop(0)
+#        if parameter == "FPRP":
+#            data.pop(0)
         if not parameter in self.parameters:
-            self.parameters[parameter] = list(data)
+            tmp = []                                    #   не совсем элегантно
+            for year in sorted(self.dates.values()):
+                tmp.append(data[year])
+            self.parameters[parameter] = tmp
         else:
-#            self.parameters[parameter] = list(map(lambda x, y: x + y,
-#                                     self.parameters[parameter], data))
             raise FieldError("Repeated parameters")
 
     def routine_operations(self):
@@ -115,14 +116,24 @@ class Field(object):  # FIXME: More docstrings
                 rate[well.first_run] += well.parameters[code][well.first_run]
         return [x * density * (10 ** degree) for x in rate]
 
+    def completed_wells(self, code='all'):
+        output = list(self.mask)
+        for well in self.wells.values():
+            if code == 'all':
+                output[well.first_run] += 1
+            elif well.classification[well.first_run] == code:
+                output[well.first_run] += 1
+        return output
+
     def abandoned_wells(self, code='all'):
         output = list(self.mask)
         for well in self.wells.values():
-            print well
+            if well.abandonment == 'working':
+                continue
             if code == 'all':
-                output[well.last_call] += 1
-            elif well.classification[well.last_call] == code:
-                output[well.last_call] += 1
+                output[well.abandonment] += 1
+            elif well.classification[well.abandonment] == code:
+                output[well.abandonment] += 1
         return output
 
     def transfered_wells(self):

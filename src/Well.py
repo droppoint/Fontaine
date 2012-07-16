@@ -6,7 +6,7 @@ Created on 04.07.2012
 '''
 
 
-total_parameters = ['WOPT', 'WWPT', 'WGPT', 'WWIT', 'WOIT', 'WGIT']
+total_parameters = ['WOPT', 'WWPT', 'WGPT', 'WWIT', 'WOIT', 'WGIT', 'WLPT']
 total_prod_parameters = ['WOPT', 'WWPT', 'WGPT']
 total_inj_parameters = ['WOIT', 'WWIT', 'WGIT']
 total_dec_parameters = ['decWOPT', 'decWWPT', 'decWGPT',
@@ -83,9 +83,8 @@ class Well(object):
         if year == 0:
             self.abandonment = "working"
             return False
-        self.last_call = len(self.work_time) - 1 - year
+        self.abandonment = len(self.work_time) - 1 - year
         return len(self.work_time) - 1 - year
-        #  to last_call
 
     def completion_year(self):
         for year, work_time in enumerate(self.work_time):
