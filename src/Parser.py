@@ -137,6 +137,9 @@ class Parser(object):
         self.config['breaker'] = breaker
         self.config['r_pattern'] = r_pattern
 
+        buf.close()
+        f.close()
+
     def get_dates_list(self):
         return self.config['dates']
 
@@ -246,4 +249,5 @@ class Parser(object):
                         yield parsed_data
 
 
+        buf.close()
         f.close()

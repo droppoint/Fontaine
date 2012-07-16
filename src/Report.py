@@ -47,7 +47,7 @@ class Report(object):
     def add_line(self, number, caption="", data=[]):
         self.lines.append(ReportLine(number, caption, data))
 
-    def render(self, filename, **kwargs):  # отдать объект для рендера
+    def render(self, filename):  # отдать объект для рендера
         import xlwt
 #        from xlwt.Utils import rowcol_to_cell
 
@@ -62,9 +62,6 @@ class Report(object):
         if self.lines == {}:
             # Nothing to render
             return None
-
-        lateral = kwargs.get('lateral')
-        debug = kwargs.get('debug')
 
         font0 = xlwt.Font()
         font0.name = 'Times New Roman'

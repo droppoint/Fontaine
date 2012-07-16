@@ -48,12 +48,11 @@ class Field(object):  # FIXME: More docstrings
     '''
 #    __metaclass__ = Singleton
 #    __slots__ = {'name', 'wells', 'parameters', 'mask'
-#                 'dates', 'minimal_year'}
+#                 'dates'}
     def __init__(self, name, dates_dict):
 
         def set_dates_list(self, dates):
             self.dates = dates
-            self.minimal_year = min(self.dates.keys())
             self.mask = [0 for _ in self.dates]
 
         self.name = name
@@ -196,7 +195,7 @@ class Field(object):  # FIXME: More docstrings
                 continue
             for lateral in self.wells[well]["Lateral"]:
                 year = self.wells[lateral]['First_run'][0]
-                index = int(year) - self.minimal_year
+                index = int(year) - min(self.dates.keys())
                 worktime = self.wells[well]['First_run'][2]
 #                if ((year <  self.wells[well]['First_run'][0])
 #                        and self.wells[well]['First_run'][0] > 0) \
@@ -220,7 +219,6 @@ class Field(object):  # FIXME: More docstrings
         self.wells.clear()
         self.parameters.clear()
         self.mask = []
-        self.minimal_year = 0
 
 def pairs(lst):  # list generator
     i = iter(lst)

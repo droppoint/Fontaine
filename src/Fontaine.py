@@ -65,13 +65,13 @@ if __name__ == "__main__":
         well_filename = ui.lineEdit_2.text()
         savefile = ui.setSaveFileName()
         const = Init.config_init('../config.ini')
+        debug=ui.debug.isChecked()
         if well_filename:
 #            storage.category = Init.wells_init(well_filename)
 #        storage.override = Init.wells_input_override('input.ini')
             pass
         if filename and savefile:
             p = Parser.Parser()
-
             p.initialization(filename)   # FIX: remove initialization or rename
             storage = Field('test field', p.get_dates_list())
             parsed_data = p.parse_file(filename, lateral=ui.tracks.isChecked())
@@ -86,7 +86,6 @@ if __name__ == "__main__":
             progress.setValue(50)
             r = Report.Report()
             storage.routine_operations()  # !!!!!!!
-            n = 0
 ##############################
             # annual production/injection
             oil_density = int(const['oil_density'])
@@ -103,6 +102,12 @@ if __name__ == "__main__":
             avg_res_pres_prod, avg_res_pres_inj = storage.avg_pressure('WBPN')
             avg_btm_pres_prod, avg_btm_pres_inj = storage.avg_pressure('WBHP')
 
+            oil_nw_PR_tons = storage.new_well_rate('WOPT',
+                         density=oil_density, degree=-6)
+            water_nw_PR_tons = storage.new_well_rate('WWPT',
+                         density=water_density, degree=-6)
+            liq_nw_PR_tons = list(map(lambda x, y: x + y,
+                         oil_nw_PR_tons, water_nw_PR_tons))
             new_wells_work_time = list(storage.mask)
 
 #            storage.dummyCheck()
@@ -120,8 +125,8 @@ if __name__ == "__main__":
             r.add_line(14, u'    Обводненность,%', [])
 
             r.add_line(22, u'Показатели новых скважин', [])
-            r.add_line(23, u'    Добыча нефти, тыс.т/год', [])
-            r.add_line(24, u'    Добыча жидкости, тыс.т/год', [])
+            r.add_line(23, u'    Добыча нефти, тыс.т/год', oil_nw_PR_tons)
+            r.add_line(24, u'    Добыча жидкости, тыс.т/год', liq_nw_PR_tons)
             r.add_line(25, u'    Обводненность,%', [])
             r.add_line(26, u'    Дебит нефти, т/сут', [])
             r.add_line(27, u'    Дебит жидкости, т/сут', [])
@@ -169,13 +174,25 @@ if __name__ == "__main__":
             r.add_line(60, u'    Вывод из бездействия доб.', [])
             r.add_line(61, u'    Вывод из бездействия наг.', [])
 
-#            for well in storage.wells:
-#                r.add_line(n, well, [])
-#                n += 1
-#                r.add_line(n, 'WOPT', storage.wells[well].parameters['WOPT'])
-#                n += 1
+            if debug:
+                n = 62
+                for well in storage.wells:
+                    r.add_line(n, well, [])
+                    n += 1
+                    r.add_line(n, 'WOPT', storage.wells[well].parameters['WOPT'])
+                    n += 1
+                    r.add_line(n, 'WWPT', storage.wells[well].parameters['WWPT'])
+                    n += 1
+                    r.add_line(n, 'WWIT', storage.wells[well].parameters['WWIT'])
+                    n += 1
+                    r.add_line(n, 'WLPR', storage.wells[well].parameters['WLPR'])
+                    n += 1
+                    r.add_line(n, 'WWIN', storage.wells[well].parameters['WWIN'])
+                    n += 1
+                    r.add_line(n, 'class', storage.wells[well].classification_by_rate)
+                    n += 1
 #######################################
-            r.render(savefile, debug=ui.debug.isChecked(),
+            r.render(savefile,
                        lateral=ui.tracks.isChecked())
             progress.setValue(100)
             storage.clear()
