@@ -60,12 +60,11 @@ if __name__ == "__main__":
     ui.setupUi(mainwindow)
 
     def ignition():
-        progress.setValue(0)
         filename = ui.lineEdit.text()
         well_filename = ui.lineEdit_2.text()
         savefile = ui.setSaveFileName()
         const = Init.config_init('../config.ini')
-        debug=ui.debug.isChecked()
+        debug = ui.debug.isChecked()
         if well_filename:
 #            storage.category = Init.wells_init(well_filename)
 #        storage.override = Init.wells_input_override('input.ini')
@@ -83,7 +82,6 @@ if __name__ == "__main__":
                 else:
                     storage.add_well(row['number'],
                         {row['parameter_code']: row['welldata']})
-            progress.setValue(50)
             r = Report.Report()
             storage.routine_operations()  # !!!!!!!
 ##############################
@@ -122,7 +120,7 @@ if __name__ == "__main__":
             r.add_line(11, u'    Годовая добыча жидкости, тыс.т', liq_PR_tons)
             r.add_line(12, u'    Годовая добыча газа, млн.м3', gas_PR_mln)
             r.add_line(13, u'    Годовая закачка воды, тыс.м3', water_IR_SM3)
-            r.add_line(14, u'    Обводненность,%', [])
+#            r.add_line(14, u'    Обводненность,%', [])
 
             r.add_line(22, u'Показатели новых скважин', [])
             r.add_line(23, u'    Добыча нефти, тыс.т/год', oil_nw_PR_tons)
@@ -130,7 +128,7 @@ if __name__ == "__main__":
             r.add_line(25, u'    Обводненность,%', [])
             r.add_line(26, u'    Дебит нефти, т/сут', [])
             r.add_line(27, u'    Дебит жидкости, т/сут', [])
-            r.add_line(28, u'    Время работы', [])
+            r.add_line(28, u'    Время работы', storage.new_well_work_time())
 
             r.add_line(33, u'Действ. фонд скважин', [])
             r.add_line(34, u'    добывающих', storage.well_fond(2))
@@ -169,10 +167,16 @@ if __name__ == "__main__":
                        storage.work_time(code=1))
 
             r.add_line(57, u'Бездействующий фонд', storage.well_fond(4))
-            r.add_line(58, u'    Перевод в б/д доб.', [])
-            r.add_line(59, u'    Перевод в б/д наг.', [])
-            r.add_line(60, u'    Вывод из бездействия доб.', [])
-            r.add_line(61, u'    Вывод из бездействия наг.', [])
+            inactive_fond = storage.inactive_transfer()
+            r.add_line(58, u'    Перевод в б/д доб.', inactive_fond[1])
+            r.add_line(59, u'    Перевод в б/д наг.', inactive_fond[3])
+            r.add_line(60, u'    Вывод из бездействия доб.', inactive_fond[0])
+            r.add_line(61, u'    Вывод из бездействия наг.', inactive_fond[2])
+
+            formulas = Report.get_formulas("IF(%s=0;0;(%s-%s)/%s*100)",
+                                (11, 11, 10, 11),
+                                len(storage.mask))
+            r.add_line(14, u'    Обводненность, %', formulas)
 
             if debug:
                 n = 62
@@ -192,9 +196,7 @@ if __name__ == "__main__":
                     r.add_line(n, 'class', storage.wells[well].classification_by_rate)
                     n += 1
 #######################################
-            r.render(savefile,
-                       lateral=ui.tracks.isChecked())
-            progress.setValue(100)
+            r.render(savefile)
             storage.clear()
             r.reset()
         elif not filename:

@@ -5,8 +5,17 @@ Created on 18.06.2012
 
 @author: APartilov
 '''
-from datetime import datetime
-from Field import Field
+
+
+def get_formulas(template, args, number):
+    import xlwt.ExcelFormula
+    from xlwt.Utils import rowcol_to_cell
+    formulas = []
+    for n in range(number):
+        formulas.append(xlwt.Formula(template %
+                tuple(rowcol_to_cell(i, n + 1) for i in args)
+                        ))
+    return formulas
 
 
 class ReportLine(object):

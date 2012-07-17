@@ -115,6 +115,12 @@ class Field(object):  # FIXME: More docstrings
                 rate[well.first_run] += well.parameters[code][well.first_run]
         return [x * density * (10 ** degree) for x in rate]
 
+    def new_well_work_time(self):
+        work_time = list(self.mask)
+        for well in self.wells.values():  #  без values
+            work_time[well.first_run] += well.work_time[well.first_run]
+        return work_time
+
     def completed_wells(self, code='all'):
         output = list(self.mask)
         for well in self.wells.values():
@@ -142,6 +148,22 @@ class Field(object):  # FIXME: More docstrings
             if n:
                 output[n] += 1
         return output
+
+    def inactive_transfer(self):
+        in_prod, in_inje, out_prod, out_inje = list(self.mask), list(self.mask), list(self.mask), list(self.mask)
+        for well in self.wells.values():
+            n = 0
+            for cur_state, next_state in pairs(well.classification_by_rate):
+                if cur_state == 1 and next_state == 4:
+                    out_inje[n] += 1
+                if cur_state == 4 and next_state == 1:
+                    in_inje[n] += 1
+                if cur_state == 2 and next_state == 4:
+                    out_prod[n] += 1
+                if cur_state == 4 and next_state == 2:
+                    in_prod[n] += 1
+                n += 1
+        return in_prod, out_prod, in_inje, out_inje
 
     def work_time(self, code='all'):  # не элегантно
         output = list(self.mask)

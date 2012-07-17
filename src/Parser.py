@@ -221,10 +221,10 @@ class Parser(object):
         n = 0
         buf.seek(n)
         while buf.find("SUMMARY", n) != -1:
-    #        if progress.wasCanceled():
-    #            f.close()
-    #            break
-    #        progress.setValue(int((n / filesize) * 100))
+#            if progress.wasCanceled():
+#                f.close()
+#                break
+#            progress.setValue(int((n / filesize) * 100))
             n = buf.find("SUMMARY", n)
             m = buf.find("DATE", n)
             n += 1
