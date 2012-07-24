@@ -51,11 +51,11 @@ if __name__ == "__main__":
     category = _Constants()
     app = QtGui.QApplication(sys.argv)
     mainwindow = QtGui.QMainWindow()
-    progress = QtGui.QProgressDialog(u"Подготовка отчета...",
-                                        u"Отмена", 0, 100)
-    progress.setWindowTitle(QtGui.QApplication.translate("Progress",
-                            "Fontaine", None, QtGui.QApplication.UnicodeUTF8))
-    progress.setWindowModality(QtCore.Qt.WindowModal)
+#    progress = QtGui.QProgressDialog(u"Подготовка отчета...",
+#                                        u"Отмена", 0, 100)
+#    progress.setWindowTitle(QtGui.QApplication.translate("Progress",
+#                            "Fontaine", None, QtGui.QApplication.UnicodeUTF8))
+#    progress.setWindowModality(QtCore.Qt.WindowModal)
     ui = Ui_MainWindow()
     ui.setupUi(mainwindow)
 
@@ -106,7 +106,6 @@ if __name__ == "__main__":
                          density=water_density, degree=-6)
             liq_nw_PR_tons = list(map(lambda x, y: x + y,
                          oil_nw_PR_tons, water_nw_PR_tons))
-            new_wells_work_time = list(storage.mask)
 
 #            storage.dummyCheck()
             # new_well_rate
@@ -183,22 +182,34 @@ if __name__ == "__main__":
                 for well in storage.wells:
                     r.add_line(n, well, [])
                     n += 1
-                    r.add_line(n, 'WOPT', storage.wells[well].parameters['WOPT'])
+                    r.add_line(n, 'WOPT',
+                               storage.wells[well].parameters['WOPT'])
                     n += 1
-                    r.add_line(n, 'WWPT', storage.wells[well].parameters['WWPT'])
+                    r.add_line(n, 'WWPT',
+                               storage.wells[well].parameters['WWPT'])
                     n += 1
-                    r.add_line(n, 'WWIT', storage.wells[well].parameters['WWIT'])
+                    r.add_line(n, 'WWIT',
+                               storage.wells[well].parameters['WWIT'])
                     n += 1
-                    r.add_line(n, 'WLPR', storage.wells[well].parameters['WLPR'])
+                    r.add_line(n, 'WLPR',
+                               storage.wells[well].parameters['WLPR'])
                     n += 1
-                    r.add_line(n, 'WWIN', storage.wells[well].parameters['WWIN'])
+                    r.add_line(n, 'WWIR',
+                               storage.wells[well].parameters['WWIR'])
                     n += 1
-                    r.add_line(n, 'class', storage.wells[well].classification_by_rate)
+                    r.add_line(n, 'class',
+                               storage.wells[well].classification_by_rate)
+                    n += 1
+                    if storage.wells[well].parent:
+                        r.add_line(n, 'parent',
+                               storage.wells[well].parent)
                     n += 1
 #######################################
             r.render(savefile)
             storage.clear()
             r.reset()
+            ui.informationMessage(u"Завершено",
+                                  caption=u"Fontaine")
         elif not filename:
             ui.informationMessage(u"Выберите файл для обработки",
                                   caption=u"Ошибка запуска")

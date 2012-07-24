@@ -64,14 +64,15 @@ class Field(object):  # FIXME: More docstrings
         return self.name
 
     def add_well(self, number, data={}, **kwargs):
+        import re
         if number in self.wells:  # ошибочка будет полюбому
             self.wells[number].add_parameter(data)
         else:
             self.wells[number] = Well()
             self.wells[number].add_parameter(data)
-#        shrt_num = re.findall(r"^([0-9A-Z]+)(?=BS|[_-])", number)
-#        if shrt_num:
-#            pass
+        shrt_num = re.search(r"^([0-9A-Z]+)(?=BS|[_-])", number)
+        if shrt_num:
+            self.wells[number].add_parent(shrt_num.group())
 
     def add_parameter(self, parameter, data):
         if parameter == "FPR":
@@ -79,16 +80,27 @@ class Field(object):  # FIXME: More docstrings
 #        if parameter == "FPRP":
 #            data.pop(0)
         if not parameter in self.parameters:
-            tmp = []                                    #   не совсем элегантно
+            tmp = []                                    # не совсем элегантно
             for year in sorted(self.dates.values()):
                 tmp.append(data[year])
             self.parameters[parameter] = tmp
         else:
             raise FieldError("Repeated parameters")
 
+    def parent_check(self):
+        for well in self.wells:
+            if not self.wells[well].parent:
+                continue
+            if self.wells[well].parent not in self.wells:
+                # child changed state to non-child, because no parent was found
+                self.wells[well].parent = None
+
     def routine_operations(self):
-        map(lambda x: Well.add_worktime(x, dates=self.dates), self.wells.values())
-        map(lambda x: Well.compress_data(x, dates=self.dates), self.wells.values())
+        self.parent_check()
+        map(lambda x: Well.add_worktime(x, dates=self.dates),
+            self.wells.values())
+        map(lambda x: Well.compress_data(x, dates=self.dates),
+            self.wells.values())
         map(Well.abandonment_year, self.wells.values())
         map(Well.completion_year, self.wells.values())
         map(Well.well_classification, self.wells.values())
@@ -98,7 +110,7 @@ class Field(object):  # FIXME: More docstrings
 
     def production_rate(self, code, density=1, degree=0):
         rate = []
-        for well in self.wells.values():  #  без values
+        for well in self.wells.values():  # без values
             if code in well.parameters:
                 if not rate:
                     rate = list(well.parameters[code])
@@ -110,20 +122,26 @@ class Field(object):  # FIXME: More docstrings
 
     def new_well_rate(self, code, density=1, degree=0):
         rate = list(self.mask)
-        for well in self.wells.values():  #  без values
+        for well in self.wells.values():  # без values
+            if well.parent:
+                continue
             if code in well.parameters:
                 rate[well.first_run] += well.parameters[code][well.first_run]
         return [x * density * (10 ** degree) for x in rate]
 
     def new_well_work_time(self):
         work_time = list(self.mask)
-        for well in self.wells.values():  #  без values
+        for well in self.wells.values():  # без values
+            if well.parent:
+                continue
             work_time[well.first_run] += well.work_time[well.first_run]
         return work_time
 
     def completed_wells(self, code='all'):
         output = list(self.mask)
         for well in self.wells.values():
+            if well.parent:
+                continue
             if code == 'all':
                 output[well.first_run] += 1
             elif well.classification[well.first_run] == code:
@@ -150,7 +168,8 @@ class Field(object):  # FIXME: More docstrings
         return output
 
     def inactive_transfer(self):
-        in_prod, in_inje, out_prod, out_inje = list(self.mask), list(self.mask), list(self.mask), list(self.mask)
+        in_prod, in_inje, out_prod, out_inje = \
+        list(self.mask), list(self.mask), list(self.mask), list(self.mask)
         for well in self.wells.values():
             n = 0
             for cur_state, next_state in pairs(well.classification_by_rate):
@@ -241,6 +260,7 @@ class Field(object):  # FIXME: More docstrings
         self.wells.clear()
         self.parameters.clear()
         self.mask = []
+
 
 def pairs(lst):  # list generator
     i = iter(lst)

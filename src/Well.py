@@ -15,7 +15,6 @@ rate_parameters = ['WLPR', 'WOIN', 'WWIN', 'WGIN']
 rate_prod_parameters = ['WLPR']
 rate_inj_parameters = ['WOIN', 'WWIN', 'WGIN']
 
-
 class Well(object):
     '''
     classdocs
@@ -29,6 +28,7 @@ class Well(object):
         '''
         self.parameters = {}
         self.first_run = None
+        self.parent = None
         self.abandonment = None
         self.work_time = None
         self.classification = None
@@ -69,6 +69,11 @@ class Well(object):
                 self.__class__.dataline_length = len(datalist)
                 self.__class__.mask[:] = []
                 self.__class__.mask = [0] * self.__class__.dataline_length
+
+    def add_parent(self, name):
+        if self.parent and self.parent != name:
+            raise ValueError
+        self.parent = name
 
     def recieve_parameters(self, *args):
         for arg in args:
@@ -157,7 +162,7 @@ class Well(object):
             if wellcode in total_parameters:
                 data = self.parameters[wellcode]
                 s_data = []
-                for cur_total, next_total in pairs(data):  #  не элегантно
+                for cur_total, next_total in pairs(data):  # не элегантно
                     s_data.append(float(next_total) - float(cur_total))
                 work_time = []
                 for cur, nex in pairs(sorted(dates)):
@@ -170,17 +175,6 @@ class Well(object):
                 if val > well_work_time[i]:
                     well_work_time[i] = val
         self.work_time = well_work_time
-
-
-#        def cutter(self, number, start_p, end_p):  #  закомментировано до
-#выяснения обстоятельств
-#            if "Last_call" not in self.wells[number]:
-#                return False
-#            jan_mask = self.wells[number]["cls_mask_rate_jan"]
-#            start_p = start_p - self.minimal_year
-#            end_p = end_p - self.minimal_year
-#            jan_mask = jan_mask[start_p:end_p]
-#            return jan_mask
 
 
 def pairs(lst):  # list generator
@@ -196,10 +190,10 @@ def list_sum(*args):  # сделать элегантнее
     for x in args:
         if len(x) != length:
             raise ValueError
-    sum = []
+    list_sum = []
     for x in range(length):
         s = 0
         for y in args:
             s += y[x]
-        sum.append(s)
-    return sum
+        list_sum.append(s)
+    return list_sum

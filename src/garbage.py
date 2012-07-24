@@ -61,6 +61,15 @@ Created on 06.07.2012
 #            welldata.pop(0)  # december pattern
 #            self.wells[number][well_code] = welldata
 
+#        def cutter(self, number, start_p, end_p):  #  закомментировано до
+#выяснения обстоятельств
+#            if "Last_call" not in self.wells[number]:
+#                return False
+#            jan_mask = self.wells[number]["cls_mask_rate_jan"]
+#            start_p = start_p - self.minimal_year
+#            end_p = end_p - self.minimal_year
+#            jan_mask = jan_mask[start_p:end_p]
+#            return jan_mask
 
     #  GARBAGE,  а выбросить жалко
 #        if 'Lateral' in self.wells[number]:
