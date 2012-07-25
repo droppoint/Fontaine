@@ -8,6 +8,7 @@ Created on 18.06.2012
 
 
 import re
+import logging
 
 # Regular expressions used for parsing
 
@@ -27,6 +28,7 @@ regex_date_alphabetic = re.compile(r"\s((?:0[1-9]|[1-2][0-9]|3[0|1])-"
                                       "(?:[ADFJMNOS][A-Za-z]{2})-"
                                       "(?:(?:19|20|21|22)\d{2}))\s")
 
+module_logger = logging.getLogger('spam_application.parser')
 
 class ParseError(Exception):
     """Exception raised for all parse errors."""
@@ -52,6 +54,9 @@ class Parser(object):
     '''
 
     def __init__(self):
+        self.logger = logging.getLogger('spam_application.parser.Parser')
+        self.logger.info('creating an instance of Parser')
+        raise ParseError('THIS IS NOT A DRILL!!!')
         '''
         Constructor
         '''

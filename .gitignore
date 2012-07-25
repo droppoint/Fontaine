@@ -4,6 +4,7 @@
 *.pyd
 .idea/
 *.log
+*.log*
 *.rsm
 *.bak
 *.bat

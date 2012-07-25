@@ -8,6 +8,8 @@ Created on 03.04.2012
 
 from __future__ import division
 import sys
+import logging
+import logging.handlers
 from Field import Field
 import Report
 import Parser
@@ -47,6 +49,19 @@ def timer(f):  # time benchmark
     return tmp
 
 if __name__ == "__main__":
+    # logger system initialization
+    logger = logging.getLogger('spam_application')
+    logger.setLevel(logging.DEBUG)
+    #basic config here
+    fh = logging.handlers.RotatingFileHandler('debug.log',
+                                      mode='w',
+                                      maxBytes=524288,
+                                      backupCount=1)
+    fh.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    fh.setFormatter(formatter)
+    logger.addHandler(fh)
+
     const = _Constants()
     category = _Constants()
     app = QtGui.QApplication(sys.argv)
@@ -70,11 +85,16 @@ if __name__ == "__main__":
 #        storage.override = Init.wells_input_override('input.ini')
             pass
         if filename and savefile:
-            p = Parser.Parser()
-            p.initialization(filename)   # FIX: remove initialization or rename
-            storage = Field('test field', p.get_dates_list())
-            parsed_data = p.parse_file(filename, lateral=ui.tracks.isChecked())
-            p.close()
+            try:
+                p = Parser.Parser()
+                p.initialization(filename)   # FIX: remove initialization or rename
+                storage = Field('test field', p.get_dates_list())
+                parsed_data = p.parse_file(filename, lateral=ui.tracks.isChecked())
+                p.close()
+            except Parser.ParseError as e:
+                logger.exception('Fatal error in parser ' + e.msg)
+                ui.errorMessage(u"Ошибка при считывании из файла",caption=u"Fontaine")
+                return
             for row in parsed_data:
                 if row['number'] == 'N/A':
                     storage.add_parameter(row['parameter_code'],
@@ -204,7 +224,7 @@ if __name__ == "__main__":
                         r.add_line(n, 'parent',
                                storage.wells[well].parent)
                     n += 1
-#######################################
+######################################
             r.render(savefile)
             storage.clear()
             r.reset()
@@ -220,3 +240,4 @@ if __name__ == "__main__":
 
     mainwindow.show()
     sys.exit(app.exec_())
+#    fh.close() нацепить на выход
