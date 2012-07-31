@@ -65,14 +65,18 @@ class Field(object):  # FIXME: More docstrings
 
     def add_well(self, number, data={}, **kwargs):
         import re
-        if number in self.wells:  # ошибочка будет полюбому
-            self.wells[number].add_parameter(data)
-        else:
-            self.wells[number] = Well()
-            self.wells[number].add_parameter(data)
-        shrt_num = re.search(r"^([0-9A-Z]+)(?=BS|[_-])", number)
+        print number
+        shrt_num = re.search(r"^([0-9A-Z]+)(?=BS|[_-])", number)  # rework interfaces
         if shrt_num:
-            self.wells[number].add_parent(shrt_num.group())
+            parent_number = shrt_num.group()
+            if not parent_number in self.wells:
+                self.wells[parent_number] = Well()
+            self.wells[parent_number].add_parameter(number, data)
+            return
+
+        if not number in self.wells:
+            self.wells[number] = Well()
+        self.wells[number].add_parameter(number, data)
 
     def add_parameter(self, parameter, data):
         if parameter == "FPR":
@@ -87,16 +91,7 @@ class Field(object):  # FIXME: More docstrings
         else:
             raise FieldError("Repeated parameters")
 
-    def parent_check(self):
-        for well in self.wells:
-            if not self.wells[well].parent:
-                continue
-            if self.wells[well].parent not in self.wells:
-                # child changed state to non-child, because no parent was found
-                self.wells[well].parent = None
-
     def routine_operations(self):
-        self.parent_check()
         map(lambda x: Well.add_worktime(x, dates=self.dates),
             self.wells.values())
         map(lambda x: Well.compress_data(x, dates=self.dates),
@@ -123,8 +118,6 @@ class Field(object):  # FIXME: More docstrings
     def new_well_rate(self, code, density=1, degree=0):
         rate = list(self.mask)
         for well in self.wells.values():  # без values
-            if well.parent:
-                continue
             if code in well.parameters:
                 rate[well.first_run] += well.parameters[code][well.first_run]
         return [x * density * (10 ** degree) for x in rate]
@@ -132,16 +125,12 @@ class Field(object):  # FIXME: More docstrings
     def new_well_work_time(self):
         work_time = list(self.mask)
         for well in self.wells.values():  # без values
-            if well.parent:
-                continue
             work_time[well.first_run] += well.work_time[well.first_run]
         return work_time
 
     def completed_wells(self, code='all'):
         output = list(self.mask)
         for well in self.wells.values():
-            if well.parent:
-                continue
             if code == 'all':
                 output[well.first_run] += 1
             elif well.classification[well.first_run] == code:
@@ -227,23 +216,6 @@ class Field(object):  # FIXME: More docstrings
             if count_inj != 0:
                 avg_inj_pres[num] += pres_inj / count_inj
         return avg_prod_pres, avg_inj_pres
-
-    def dummyCheck(self):   # rework
-        for well in self.wells:
-            if not self.wells[well]['First_run'][1] == 'Dummy':
-                continue
-            if not "Lateral" in self.wells[well]:
-                continue
-            for lateral in self.wells[well]["Lateral"]:
-                year = self.wells[lateral]['First_run'][0]
-                index = int(year) - min(self.dates.keys())
-                worktime = self.wells[well]['First_run'][2]
-#                if ((year <  self.wells[well]['First_run'][0])
-#                        and self.wells[well]['First_run'][0] > 0) \
-#                    or (self.wells[well]['First_run'][0] == "N/A"):
-                self.parameters["NOPT"][index] += self.wells[lateral]['WOPT'][index]
-                self.parameters["NWPT"][index] += self.wells[lateral]['WWPT'][index]
-                self.parameters["NPW"][index] += 1
 
     def countMonth(self, pointer, data):
         m = 0

@@ -54,9 +54,8 @@ class Parser(object):
     '''
 
     def __init__(self):
-        self.logger = logging.getLogger('spam_application.parser.Parser')
+        self.logger = logging.getLogger('Fontaine.parser.Parser')
         self.logger.info('creating an instance of Parser')
-        raise ParseError('THIS IS NOT A DRILL!!!')
         '''
         Constructor
         '''

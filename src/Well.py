@@ -15,35 +15,18 @@ rate_parameters = ['WLPR', 'WOIN', 'WWIN', 'WGIN']
 rate_prod_parameters = ['WLPR']
 rate_inj_parameters = ['WOIN', 'WWIN', 'WGIN']
 
-class Well(object):
+class Borehole(object):
     '''
     classdocs
     '''
-    dataline_length = 0
-    mask = []
 
-    def __init__(self, data=None):  # number
-        '''
-        Constructor
-        '''
+    def __init__(self, data=None):
         self.parameters = {}
-        self.first_run = None
-        self.parent = None
-        self.abandonment = None
-        self.work_time = None
-        self.classification = None
-        self.classification_by_rate = None
         if data:
             self.add_parameter(data)
 
-#    def __call__(self):
-#        return self.name
-
-#    def __repr__(self):
-#        return "Well('%s')" % (self.name)
-
-    def is_lateral(self):
-        pass
+    def add_parameter(self, data):
+        self.paremeters.update(data)
 
     def compress_data(self, dates):  # уменьшить вложенность
         for parameter in self.parameters:
@@ -60,28 +43,48 @@ class Well(object):
                 for date in s_dates:
                     self.parameters[parameter].append(float(compress[date]))
 
-    def add_parameter(self, data):
-        self.parameters.update(data)
-
-        for datalist in data.values():   # potentially to own def
-            len(datalist)
-            if len(datalist) > self.__class__.dataline_length:
-                self.__class__.dataline_length = len(datalist)
-                self.__class__.mask[:] = []
-                self.__class__.mask = [0] * self.__class__.dataline_length
-
-    def add_parent(self, name):
-        if self.parent and self.parent != name:
-            raise ValueError
-        self.parent = name
-
     def recieve_parameters(self, *args):
         for arg in args:
-            yield self.parameters.get(arg, list(self.__class__.short_mask))
+            yield self.parameters.get(arg)
+
+class Well(object):
+    '''
+    classdocs
+    '''
+    def __init__(self, data=None):  # number
+        '''
+        Constructor
+        '''
+        self.__boreholes = {}
+        self.first_run = None
+        self.abandonment = None
+        self.work_time = None
+        self.classification = None
+        self.classification_by_rate = None
+        if data:
+            self.add_parameter(data)
+
+    def add_parameter(self, number, data):
+        if not number in self.__boreholes:
+            self.__boreholes.update({number: data})
+        else:
+            self.__boreholes[number].update(data)
+
+#        for datalist in data.values():   # potentially to own def
+#            len(datalist)
+#            if len(datalist) > self.__class__.dataline_length:
+#                self.__class__.dataline_length = len(datalist)
+#                self.__class__.mask[:] = []
+#                self.__class__.mask = [0] * self.__class__.dataline_length
+
+#    def add_child(self, name):
+#        if not self.child:
+#            self.child = []
+#        if not name in self.child:
+#            self.child.append(name)
+
 
     def abandonment_year(self):
-#        for year in reversed(range(self.__class__.dataline_length)):
-        #  Maybe this work
         for year, work_time in enumerate(reversed(self.work_time)):
             if work_time > 0:
                 break
@@ -158,19 +161,19 @@ class Well(object):
         s_dates.pop(0)
         self.__class__.short_mask = [0] * len(s_dates)
         well_work_time = list(self.__class__.short_mask)
-        for wellcode in self.parameters:
-            if wellcode in total_parameters:
-                data = self.parameters[wellcode]
-                s_data = []
-                for cur_total, next_total in pairs(data):  # не элегантно
-                    s_data.append(float(next_total) - float(cur_total))
-                work_time = []
-                for cur, nex in pairs(sorted(dates)):
-                    cur_line = dates[cur]
-                    next_line = dates[nex]
-                    sliced_data = s_data[cur_line:next_line:]
-                    m = countMonth(cur, sliced_data)
-                    work_time.append(m)
+        parameters = self.__boreholes.recieve_parameters(*total_parameters)
+        for wellcode in parameters:
+            data = parameters[wellcode]
+            s_data = []
+            for cur_total, next_total in pairs(data):  # не элегантно
+                s_data.append(float(next_total) - float(cur_total))
+            work_time = []
+            for cur, nex in pairs(sorted(dates)):
+                cur_line = dates[cur]
+                next_line = dates[nex]
+                sliced_data = s_data[cur_line:next_line:]
+                m = countMonth(cur, sliced_data)
+                work_time.append(m)
             for i, val in enumerate(work_time):
                 if val > well_work_time[i]:
                     well_work_time[i] = val
