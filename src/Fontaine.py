@@ -50,7 +50,7 @@ def timer(f):  # time benchmark
 
 if __name__ == "__main__":
     # logger system initialization
-    logger = logging.getLogger('spam_application')
+    logger = logging.getLogger('')
     logger.setLevel(logging.DEBUG)
     #basic config here
     fh = logging.handlers.RotatingFileHandler('debug.log',
@@ -202,27 +202,27 @@ if __name__ == "__main__":
                 for well in storage.wells:
                     r.add_line(n, well, [])
                     n += 1
-                    r.add_line(n, 'WOPT',
-                               storage.wells[well].parameters['WOPT'])
-                    n += 1
-                    r.add_line(n, 'WWPT',
-                               storage.wells[well].parameters['WWPT'])
-                    n += 1
-                    r.add_line(n, 'WWIT',
-                               storage.wells[well].parameters['WWIT'])
-                    n += 1
-                    r.add_line(n, 'WLPR',
-                               storage.wells[well].parameters['WLPR'])
-                    n += 1
-                    r.add_line(n, 'WWIR',
-                               storage.wells[well].parameters['WWIR'])
-                    n += 1
+#                    r.add_line(n, 'WOPT',
+#                               storage.wells[well].parameters['WOPT'])
+#                    n += 1
+#                    r.add_line(n, 'WWPT',
+#                               storage.wells[well].parameters['WWPT'])
+#                    n += 1
+#                    r.add_line(n, 'WWIT',
+#                               storage.wells[well].parameters['WWIT'])
+#                    n += 1
+#                    r.add_line(n, 'WLPR',
+#                               storage.wells[well].parameters['WLPR'])
+#                    n += 1
+#                    r.add_line(n, 'WWIN',
+#                               storage.wells[well].parameters['WWIN'])
+#                    n += 1
                     r.add_line(n, 'class',
                                storage.wells[well].classification_by_rate)
                     n += 1
-                    if storage.wells[well].parent:
-                        r.add_line(n, 'parent',
-                               storage.wells[well].parent)
+                    if storage.wells[well].child:
+                        r.add_line(n, 'child',
+                               storage.wells[well].child)
                     n += 1
 ######################################
             r.render(savefile)
