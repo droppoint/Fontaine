@@ -44,7 +44,7 @@ class Borehole(object):
                     self.parameters[parameter].append(float(compress[date]))
 
     def recieve_parameter(self, code):
-        return self.parameters.get('code')
+        return self.parameters.get(code)
 
 class Well(object):
     '''
@@ -105,7 +105,7 @@ class Well(object):
 
     def recieve_parameters(self, *args):
         for arg in args:
-            sum = []
+            sum = None
             for borehole in self.__boreholes.values():
                 if not sum:
                     exists = borehole.recieve_parameter(arg)
@@ -116,7 +116,6 @@ class Well(object):
             yield {arg: sum}
 
     def well_classification(self, mode='total'):
-        prod = [i for i in self.recieve_parameters(*total_prod_parameters)]
         if mode == 'total':
             prod_parameters = [i for i in self.recieve_parameters(*total_prod_parameters)]
             inj_parameters = [i for i in self.recieve_parameters(*total_inj_parameters)]
@@ -125,6 +124,7 @@ class Well(object):
             inj_parameters = self.recieve_parameters(*rate_inj_parameters)
         else:
             raise ValueError
+
         production = list_sum(*prod_parameters)
         injection = list_sum(*inj_parameters)
         output = list(self.__class__.short_mask)
@@ -173,9 +173,7 @@ class Well(object):
         self.__class__.short_mask = [0] * len(s_dates)
         well_work_time = list(self.__class__.short_mask)
         parameters = self.recieve_parameters(*total_parameters)
-        test = [i for i in parameters]
-        for wellcode in parameters:
-            print wellcode
+        for wellcode in parameters:    #  это пиздец, товарищи !
             data = wellcode
             s_data = []
             for cur_total, next_total in pairs(data):  # не элегантно
@@ -192,6 +190,10 @@ class Well(object):
                     well_work_time[i] = val
         self.work_time = well_work_time
 
+    #  very very bad idea
+    def compress_data(self, dates):
+        for borehole in self.__boreholes.values():
+            borehole.compress_data(dates)
 
 def pairs(lst):  # list generator
     i = iter(lst)
@@ -210,6 +212,6 @@ def list_sum(*args):  # сделать элегантнее
     for x in range(length):
         s = 0
         for y in args:
-            s += y[x]
+            s += float(y[x])
         list_sum.append(s)
     return list_sum
