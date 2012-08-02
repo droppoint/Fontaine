@@ -43,9 +43,8 @@ class Borehole(object):
                 for date in s_dates:
                     self.parameters[parameter].append(float(compress[date]))
 
-    def recieve_parameters(self, *args):
-        for arg in args:
-            yield self.parameters.get(arg)
+    def recieve_parameter(self):
+        pass
 
 class Well(object):
     '''
@@ -66,7 +65,7 @@ class Well(object):
 
     def add_parameter(self, number, data):
         if not number in self.__boreholes:
-            self.__boreholes.update({number: data})
+            self.__boreholes = {number: Borehole()}
         else:
             self.__boreholes[number].update(data)
 
@@ -105,7 +104,18 @@ class Well(object):
         self.first_run = year
         return year
 
+    def recieve_parameters(self, *args):
+        for arg in args:
+            sum = []
+            for borehole in self.__boreholes:
+                if not sum:
+                    sum = list(self.__boreholes[borehole].recieve_parameter(arg))
+                    continue
+                sum = list_sum(sum, list(borehole.recieve_parameter(arg)))
+            yield {arg: sum}
+
     def well_classification(self, mode='total'):
+        prod = [i for i in self.recieve_parameters(*total_prod_parameters)]
         if mode == 'total':
             prod_parameters = [i for i in self.recieve_parameters(*total_prod_parameters)]
             inj_parameters = [i for i in self.recieve_parameters(*total_inj_parameters)]
@@ -150,6 +160,7 @@ class Well(object):
         return output
 
     def add_worktime(self, dates):
+        prod = [i for i in self.recieve_parameters(*total_prod_parameters)]
         def countMonth(self, data):
             m = 0
             k = 12 / len(data)
