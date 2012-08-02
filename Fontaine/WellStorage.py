@@ -386,6 +386,8 @@ class WellStorage(object):  # FIXME: More docstrings
                 continue
             for lateral in self.wells[well]["Lateral"]:
                 year = self.wells[lateral]['First_run'][0]
+                if year == 'N/A':
+                    continue
                 index = int(year) - self.minimal_year
                 worktime = self.wells[well]['First_run'][2]
 #                if ((year <  self.wells[well]['First_run'][0])

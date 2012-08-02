@@ -11,7 +11,7 @@ import sys
 #import locale
 from WellStorage import WellStorage
 import Report
-import Parser
+from Parser import Parser
 import Initialization as Init
 from PySide import QtGui, QtCore
 from fontaine_ui import Ui_MainWindow
@@ -77,9 +77,15 @@ if __name__ == "__main__":
         storage.override = Init.wells_input_override('input.ini')
 
         if filename and savefile:
-            p.inititalization(filename)
-            p.parseFile(filename, lateral=ui.tracks.isChecked())
-            Report.render(savefile, debug=ui.debug.isChecked(),
+            storage.dates = p.initialization(filename)
+            data = p.parse_file(filename, lateral=ui.tracks.isChecked())
+            for line in data:
+                if line[0] == 'N/A':
+                    storage.add_parameter(line[1], line[2])
+                else:
+                    storage.add_well(line[0], line[1], line[2], lateral=True)
+            r = Report.Report()
+            r.render(storage, savefile, debug=ui.debug.isChecked(),
                        lateral=ui.tracks.isChecked())
             storage.clear()
         elif not filename:

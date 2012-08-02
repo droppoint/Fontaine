@@ -138,6 +138,7 @@ class Parser(object):
         self.config['filetype'] = filetype
         self.config['breaker'] = breaker
         self.config['r_pattern'] = r_pattern
+        return mod_dates
 #        storage.minimal_year = min(storage.dates.keys())
 
     def parse_file(self, filename, **kwargs):
@@ -174,7 +175,7 @@ class Parser(object):
                     temp_num = line[14:]   # bad block of code
                     nn = 0
                     while nn + 13 < len(temp_num):
-                        if factor.match(temp_num[nn:nn + 13]):
+                        if regex_factor.match(temp_num[nn:nn + 13]):
                             factor.append(regex_factor.findall(
                                             temp_num[nn:nn + 13])[0])
                         else:
@@ -241,15 +242,13 @@ class Parser(object):
                                 fl = float(factor)
                                 fk = math.pow(10.0, fl)
                                 data = [float(i) * fk for i in data]
-#                        storage.add_well(well_num, parameter,
-#                                            data, lateral=lateral)
-                        print (well_num, parameter, data)
+                        
+                        yield (well_num, parameter, data)
 
                     if regex_field_properties.match(parameter):
 #                        welldata = []
 #                        for year in sorted(storage.dates.values()):
 #                            welldata.append(float(data[year]))
-                        print (well_num, parameter, data)
-#                        storage.add_parameter(parameter, welldata)
+                         yield (well_num, parameter, data)
 
         f.close()
