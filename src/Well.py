@@ -26,7 +26,7 @@ class Borehole(object):
             self.add_parameter(data)
 
     def add_parameter(self, data):
-        self.paremeters.update(data)
+        self.parameters.update(data)
 
     def compress_data(self, dates):  # уменьшить вложенность
         for parameter in self.parameters:
@@ -43,8 +43,8 @@ class Borehole(object):
                 for date in s_dates:
                     self.parameters[parameter].append(float(compress[date]))
 
-    def recieve_parameter(self):
-        pass
+    def recieve_parameter(self, code):
+        return self.parameters.get('code')
 
 class Well(object):
     '''
@@ -65,9 +65,8 @@ class Well(object):
 
     def add_parameter(self, number, data):
         if not number in self.__boreholes:
-            self.__boreholes = {number: Borehole()}
-        else:
-            self.__boreholes[number].update(data)
+            self.__boreholes.update({number: Borehole()})
+        self.__boreholes[number].add_parameter(data)
 
 #        for datalist in data.values():   # potentially to own def
 #            len(datalist)
@@ -107,9 +106,11 @@ class Well(object):
     def recieve_parameters(self, *args):
         for arg in args:
             sum = []
-            for borehole in self.__boreholes:
+            for borehole in self.__boreholes.values():
                 if not sum:
-                    sum = list(self.__boreholes[borehole].recieve_parameter(arg))
+                    exists = borehole.recieve_parameter(arg)
+                    if exists:
+                        sum = list(exists)  # слишком хитровыебано
                     continue
                 sum = list_sum(sum, list(borehole.recieve_parameter(arg)))
             yield {arg: sum}
@@ -160,7 +161,6 @@ class Well(object):
         return output
 
     def add_worktime(self, dates):
-        prod = [i for i in self.recieve_parameters(*total_prod_parameters)]
         def countMonth(self, data):
             m = 0
             k = 12 / len(data)
@@ -172,9 +172,11 @@ class Well(object):
         s_dates.pop(0)
         self.__class__.short_mask = [0] * len(s_dates)
         well_work_time = list(self.__class__.short_mask)
-        parameters = self.__boreholes.recieve_parameters(*total_parameters)
+        parameters = self.recieve_parameters(*total_parameters)
+        test = [i for i in parameters]
         for wellcode in parameters:
-            data = parameters[wellcode]
+            print wellcode
+            data = wellcode
             s_data = []
             for cur_total, next_total in pairs(data):  # не элегантно
                 s_data.append(float(next_total) - float(cur_total))
