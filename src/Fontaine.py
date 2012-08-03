@@ -78,7 +78,7 @@ if __name__ == "__main__":
         def decorator(*args, **kwargs):
             try:
                 return func(*args, **kwargs)
-            except Exception as e:
+            except ParseError as e:
                 logger.exception('Fatal error in parser' + e.msg)
                 ui.errorMessage(u"Ошибка модуля Parser\n" + e.msg, caption=u"Fontaine")
             except: 
