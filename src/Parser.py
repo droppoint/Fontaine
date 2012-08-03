@@ -5,10 +5,10 @@ Created on 18.06.2012
 
 @author: APartilov
 '''
-from WellStorage import WellStorage
 
 
 import re
+import logging
 
 # Regular expressions used for parsing
 
@@ -16,8 +16,7 @@ regex_all_headers = re.compile(r"([A-Z0-9_]+)")
 regex_necessary_headers = re.compile(
                 r"\b(W[O|G|W|L][I|P][T|R|N]|WBPN|WBHP|FPRP?)\b")
 regex_header = re.compile(r"^(W[O|G|W|L][I|P][T|R|N])|(WBPN|WBHP)$")
-regex_well_properties = re.compile(r"^(W[O|G|W|L][I|P][T|R|N])|(WBPN|WBHP)$")
-regex_field_properties = re.compile(r"^(FPRP?)$")
+regex_properties = re.compile(r"^(W[O|G|W|L][I|P][T|R|N])|(WBPN|WBHP)|(FPRP?)$")
 regex_numbers = re.compile(r"\s([0-9]+[A-Z]?(?:[-_]?\w*)?)\s")
 regex_data_line = re.compile(r"\s((?:[-+]?[0-9]*\.[0-9]*E?-?[0-9]*)|0)\s")
 regex_all_numbers = re.compile(r"^([\w-]+)\b")
@@ -29,6 +28,7 @@ regex_date_alphabetic = re.compile(r"\s((?:0[1-9]|[1-2][0-9]|3[0|1])-"
                                       "(?:[ADFJMNOS][A-Za-z]{2})-"
                                       "(?:(?:19|20|21|22)\d{2}))\s")
 
+module_logger = logging.getLogger('spam_application.parser')
 
 class ParseError(Exception):
     """Exception raised for all parse errors."""
@@ -54,6 +54,8 @@ class Parser(object):
     '''
 
     def __init__(self):
+        self.logger = logging.getLogger('Fontaine.parser.Parser')
+        self.logger.info('creating an instance of Parser')
         '''
         Constructor
         '''
@@ -69,7 +71,7 @@ class Parser(object):
 
     def close(self):
         """Handle any buffered data."""
-        self.goahead(1)
+        self.reset()
 
     def initialization(self, filename):
         """Return primary parameters of RSM file,
@@ -134,12 +136,21 @@ class Parser(object):
         for date in dates:
             if date.month == 1:
                 mod_dates[date.year] = dates.index(date)
-#        storage.dates = mod_dates
+        self.config['dates'] = mod_dates
         self.config['filetype'] = filetype
         self.config['breaker'] = breaker
         self.config['r_pattern'] = r_pattern
+<<<<<<< HEAD:Fontaine/Parser.py
         return mod_dates
 #        storage.minimal_year = min(storage.dates.keys())
+=======
+
+        buf.close()
+        f.close()
+
+    def get_dates_list(self):
+        return self.config['dates']
+>>>>>>> d3377641635ea64c67f85fa31da0c2187cde04e8:src/Parser.py
 
     def parse_file(self, filename, **kwargs):
         import mmap
@@ -219,13 +230,12 @@ class Parser(object):
         n = 0
         buf.seek(n)
         while buf.find("SUMMARY", n) != -1:
-    #        if progress.wasCanceled():
-    #            f.close()
-    #            break
-    #        progress.setValue(int((n / filesize) * 100))
+#            if progress.wasCanceled():
+#                f.close()
+#                break
+#            progress.setValue(int((n / filesize) * 100))
             n = buf.find("SUMMARY", n)
             m = buf.find("DATE", n)
-            buf.seek(n)  # WHY???
             n += 1
             buf.seek(m)
             cur_str = buf.readline()
@@ -234,14 +244,15 @@ class Parser(object):
                 for key, well_num in enumerate(block['numbers']):
                     data = [i[key] for i in block['data']]
                     parameter = block['headers'][key]
-
-                    if regex_well_properties.match(parameter):
-                        if block['factor']:
+                    parsed_data = {}
+                    if regex_properties.match(parameter):
+                        if block['factor']:   # FIX: maybe repeated conditions
                             factor = block['factor'][key]
                             if factor:
                                 fl = float(factor)
                                 fk = math.pow(10.0, fl)
                                 data = [float(i) * fk for i in data]
+<<<<<<< HEAD:Fontaine/Parser.py
                         
                         yield (well_num, parameter, data)
 
@@ -250,5 +261,13 @@ class Parser(object):
 #                        for year in sorted(storage.dates.values()):
 #                            welldata.append(float(data[year]))
                          yield (well_num, parameter, data)
+=======
+                        parsed_data['number'] = well_num
+                        parsed_data['parameter_code'] = parameter
+                        parsed_data['welldata'] = data
+                        yield parsed_data
 
+>>>>>>> d3377641635ea64c67f85fa31da0c2187cde04e8:src/Parser.py
+
+        buf.close()
         f.close()
