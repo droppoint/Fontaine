@@ -13,7 +13,7 @@ total_dec_parameters = ['decWOPT', 'decWWPT', 'decWGPT',
                         'decWWIT', 'decWOIT', 'decWGIT']
 rate_parameters = ['WLPR', 'WOIN', 'WWIN', 'WGIN']
 rate_prod_parameters = ['WLPR']
-rate_inj_parameters = ['WOIN', 'WWIN', 'WGIN']
+rate_inj_parameters = ['WOIN', 'WWIN', 'WGIN', 'WOIR', 'WWIR', 'WGIR']
 
 class Borehole(object):
     '''
@@ -75,13 +75,6 @@ class Well(object):
 #                self.__class__.mask[:] = []
 #                self.__class__.mask = [0] * self.__class__.dataline_length
 
-#    def add_child(self, name):
-#        if not self.child:
-#            self.child = []
-#        if not name in self.child:
-#            self.child.append(name)
-
-
     def abandonment_year(self):
         for year, work_time in enumerate(reversed(self.work_time)):
             if work_time > 0:
@@ -113,18 +106,20 @@ class Well(object):
                         sum = list(exists)  # слишком хитровыебано
                     continue
                 sum = list_sum(sum, list(borehole.recieve_parameter(arg)))
-            yield {arg: sum}
+            if sum == None:
+                continue
+#            yield (arg, sum)
+            yield sum
 
     def well_classification(self, mode='total'):
         if mode == 'total':
-            prod_parameters = [i for i in self.recieve_parameters(*total_prod_parameters)]
-            inj_parameters = [i for i in self.recieve_parameters(*total_inj_parameters)]
+            prod_parameters = self.recieve_parameters(*total_prod_parameters)
+            inj_parameters = self.recieve_parameters(*total_inj_parameters)
         elif mode == 'rate':
             prod_parameters = self.recieve_parameters(*rate_prod_parameters)
             inj_parameters = self.recieve_parameters(*rate_inj_parameters)
         else:
             raise ValueError
-
         production = list_sum(*prod_parameters)
         injection = list_sum(*inj_parameters)
         output = list(self.__class__.short_mask)
@@ -173,8 +168,7 @@ class Well(object):
         self.__class__.short_mask = [0] * len(s_dates)
         well_work_time = list(self.__class__.short_mask)
         parameters = self.recieve_parameters(*total_parameters)
-        for wellcode in parameters:    #  это пиздец, товарищи !
-            data = wellcode
+        for data in parameters:
             s_data = []
             for cur_total, next_total in pairs(data):  # не элегантно
                 s_data.append(float(next_total) - float(cur_total))

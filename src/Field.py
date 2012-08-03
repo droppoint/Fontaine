@@ -105,21 +105,24 @@ class Field(object):  # FIXME: More docstrings
 
     def production_rate(self, code, density=1, degree=0):
         rate = []
-        for well in self.wells.values():  # без values
-            if code in well.parameters:
-                if not rate:
-                    rate = list(well.parameters[code])
-                else:
-                    rate = list(map(
-                        lambda x, y: float(x) + float(y), well.parameters[code], rate
-                                ))
+        for well in self.wells.values():
+            for data in well.recieve_parameters(code):
+                if data:
+                    if not rate:
+                        rate = data
+                    else:
+                        tmp_rate = list(rate)
+                        rate = []
+                        for a, b in zip(tmp_rate, data):
+                            rate.append(a + b)
         return [x * density * (10 ** degree) for x in rate]
 
     def new_well_rate(self, code, density=1, degree=0):
         rate = list(self.mask)
         for well in self.wells.values():  # без values
-            if code in well.parameters:
-                rate[well.first_run] += well.parameters[code][well.first_run]
+            for data in well.recieve_parameters(code):
+                if data:
+                    rate[well.first_run] += data[well.first_run]
         return [x * density * (10 ** degree) for x in rate]
 
     def new_well_work_time(self):
@@ -204,13 +207,14 @@ class Field(object):  # FIXME: More docstrings
             pres_prod, pres_inj = 0, 0
             count_prod, count_inj = 0, 0
             for well in self.wells.values():  # деление на well_fond
-                if pres_type in well.parameters:
-                    if well.classification_by_rate[num] == 2:
-                        pres_prod += well.parameters[pres_type][num]
-                        count_prod += 1
-                    elif well.classification_by_rate[num] == 1:
-                        pres_inj += well.parameters[pres_type][num]
-                        count_inj += 1
+                for data in well.recieve_parameters(pres_type):
+                    if data:
+                        if well.classification_by_rate[num] == 2:
+                            pres_prod += data[num]
+                            count_prod += 1
+                        elif well.classification_by_rate[num] == 1:
+                            pres_inj += data[num]
+                            count_inj += 1
             if count_prod != 0:
                 avg_prod_pres[num] += pres_prod / count_prod
             if count_inj != 0:

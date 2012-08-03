@@ -93,7 +93,7 @@ if __name__ == "__main__":
                 p.close()
             except Parser.ParseError as e:
                 logger.exception('Fatal error in parser ' + e.msg)
-                ui.errorMessage(u"Ошибка при считывании из файла",caption=u"Fontaine")
+                ui.errorMessage(u"Ошибка при считывании из файла", caption=u"Fontaine")
                 return
             for row in parsed_data:
                 if row['number'] == 'N/A':
@@ -129,9 +129,6 @@ if __name__ == "__main__":
 
 #            storage.dummyCheck()
             # new_well_rate
-
-#            if debug:
-#                debuglist = wb.add_sheet(u'debug')
             r.add_line(0, u'Годы', sorted(storage.dates.keys()))
 
             r.add_line(9, u'Годовые показатели', [])
@@ -219,10 +216,6 @@ if __name__ == "__main__":
 #                    n += 1
                     r.add_line(n, 'class',
                                storage.wells[well].classification_by_rate)
-                    n += 1
-                    if storage.wells[well].child:
-                        r.add_line(n, 'child',
-                               storage.wells[well].child)
                     n += 1
 ######################################
             r.render(savefile)
