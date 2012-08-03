@@ -73,7 +73,21 @@ if __name__ == "__main__":
 #    progress.setWindowModality(QtCore.Qt.WindowModal)
     ui = Ui_MainWindow()
     ui.setupUi(mainwindow)
-
+    
+    def errorlog(func):
+        def decorator(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except Exception as e:
+                logger.exception('Fatal error in parser' + e.msg)
+                ui.errorMessage(u"Ошибка модуля Parser\n" + e.msg, caption=u"Fontaine")
+            except: 
+                logger.exception('Unknown error')
+                ui.errorMessage(u"Неизвестная ошибка. \n " , caption=u"Fontaine")
+        return decorator
+        
+            
+    @errorlog
     def ignition():
         filename = ui.lineEdit.text()
         well_filename = ui.lineEdit_2.text()
@@ -85,16 +99,11 @@ if __name__ == "__main__":
 #        storage.override = Init.wells_input_override('input.ini')
             pass
         if filename and savefile:
-            try:
-                p = Parser.Parser()
-                p.initialization(filename)   # FIX: remove initialization or rename
-                storage = Field('test field', p.get_dates_list())
-                parsed_data = p.parse_file(filename, lateral=ui.tracks.isChecked())
-                p.close()
-            except Parser.ParseError as e:
-                logger.exception('Fatal error in parser ' + e.msg)
-                ui.errorMessage(u"Ошибка при считывании из файла", caption=u"Fontaine")
-                return
+            p = Parser.Parser()
+            p.initialization(filename)   # FIX: remove initialization or rename
+            storage = Field('test field', p.get_dates_list())
+            parsed_data = p.parse_file(filename, lateral=ui.tracks.isChecked())
+            p.close()
             for row in parsed_data:
                 if row['number'] == 'N/A':
                     storage.add_parameter(row['parameter_code'],

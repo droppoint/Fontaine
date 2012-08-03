@@ -83,6 +83,7 @@ class Parser(object):
         def fileTypeDetermination(buf):
             n = 0
             buf.seek(n)
+            raise ValueError
             breaker = buf.readline()
             if breaker == "1\r\n":
                 filetype = "tempest"
