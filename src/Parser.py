@@ -140,17 +140,12 @@ class Parser(object):
         self.config['filetype'] = filetype
         self.config['breaker'] = breaker
         self.config['r_pattern'] = r_pattern
-<<<<<<< HEAD:Fontaine/Parser.py
-        return mod_dates
 #        storage.minimal_year = min(storage.dates.keys())
-=======
-
         buf.close()
         f.close()
 
     def get_dates_list(self):
         return self.config['dates']
->>>>>>> d3377641635ea64c67f85fa31da0c2187cde04e8:src/Parser.py
 
     def parse_file(self, filename, **kwargs):
         import mmap
@@ -251,23 +246,12 @@ class Parser(object):
                             if factor:
                                 fl = float(factor)
                                 fk = math.pow(10.0, fl)
-                                data = [float(i) * fk for i in data]
-<<<<<<< HEAD:Fontaine/Parser.py
-                        
-                        yield (well_num, parameter, data)
-
-                    if regex_field_properties.match(parameter):
-#                        welldata = []
-#                        for year in sorted(storage.dates.values()):
-#                            welldata.append(float(data[year]))
-                         yield (well_num, parameter, data)
-=======
+                                data = [float(i) * fk for i in data]      
                         parsed_data['number'] = well_num
                         parsed_data['parameter_code'] = parameter
                         parsed_data['welldata'] = data
                         yield parsed_data
 
->>>>>>> d3377641635ea64c67f85fa31da0c2187cde04e8:src/Parser.py
 
         buf.close()
         f.close()
