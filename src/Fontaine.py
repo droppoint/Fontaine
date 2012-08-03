@@ -75,12 +75,22 @@ if __name__ == "__main__":
     ui.setupUi(mainwindow)
     
     def errorlog(func):
+        
+        def error_msg(module, msg):
+            logger.exception('Fatal error in '+ module + '\n' + e.msg)
+            ui.errorMessage(u'Ошибка модуля ' + module + '\n' + e.msg, caption=u"Fontaine")
+            
         def decorator(*args, **kwargs):
             try:
                 return func(*args, **kwargs)
-            except Exception as e:
-                logger.exception('Fatal error in parser' + e.msg)
-                ui.errorMessage(u"Ошибка модуля Parser\n" + e.msg, caption=u"Fontaine")
+            except Parser.ParseError as e:
+                error_msg('Parser', e.msg)
+            except Field.FieldError as e:
+                error_msg('Field', e.msg)
+            except Well.WellError as e:
+                error_msg('Well', e.msg)
+            except Report.ReportError as e:
+                error_msg('Report', e.msg)     
             except: 
                 logger.exception('Unknown error')
                 ui.errorMessage(u"Неизвестная ошибка. \n " , caption=u"Fontaine")
