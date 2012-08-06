@@ -14,13 +14,13 @@ import logging
 
 regex_all_headers = re.compile(r"([A-Z0-9_]+)")
 regex_necessary_headers = re.compile(
-                r"\b(W[O|G|W|L][I|P][T|R|N]|WBPN|WBHP|FPRP?)\b")
-regex_header = re.compile(r"^(W[O|G|W|L][I|P][T|R|N])|(WBPN|WBHP)$")
+                r"\b(W[O|G|W|L][I|P][T|R|N]|WBP9|WBHP|FPRP?)\b")
+regex_header = re.compile(r"^(W[O|G|W|L][I|P][T|R|N])|(WBP9|WBHP)$")
 regex_properties = re.compile(
-                r"^(W[O|G|W|L][I|P][T|R|N])|(WBPN|WBHP)|(FPRP?)$")
+                r"^(W[O|G|W|L][I|P][T|R|N])|(WBP9|WBHP)|(FPRP?)$")
 regex_numbers = re.compile(r"\s([0-9]+[A-Z]?(?:[-_]?\w*)?)\s")
 regex_data_line = re.compile(r"\s((?:[-+]?[0-9]*\.[0-9]*E?-?[0-9]*)|0)\s")
-regex_all_numbers = re.compile(r"^([\w-]+)\b")
+regex_all_numbers = re.compile(r"\b([\w-]+)\b")
 regex_factor = re.compile(r"(?:\*10\*\*(\d))")
 regex_date_numeric = re.compile(r"\s((?:0[1-9]|[1-2][0-9]|3[0|1])/"
                  "(?:0[1-9]|1[0-2])/"
@@ -193,8 +193,8 @@ class Parser(object):
                 numbers = []
                 nn = 0
                 while nn + 13 < len(temp_num):
-                    if regex_all_numbers.match(temp_num[nn:nn + 13]):
-                        numbers.append(regex_all_numbers.match(
+                    if regex_all_numbers.search(temp_num[nn:nn + 13]):
+                        numbers.append(regex_all_numbers.search(
                                         temp_num[nn:nn + 13]).group(0))
                     else:
                         numbers.append("N/A")

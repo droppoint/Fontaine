@@ -140,7 +140,7 @@ if __name__ == "__main__":
                          oil_PR_tons, water_PR_tons))
             water_IR_SM3 = storage.production_rate('WWIT', degree=-3)
 
-            avg_res_pres_prod, avg_res_pres_inj = storage.avg_pressure('WBPN')
+            avg_res_pres_prod, avg_res_pres_inj = storage.avg_pressure('WBP9')
             avg_btm_pres_prod, avg_btm_pres_inj = storage.avg_pressure('WBHP')
 
             oil_nw_PR_tons = storage.new_well_rate('WOPT',

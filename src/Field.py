@@ -26,15 +26,18 @@ class Singleton(type):
 class FieldError(Exception):
     """Exception raised for all parse errors."""
 
-    def __init__(self, msg, position=(None, None)):
+    def __init__(self, msg, well=None, parameter=None):
         assert msg
         self.msg = msg
         self.well = well
+        self.parameter = parameter
 
     def __str__(self):
         result = self.msg
         if self.well is not None:
-            result = result + " at well" % self.well
+            result = result + " at well" + self.well
+        if self.parameter is not None:
+            result = result + " at parameter" + self.parameter
         return result
 
 
@@ -85,7 +88,7 @@ class Field(object):  # FIXME: More docstrings
                 tmp.append(data[year])
             self.parameters[parameter] = tmp
         else:
-            raise FieldError("Repeated field parameters")
+            raise FieldError("Repeated field parameters", parameter=str(parameter))
 
     def routine_operations(self):
         map(lambda x: Well.add_worktime(x, dates=self.dates),
