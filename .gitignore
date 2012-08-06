@@ -9,9 +9,12 @@
 *.bak
 *.bat
 *.xls
+*.report
+*.pyprof
+*.spec
 *.profile
 *.project
 *.pydevproject
 .settings/
-Fontaine/build
-Fontaine/dist
+tmp/built/
+tmp/dist/

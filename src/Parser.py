@@ -16,7 +16,8 @@ regex_all_headers = re.compile(r"([A-Z0-9_]+)")
 regex_necessary_headers = re.compile(
                 r"\b(W[O|G|W|L][I|P][T|R|N]|WBPN|WBHP|FPRP?)\b")
 regex_header = re.compile(r"^(W[O|G|W|L][I|P][T|R|N])|(WBPN|WBHP)$")
-regex_properties = re.compile(r"^(W[O|G|W|L][I|P][T|R|N])|(WBPN|WBHP)|(FPRP?)$")
+regex_properties = re.compile(
+                r"^(W[O|G|W|L][I|P][T|R|N])|(WBPN|WBHP)|(FPRP?)$")
 regex_numbers = re.compile(r"\s([0-9]+[A-Z]?(?:[-_]?\w*)?)\s")
 regex_data_line = re.compile(r"\s((?:[-+]?[0-9]*\.[0-9]*E?-?[0-9]*)|0)\s")
 regex_all_numbers = re.compile(r"^([\w-]+)\b")
@@ -30,6 +31,7 @@ regex_date_alphabetic = re.compile(r"\s((?:0[1-9]|[1-2][0-9]|3[0|1])-"
 
 module_logger = logging.getLogger('spam_application.parser')
 
+
 class ParseError(Exception):
     """Exception raised for all parse errors."""
 
@@ -42,9 +44,9 @@ class ParseError(Exception):
     def __str__(self):
         result = self.msg
         if self.lineno is not None:
-            result = result + ", at line %d" % self.lineno
+            result = result + " at line %d" % self.lineno
         if self.offset is not None:
-            result = result + ", column %d" % (self.offset + 1)
+            result = result + " column %d" % (self.offset + 1)
         return result
 
 
@@ -66,9 +68,6 @@ class Parser(object):
         self.data = {}
         self.config = {}
 
-    def error(self, message):
-        raise ParseError(message)
-
     def close(self):
         """Handle any buffered data."""
         self.reset()
@@ -83,14 +82,13 @@ class Parser(object):
         def fileTypeDetermination(buf):
             n = 0
             buf.seek(n)
-            raise ValueError
             breaker = buf.readline()
             if breaker == "1\r\n":
                 filetype = "tempest"
             elif breaker == "\r\n":
                 filetype = "eclipse"
             else:
-                raise IOError
+                raise ParseError('Unknown breaker ', position=(0, 0))
             return filetype, breaker
 
         def dateFormatDetermination(dataline):
@@ -103,8 +101,7 @@ class Parser(object):
                 date_pattern = "%d-%b-%Y"
                 regex_pattern = regex_date_alphabetic
             else:
-                print "unknown date type"
-                raise ValueError
+                raise ParseError('Unknown date type')
             return date_pattern, regex_pattern
 
         dates = []
@@ -128,7 +125,7 @@ class Parser(object):
         dataline = buf.readline()
         d_pattern, r_pattern = dateFormatDetermination(dataline)
         dataheight = num - commentaryline
-        for unused_i in range(dataheight):  # получение массива дат
+        for _ in range(dataheight):  # получение массива дат
     #        locale.setlocale(locale.LC_ALL, 'en_US.utf8')
             cur_date = datetime.strptime(r_pattern.findall(dataline)[0],
                                                                 d_pattern)
@@ -141,17 +138,15 @@ class Parser(object):
         self.config['filetype'] = filetype
         self.config['breaker'] = breaker
         self.config['r_pattern'] = r_pattern
-#        storage.minimal_year = min(storage.dates.keys())
         buf.close()
         f.close()
 
     def get_dates_list(self):
         return self.config['dates']
 
-    def parse_file(self, filename, **kwargs):
+    def parse_file(self, filename):
         import mmap
         import math  # maybe in other place?
-        lateral = kwargs.get('lateral')
         self.initialization(filename)
 
         def parseBlock(pointer):
@@ -175,7 +170,7 @@ class Parser(object):
     #        quantity_str = buf.readline()
             line = buf.readline()
             factor = []
-            while not re.search(r"\s([0-9]+[A-Z]?(?:[-_]?\w*)?)\s", line):  # ???
+            while not re.search(r"\s([0-9]+[A-Z]?(?:[-_]?\w*)?)\s", line):
                 if re.search(self.config['r_pattern'], line):
                     break
                 if regex_factor.search(line):
@@ -226,10 +221,6 @@ class Parser(object):
         n = 0
         buf.seek(n)
         while buf.find("SUMMARY", n) != -1:
-#            if progress.wasCanceled():
-#                f.close()
-#                break
-#            progress.setValue(int((n / filesize) * 100))
             n = buf.find("SUMMARY", n)
             m = buf.find("DATE", n)
             n += 1
@@ -242,17 +233,16 @@ class Parser(object):
                     parameter = block['headers'][key]
                     parsed_data = {}
                     if regex_properties.match(parameter):
-                        if block['factor']:   # FIX: maybe repeated conditions
+                        if block['factor']:
                             factor = block['factor'][key]
                             if factor:
                                 fl = float(factor)
                                 fk = math.pow(10.0, fl)
-                                data = [float(i) * fk for i in data]      
+                                data = [float(i) * fk for i in data]
                         parsed_data['number'] = well_num
                         parsed_data['parameter_code'] = parameter
                         parsed_data['welldata'] = data
                         yield parsed_data
-
 
         buf.close()
         f.close()
