@@ -18,6 +18,21 @@ def get_formulas(template, args, number):
     return formulas
 
 
+class ReportError(Exception):
+    """Exception raised for all parse errors."""
+
+    def __init__(self, msg, lineno=None):
+        assert msg
+        self.msg = msg
+        self.lineno = lineno
+
+    def __str__(self):
+        result = self.msg
+        if self.lineno is not None:
+            result = result + " at line " % self.lineno
+        return result
+
+
 class ReportLine(object):
         '''
         Lines for report
@@ -69,7 +84,7 @@ class Report(object):
                 x += 1
 
         if self.lines == {}:
-            # Nothing to render
+            raise ReportError('Nothing to render')
             return None
 
         font0 = xlwt.Font()

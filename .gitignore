@@ -10,10 +10,13 @@
 *.report
 *.bak
 *.xls
+*.report
+*.pyprof
+*.spec
 *.profile
 *.project
 *.pydevproject
 *.pyprof
 .settings/
-Fontaine/build
-Fontaine/dist
+tmp/built/
+tmp/dist/

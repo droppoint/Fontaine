@@ -10,7 +10,7 @@ from __future__ import division
 import sys
 import logging
 import logging.handlers
-from Field import Field
+import Field
 import Report
 import Parser
 import Initialization as Init
@@ -58,9 +58,11 @@ if __name__ == "__main__":
                                       maxBytes=524288,
                                       backupCount=1)
     fh.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    formatter = logging.Formatter(
+                '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     fh.setFormatter(formatter)
     logger.addHandler(fh)
+    logger.info('Fontaine start')
 
     const = _Constants()
     category = _Constants()
@@ -73,20 +75,32 @@ if __name__ == "__main__":
 #    progress.setWindowModality(QtCore.Qt.WindowModal)
     ui = Ui_MainWindow()
     ui.setupUi(mainwindow)
-    
+
     def errorlog(func):
+
+        def error_msg(module, msg):
+            logger.exception('Fatal error in ' + module + '\n' + msg)
+            ui.errorMessage(u'Ошибка модуля ' + module + '\n' + msg,
+                            caption=u"Fontaine")
+
         def decorator(*args, **kwargs):
             try:
                 return func(*args, **kwargs)
-            except ParseError as e:
-                logger.exception('Fatal error in parser' + e.msg)
-                ui.errorMessage(u"Ошибка модуля Parser\n" + e.msg, caption=u"Fontaine")
-            except: 
+            except Parser.ParseError as e:
+                error_msg('Parser', str(e))
+            except Field.FieldError as e:
+                error_msg('Field', str(e))
+            except Report.ReportError as e:
+                error_msg('Report', e.msg)
+            except Exception as inst:
                 logger.exception('Unknown error')
-                ui.errorMessage(u"Неизвестная ошибка. \n " , caption=u"Fontaine")
+                logger.exception(type(inst))
+                logger.exception(inst.args)
+                ui.errorMessage(u"Неизвестная ошибка. \n ",
+                                caption=u"Fontaine")
+                raise
         return decorator
-        
-            
+
     @errorlog
     def ignition():
         filename = ui.lineEdit.text()
@@ -101,8 +115,8 @@ if __name__ == "__main__":
         if filename and savefile:
             p = Parser.Parser()
             p.initialization(filename)   # FIX: remove initialization or rename
-            storage = Field('test field', p.get_dates_list())
-            parsed_data = p.parse_file(filename, lateral=ui.tracks.isChecked())
+            storage = Field.Field('test field', p.get_dates_list())
+            parsed_data = p.parse_file(filename)
             p.close()
             for row in parsed_data:
                 if row['number'] == 'N/A':

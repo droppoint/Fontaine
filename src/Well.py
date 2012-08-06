@@ -15,6 +15,7 @@ rate_parameters = ['WLPR', 'WOIN', 'WWIN', 'WGIN']
 rate_prod_parameters = ['WLPR']
 rate_inj_parameters = ['WOIN', 'WWIN', 'WGIN', 'WOIR', 'WWIR', 'WGIR']
 
+
 class Borehole(object):
     '''
     classdocs
@@ -34,7 +35,8 @@ class Borehole(object):
             self.parameters[parameter][:] = []
             if parameter in total_parameters:
                 for cur_date, next_date in pairs(sorted(dates.values())):
-                    value = float(compress[next_date]) - float(compress[cur_date])
+                    value = float(compress[next_date]) - \
+                            float(compress[cur_date])
                     self.parameters[parameter].append(value)
             else:
                 s_dates = sorted(dates.values())
@@ -45,6 +47,7 @@ class Borehole(object):
 
     def recieve_parameter(self, code):
         return self.parameters.get(code)
+
 
 class Well(object):
     '''
@@ -67,13 +70,6 @@ class Well(object):
         if not number in self.__boreholes:
             self.__boreholes.update({number: Borehole()})
         self.__boreholes[number].add_parameter(data)
-
-#        for datalist in data.values():   # potentially to own def
-#            len(datalist)
-#            if len(datalist) > self.__class__.dataline_length:
-#                self.__class__.dataline_length = len(datalist)
-#                self.__class__.mask[:] = []
-#                self.__class__.mask = [0] * self.__class__.dataline_length
 
     def abandonment_year(self):
         for year, work_time in enumerate(reversed(self.work_time)):
@@ -98,18 +94,18 @@ class Well(object):
 
     def recieve_parameters(self, *args):
         for arg in args:
-            sum = None
+            datalist = None
             for borehole in self.__boreholes.values():
-                if not sum:
+                if not datalist:
                     exists = borehole.recieve_parameter(arg)
                     if exists:
-                        sum = list(exists)  # слишком хитровыебано
+                        datalist = list(exists)  # слишком хитровыебано
                     continue
-                sum = list_sum(sum, list(borehole.recieve_parameter(arg)))
-            if sum == None:
+                datalist = list_sum(datalist,
+                                list(borehole.recieve_parameter(arg)))
+            if datalist == None:
                 continue
-#            yield (arg, sum)
-            yield sum
+            yield datalist
 
     def well_classification(self, mode='total'):
         if mode == 'total':
@@ -150,7 +146,8 @@ class Well(object):
             if cur == 2 and nex == 1:
                 output = n
                 break
-            if cur == 4 and nex == 1 and self.classification[self.first_run] == 2:
+            if cur == 4 and nex == 1 and \
+                self.classification[self.first_run] == 2:
                 output = n
                 break
         return output
@@ -188,6 +185,7 @@ class Well(object):
     def compress_data(self, dates):
         for borehole in self.__boreholes.values():
             borehole.compress_data(dates)
+
 
 def pairs(lst):  # list generator
     i = iter(lst)

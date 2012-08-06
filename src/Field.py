@@ -29,15 +29,12 @@ class FieldError(Exception):
     def __init__(self, msg, position=(None, None)):
         assert msg
         self.msg = msg
-        self.lineno = position[0]
-        self.offset = position[1]
+        self.well = well
 
     def __str__(self):
         result = self.msg
-        if self.lineno is not None:
-            result = result + ", at line %d" % self.lineno
-        if self.offset is not None:
-            result = result + ", column %d" % (self.offset + 1)
+        if self.well is not None:
+            result = result + " at well" % self.well
         return result
 
 
@@ -65,7 +62,7 @@ class Field(object):  # FIXME: More docstrings
 
     def add_well(self, number, data={}, **kwargs):
         import re
-        shrt_num = re.search(r"^([0-9A-Z]+)(?=BS|[_-])", number)  # rework interfaces
+        shrt_num = re.search(r"^([0-9A-Z]+)(?=BS|[_-])", number)
         if shrt_num:
             parent_number = shrt_num.group()
             if not parent_number in self.wells:
@@ -88,7 +85,7 @@ class Field(object):  # FIXME: More docstrings
                 tmp.append(data[year])
             self.parameters[parameter] = tmp
         else:
-            raise FieldError("Repeated parameters")
+            raise FieldError("Repeated field parameters")
 
     def routine_operations(self):
         map(lambda x: Well.add_worktime(x, dates=self.dates),
