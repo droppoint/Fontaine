@@ -6,12 +6,14 @@
 *.log
 *.log*
 *.rsm
-*.bak
 *.bat
+*.report
+*.bak
 *.xls
 *.profile
 *.project
 *.pydevproject
+*.pyprof
 .settings/
 Fontaine/build
 Fontaine/dist
