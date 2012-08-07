@@ -171,7 +171,7 @@ class Parser(object):
             line = buf.readline()
             factor = []
             while not re.search(r"\s([0-9]+[A-Z]?(?:[-_]?\w*)?)\s", line):
-                if re.search(self.config['r_pattern'], line):
+                if self.config['r_pattern'].search(line):
                     break
                 if regex_factor.search(line):
                     temp_num = line[14:]   # bad block of code
@@ -184,10 +184,11 @@ class Parser(object):
                             factor.append(None)
                         nn += 13
                 line = buf.readline()
-            result['factor'] = list(factor)
             numbers_str = line
             numbers = regex_numbers.findall(numbers_str)
-
+            if self.config['r_pattern'].search(line):
+                numbers = []
+            result['factor'] = list(factor)
             if ((len(headers) - 1) > len(numbers)) and numbers != []:
                 temp_num = numbers_str[14:]   # bad block of code
                 numbers = []
