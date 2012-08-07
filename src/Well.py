@@ -196,7 +196,8 @@ def pairs(lst):  # list generator
 
 
 def list_sum(*args):  # сделать элегантнее
-    print args
+    if not args:
+        raise ValueError
     length = len(args[0])
     for x in args:
         if len(x) != length:
