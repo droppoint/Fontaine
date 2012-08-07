@@ -197,6 +197,15 @@ class Field(object):  # FIXME: More docstrings
                     wells_fond[year] += 1
         return wells_fond
 
+    def borehole_fond(self):
+        years = []
+        for well in self.wells:
+            years += self.wells[well].borehole_input(well)
+        fond = list(self.mask)
+        for year in years:
+            fond[year] += 1
+        return fond
+
     def avg_pressure(self, pres_type):
         mask = list(self.mask)
         mask.pop(0)

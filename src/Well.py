@@ -48,6 +48,12 @@ class Borehole(object):
     def recieve_parameter(self, code):
         return self.parameters.get(code)
 
+    def recieve_parameters(self, *args):
+        for arg in args:
+            datalist = self.recieve_parameter(arg)
+            if datalist:
+                yield datalist
+
 
 class Well(object):
     '''
@@ -106,6 +112,19 @@ class Well(object):
             if datalist == None:
                 continue
             yield datalist
+
+    def borehole_input(self, name):
+        years = []
+        for number in self.__boreholes:
+            if number == name:
+                continue  # плохо, очень плохо
+            production = list_sum(*self.__boreholes[number].recieve_parameters(*total_prod_parameters))
+            injection = list_sum(*self.__boreholes[number].recieve_parameters(*total_inj_parameters))
+            for year, (prod, inj) in enumerate(zip(production, injection)):
+                if inj + prod > 0:
+                    years.append(year)
+                    break
+        return years
 
     def well_classification(self, mode='total'):
         if mode == 'total':

@@ -179,7 +179,7 @@ if __name__ == "__main__":
                        storage.completed_wells(code=2))
             r.add_line(39, u'    нагнетательных',
                        storage.completed_wells(code=1))
-            r.add_line(40, u'    боковые стволы', [])
+            r.add_line(40, u'    боковые стволы', storage.borehole_fond())
 
             r.add_line(41, u'Перевод из доб. в нагн.',
                        storage.transfered_wells())
@@ -216,7 +216,7 @@ if __name__ == "__main__":
                                 (11, 11, 10, 11),
                                 len(storage.mask))
             r.add_line(14, u'    Обводненность, %', formulas)
-
+            
             if debug:
                 n = 62
                 for well in storage.wells:
