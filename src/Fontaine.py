@@ -92,6 +92,8 @@ if __name__ == "__main__":
                 error_msg('Field', str(e))
             except Report.ReportError as e:
                 error_msg('Report', e.msg)
+            except IOError:
+                error_msg('Initialization', "Ini-файл не найден или поврежден")
             except Exception as inst:
                 logger.exception('Unknown error')
                 logger.exception(type(inst))
@@ -106,7 +108,7 @@ if __name__ == "__main__":
         filename = ui.lineEdit.text()
         well_filename = ui.lineEdit_2.text()
         savefile = ui.setSaveFileName()
-        const = Init.config_init('../config.ini')
+        const = Init.config_init('config.ini')
         debug = ui.debug.isChecked()
         if well_filename:
 #            storage.category = Init.wells_init(well_filename)

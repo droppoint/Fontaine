@@ -17,6 +17,8 @@
 *.project
 *.pydevproject
 *.pyprof
+*.pyd
+*.ini
 .settings/
 tmp/built/
 tmp/dist/

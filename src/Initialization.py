@@ -11,6 +11,9 @@ def config_init(filename):
     import ConfigParser
     const = {}
 
+    with open(filename) as f:
+        pass
+
     def parseConfigSection(section_name):
         if not section_name in config.sections():
             return
@@ -22,7 +25,7 @@ def config_init(filename):
         for sections in config.sections():
             parseConfigSection(sections)
     except:
-        print "Configuration file not found"
+        raise IOError
     return const
 
 
