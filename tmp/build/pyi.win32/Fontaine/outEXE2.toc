@@ -1,10 +1,10 @@
 ('D:\\Aptana_Workspace\\Fontaine\\tmp\\dist\\Fontaine.exe',
  False,
  False,
- None,
+ 'D:\\Aptana_Workspace\\Fontaine\\tmp\\fontaine_icon.ico',
  None,
  [],
  False,
  True,
  0,
- 1344246845L)
+ 1344841712L)

@@ -29,8 +29,6 @@ regex_date_alphabetic = re.compile(r"\s((?:0[1-9]|[1-2][0-9]|3[0|1])-"
                                       "(?:[ADFJMNOS][A-Za-z]{2})-"
                                       "(?:(?:19|20|21|22)\d{2}))\s")
 
-module_logger = logging.getLogger('spam_application.parser')
-
 
 class ParseError(Exception):
     """Exception raised for all parse errors."""

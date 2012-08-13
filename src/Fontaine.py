@@ -216,7 +216,7 @@ if __name__ == "__main__":
                                 (11, 11, 10, 11),
                                 len(storage.mask))
             r.add_line(14, u'    Обводненность, %', formulas)
-            
+
             if debug:
                 n = 62
                 for well in storage.wells:
