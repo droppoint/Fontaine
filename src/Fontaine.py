@@ -16,8 +16,8 @@ import Parser
 import Initialization as Init
 import gc
 from PySide import QtGui, QtCore
-from fontaine_ui import Ui_MainWindow
-
+#from fontaine_ui import Ui_MainWindow
+from mainwindow import Ui_MainWindow
 
 class _Constants:   # this class store initial data and constants
 
@@ -76,6 +76,7 @@ if __name__ == "__main__":
 #    progress.setWindowModality(QtCore.Qt.WindowModal)
     ui = Ui_MainWindow()
     ui.setupUi(mainwindow)
+    ui.action_5.triggered.connect(app.quit)
 
     def errorlog(func):
 
@@ -107,14 +108,14 @@ if __name__ == "__main__":
     @errorlog
     def ignition():
         filename = ui.lineEdit.text()
-        well_filename = ui.lineEdit_2.text()
+#        well_filename = ui.lineEdit_2.text()
         savefile = ui.setSaveFileName()
         const = Init.config_init('config.ini')
-        debug = ui.debug.isChecked()
-        if well_filename:
+        debug = False   # ui.debug.isChecked()
+#        if well_filename:
 #            storage.category = Init.wells_init(well_filename)
 #        storage.override = Init.wells_input_override('input.ini')
-            pass
+#            pass
         if filename and savefile:
             p = Parser.Parser()
             p.initialization(filename)   # FIX: remove initialization or rename
