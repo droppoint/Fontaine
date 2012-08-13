@@ -241,7 +241,8 @@ class Field(object):  # FIXME: More docstrings
         return m
 
     def clear(self):
-        self.wells.clear()
+        for well in self.wells.values():
+            well.clear()
         self.parameters.clear()
         self.mask = []
 

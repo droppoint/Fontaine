@@ -54,6 +54,9 @@ class Borehole(object):
             if datalist:
                 yield datalist
 
+    def clear(self):
+        self.parameters.clear()
+
 
 class Well(object):
     '''
@@ -204,6 +207,15 @@ class Well(object):
     def compress_data(self, dates):
         for borehole in self.__boreholes.values():
             borehole.compress_data(dates)
+
+    def clear(self):
+        self.first_run = None
+        self.abandonment = None
+        self.work_time = None
+        self.classification = None
+        self.classification_by_rate = None
+        for borehole in self.__boreholes.values():
+            borehole.clear()
 
 
 def pairs(lst):  # list generator

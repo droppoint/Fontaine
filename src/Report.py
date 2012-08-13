@@ -66,6 +66,9 @@ class Report(object):
 
     def reset(self):
         """Reset this instance.  Loses all unprocessed data."""
+        if hasattr(self, 'lines'):
+            for lines in self.lines:
+                lines.reset()
         self.lines = []
 
     def add_line(self, number, caption="", data=[]):

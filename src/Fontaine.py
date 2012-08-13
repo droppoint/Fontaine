@@ -14,6 +14,7 @@ import Field
 import Report
 import Parser
 import Initialization as Init
+import gc
 from PySide import QtGui, QtCore
 from fontaine_ui import Ui_MainWindow
 
@@ -248,6 +249,7 @@ if __name__ == "__main__":
             r.reset()
             ui.informationMessage(u"Завершено",
                                   caption=u"Fontaine")
+            gc.collect()
         elif not filename:
             ui.informationMessage(u"Выберите файл для обработки",
                                   caption=u"Ошибка запуска")
