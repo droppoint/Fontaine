@@ -16,10 +16,12 @@ class Test(unittest.TestCase):
         pass
 
     def testTempestParseFile(self):
-        self.p.parse_file('test.rsm')
+        for i in self.p.parse_file('test.rsm'):
+            print i
 
     def testEclipseParseFile(self):
-        self.p.parse_file('testeclipse.rsm')
+        for i in self.p.parse_file('testeclipse.rsm'):
+            print i
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']

@@ -22,12 +22,12 @@ regex_numbers = re.compile(r"\s([0-9]+[A-Z]?(?:[-_]?\w*)?)\s")
 regex_data_line = re.compile(r"\s((?:[-+]?[0-9]*\.[0-9]*E?-?[0-9]*)|0)\s")
 regex_all_numbers = re.compile(r"\b([\w-]+)\b")
 regex_factor = re.compile(r"(?:\*10\*\*(\d))")
-regex_date_numeric = re.compile(r"\s((?:0[1-9]|[1-2][0-9]|3[0|1])/"
+regex_date_numeric = re.compile(r"((?:0[1-9]|[1-2][0-9]|3[0|1])/"
                  "(?:0[1-9]|1[0-2])/"
-                "(?:(?:19|20|21|22)\d{2}))\s")
-regex_date_alphabetic = re.compile(r"\s((?:0[1-9]|[1-2][0-9]|3[0|1])-"
+                "(?:(?:19|20|21|22)\d{2}))")
+regex_date_alphabetic = re.compile(r"((?:0[1-9]|[1-2][0-9]|3[0|1])-"
                                       "(?:[ADFJMNOS][A-Za-z]{2})-"
-                                      "(?:(?:19|20|21|22)\d{2}))\s")
+                                      "(?:(?:19|20|21|22)\d{2}))")
 
 
 class ParseError(Exception):
@@ -54,12 +54,13 @@ class Parser(object):
     '''
 
     def __init__(self):
-        self.logger = logging.getLogger('Fontaine.parser.Parser')
-        self.logger.info('creating an instance of Parser')
         '''
         Constructor
         '''
+        self.logger = logging.getLogger('Fontaine.parser.Parser')
+        self.logger.info('creating an instance of Parser')
         self.reset()
+        self.__progress = 0.0
 
     def reset(self):
         """Reset this instance.  Loses all unprocessed data."""
@@ -68,7 +69,13 @@ class Parser(object):
 
     def close(self):
         """Handle any buffered data."""
+        self.data.clear()
+        self.config.clear()
         self.reset()
+        self.__progress = 0.0
+
+    def report_progress(self):
+        return self.__progress
 
     def initialization(self, filename):
         """Return primary parameters of RSM file,
@@ -77,7 +84,7 @@ class Parser(object):
         from datetime import datetime
         import mmap
 
-        def fileTypeDetermination(buf):
+        def fileTypeDetermination():
             n = 0
             buf.seek(n)
             breaker = buf.readline()
@@ -104,40 +111,36 @@ class Parser(object):
 
         dates = []
         mod_dates = {}
-        f = open(filename, "r+")   # add filename check
-        buf = mmap.mmap(f.fileno(), 0)
-        filetype, breaker = fileTypeDetermination(buf)
-        line = buf.readline()
-        num = 0
-        firstdataline = 0
-        while not re.search(r"^%s$" % (breaker), line):
-            num += 1
-            if re.search(r"^\s*[-]*\r\n$", line):
-                commentaryline = num
-                firstdataline = buf.tell()
-            elif re.findall(r"\s(DATE)", line):  # WHY???
-    #            header = num
-                pass
+        with open(filename, "r+") as f:
+            f = open(filename, "r+")   # add filename check
+            buf = mmap.mmap(f.fileno(), 0)
+            filetype, breaker = fileTypeDetermination()
             line = buf.readline()
-        buf.seek(firstdataline)
-        dataline = buf.readline()
-        d_pattern, r_pattern = dateFormatDetermination(dataline)
-        dataheight = num - commentaryline
-        for _ in range(dataheight):  # получение массива дат
-    #        locale.setlocale(locale.LC_ALL, 'en_US.utf8')
-            cur_date = datetime.strptime(r_pattern.findall(dataline)[0],
-                                                                d_pattern)
+            num = 0
+            firstdataline = 0
+            while not re.search(r"^%s$" % (breaker), line):
+                num += 1
+                if re.search(r"^\s*[-]*\r\n$", line):
+                    commentaryline = num
+                    firstdataline = buf.tell()
+                line = buf.readline()
+            buf.seek(firstdataline)
             dataline = buf.readline()
-            dates.append(cur_date)
-        for date in dates:
-            if date.month == 1:
-                mod_dates[date.year] = dates.index(date)
-        self.config['dates'] = mod_dates
-        self.config['filetype'] = filetype
-        self.config['breaker'] = breaker
-        self.config['r_pattern'] = r_pattern
-        buf.close()
-        f.close()
+            d_pattern, r_pattern = dateFormatDetermination(dataline)
+            dataheight = num - commentaryline
+            for line_number in range(dataheight):  # получение массива дат
+        #        locale.setlocale(locale.LC_ALL, 'en_US.utf8')
+                cur_date = r_pattern.search(dataline).group(0)
+                cur_date = datetime.strptime(cur_date, d_pattern)
+                dataline = buf.readline()
+                dates.append(cur_date)
+                if cur_date.month == 1:
+                    mod_dates[cur_date.year] = line_number
+            self.config['dates'] = mod_dates
+            self.config['filetype'] = filetype
+            self.config['breaker'] = breaker
+            self.config['r_pattern'] = r_pattern
+            buf.close()
 
     def get_dates_list(self):
         return self.config['dates']
@@ -154,10 +157,12 @@ class Parser(object):
             header_str = buf.readline()
             headers = re.findall(r"([A-Z0-9_]+)", header_str)
             result['headers'] = regex_necessary_headers.findall(header_str)
-
+            if not result['headers']:
+                return
             #Comparsion of the headers
             def indices(mylist, value):
                 return [i for i, x in enumerate(mylist) if x == value]
+
             index = []
             temp = []
             for value in result['headers']:
@@ -165,7 +170,6 @@ class Parser(object):
                     index += indices(headers, value)
                     temp.append(value)
             del(temp)
-    #        quantity_str = buf.readline()
             line = buf.readline()
             factor = []
             while not re.search(r"\s([0-9]+[A-Z]?(?:[-_]?\w*)?)\s", line):
@@ -224,6 +228,7 @@ class Parser(object):
             m = buf.find("DATE", n)
             n += 1
             buf.seek(m)
+            self.__progress = (m*100)//filesize
             cur_str = buf.readline()
             if regex_necessary_headers.findall(cur_str):
                 block = parseBlock(m)

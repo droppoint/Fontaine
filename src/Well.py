@@ -229,14 +229,10 @@ def pairs(lst):  # list generator
 def list_sum(*args):  # сделать элегантнее
     if not args:
         raise ValueError
-    length = len(args[0])
-    for x in args:
-        if len(x) != length:
-            raise ValueError
-    list_sum = []
-    for x in range(length):
-        s = 0
-        for y in args:
-            s += float(y[x])
-        list_sum.append(s)
-    return list_sum
+    if len(args) == 1:
+        return [float(x) for x in args[0]]
+
+    def list2_sum(a, b):
+        return [float(x) + float(y) for x, y in zip(a, b)]
+
+    return reduce(list2_sum, args)
