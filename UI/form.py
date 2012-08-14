@@ -26,6 +26,7 @@ class Ui_Form(object):
         self.pushButton = QtGui.QPushButton(Form)
         self.pushButton.setGeometry(QtCore.QRect(120, 230, 75, 23))
         self.pushButton.setObjectName("pushButton")
+        self.pushButton.clicked.connect(Form.close)
         self.label = QtGui.QLabel(Form)
         self.label.setGeometry(QtCore.QRect(90, 10, 128, 128))
         self.label.setMaximumSize(QtCore.QSize(128, 128))

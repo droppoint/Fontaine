@@ -11,7 +11,6 @@ from PySide import QtCore, QtGui
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
-        print 'dialog building'
         Dialog.setObjectName("Dialog")
         Dialog.resize(220, 160)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
@@ -29,6 +28,7 @@ class Ui_Dialog(object):
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")
+#        self.buttonBox.accepted.connect(self.accept)
         self.groupBox = QtGui.QGroupBox(Dialog)
         self.groupBox.setGeometry(QtCore.QRect(10, 10, 201, 81))
         self.groupBox.setObjectName("groupBox")
@@ -71,8 +71,6 @@ class Ui_Dialog(object):
         self.checkBox = QtGui.QCheckBox(Dialog)
         self.checkBox.setGeometry(QtCore.QRect(10, 100, 131, 17))
         self.checkBox.setObjectName("checkBox")
-        self.prefences = {'oil_density': self.doubleSpinBox.value(),
-                'water_density': self.doubleSpinBox_2.value()}
 
         self.retranslateUi(Dialog)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), Dialog.accept)
@@ -87,18 +85,5 @@ class Ui_Dialog(object):
         self.label_2.setText(QtGui.QApplication.translate("Dialog", "Вода", None, QtGui.QApplication.UnicodeUTF8))
         self.label_4.setText(QtGui.QApplication.translate("Dialog", "кг/м3", None, QtGui.QApplication.UnicodeUTF8))
         self.checkBox.setText(QtGui.QApplication.translate("Dialog", "Включить отладку", None, QtGui.QApplication.UnicodeUTF8))
-
-    def accept(self):
-        print "accept"
-        self.prefences = {'oil_density': self.doubleSpinBox.value(),
-                'water_density': self.doubleSpinBox_2.value()}
-
-    def reject(self):
-        print "reject"
-        self.doubleSpinBox.setProperty("value", self.prefences['oil_density'])
-        self.doubleSpinBox_2.setProperty("value", self.prefences['water_density'])
-
-    def get_prefences(self):
-        return self.prefences
 
 import res

@@ -78,12 +78,11 @@ class Ui_MainWindow(object):
         if sys.platform not in ("win32", "darwin"):
             self.native.hide()
 
-        self.prefences = QtGui.QDialog()
-        ui = dialog.Ui_Dialog()
-        ui.setupUi(self.prefences)
-        ui.buttonBox.accepted.connect(ui.accept)
-        ui.buttonBox.rejected.connect(ui.reject)
-        self.prefences_values = ui.get_prefences()
+        self.prefences = ConfigurationDialog()
+        self.prefences_values = self.prefences.get_prefences()
+        self.debug = False
+        self.prefences.accepted.connect(self.acceptPrefences)
+        self.prefences.rejected.connect(self.rejectPrefences)
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -143,6 +142,14 @@ class Ui_MainWindow(object):
     def openPrefencesWindow(self):
         self.prefences.show()
 
+    def acceptPrefences(self):
+        self.prefences_values = self.prefences.get_prefences()
+        self.debug = self.prefences.get_debug()
+
+    def rejectPrefences(self):
+        self.prefences.set_prefences(self.prefences_values)
+        self.prefences.set_debug(self.debug)
+
     def openAboutWindow(self):
         self.about = QtGui.QDialog()
         ui = form.Ui_Form()
@@ -156,3 +163,24 @@ class Ui_MainWindow(object):
     def errorMessage(self, message, caption="Fontaine"):
         _ = QtGui.QMessageBox.critical(self.pushButton_2,
                 caption, message)
+
+
+class ConfigurationDialog(QtGui.QDialog):
+    def __init__(self, parent=None):
+        super(ConfigurationDialog, self).__init__(parent)
+        self.ui = dialog.Ui_Dialog()
+        self.ui.setupUi(self)
+
+    def get_prefences(self):
+        return {'oil_density': self.ui.doubleSpinBox.value(),
+                'water_density': self.ui.doubleSpinBox_2.value()}
+
+    def set_prefences(self, prefences):
+        self.ui.doubleSpinBox.setProperty("value", prefences['oil_density'])
+        self.ui.doubleSpinBox_2.setProperty("value", prefences['water_density'])
+
+    def get_debug(self):
+        return self.ui.checkBox.isChecked()
+
+    def set_debug(self, state):
+        self.ui.checkBox.setChecked(state)

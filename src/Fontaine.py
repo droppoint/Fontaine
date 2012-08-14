@@ -110,8 +110,8 @@ if __name__ == "__main__":
         filename = ui.lineEdit.text()
 #        well_filename = ui.lineEdit_2.text()
         savefile = ui.setSaveFileName()
-        const = Init.config_init('config.ini')
-        debug = False   # ui.debug.isChecked()
+        const = ui.prefences_values
+        debug = ui.debug
 #        if well_filename:
 #            storage.category = Init.wells_init(well_filename)
 #        storage.override = Init.wells_input_override('input.ini')
