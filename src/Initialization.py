@@ -7,28 +7,6 @@ Created on 18.06.2012
 '''
 
 
-def config_init(filename):
-    import ConfigParser
-    const = {}
-
-    with open(filename) as f:
-        pass
-
-    def parseConfigSection(section_name):
-        if not section_name in config.sections():
-            return
-        for options in config.options(section_name):
-            const[options] = config.get(section_name, options)
-    try:
-        config = ConfigParser.ConfigParser()
-        config.read(filename)
-        for sections in config.sections():
-            parseConfigSection(sections)
-    except:
-        raise IOError
-    return const
-
-
 def wells_init(filename):
     import mmap
     import re
