@@ -26,7 +26,7 @@ def wells_init(filename):
         if buf.tell() == filesize:
             break
         data = buf.readline()
-        raw = re.match(r"^([0-9]+[A-Z]?(?:[-_]?\w*)?)\s+(0.\d+|1)", data)
+        raw = re.match(r"^((?:[0-9]+[A-Z]?(?:[-_]?\w*)?)|(?:[A-Z]{1,3}(?:[-_]\w*)?(?:[-_]\w*)?))\s+(0.\d+|1)", data)
         if raw:
             well = raw.groups()
             result.update(dict([well]))  # bad memory consumption
@@ -36,7 +36,6 @@ def wells_init(filename):
 def wells_input_override(filename):
     import mmap
     import re
-
     result = {}
     try:
         f = open(filename, "r+")

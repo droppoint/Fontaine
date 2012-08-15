@@ -69,11 +69,11 @@ if __name__ == "__main__":
     category = _Constants()
     app = QtGui.QApplication(sys.argv)
     mainwindow = QtGui.QMainWindow()
-    progress = QtGui.QProgressDialog(u"Подготовка отчета...",
-                                        u"Отмена", 0, 100)
-    progress.setWindowTitle(QtGui.QApplication.translate("Progress",
-                            "Fontaine", None, QtGui.QApplication.UnicodeUTF8))
-    progress.setWindowModality(QtCore.Qt.WindowModal)
+#    progress = QtGui.QProgressDialog(u"Подготовка отчета...",
+#                                        u"Отмена", 0, 100)
+#    progress.setWindowTitle(QtGui.QApplication.translate("Progress",
+#                            "Fontaine", None, QtGui.QApplication.UnicodeUTF8))
+#    progress.setWindowModality(QtCore.Qt.WindowModal)
     ui = Ui_MainWindow()
     ui.setupUi(mainwindow)
     ui.action_5.triggered.connect(app.quit)
@@ -113,7 +113,6 @@ if __name__ == "__main__":
         const = ui.prefences_values
         debug = ui.debug
 #        if well_filename:
-#            storage.category = Init.wells_init(well_filename)
 #        storage.override = Init.wells_input_override('input.ini')
 #            pass
         if filename and savefile:
@@ -123,15 +122,22 @@ if __name__ == "__main__":
             parsed_data = p.parse_file(filename)
             p.close()
             for row in parsed_data:
-                progress.setValue(p.report_progress())
+#                progress.setValue(p.report_progress())
                 if row['number'] == 'N/A':
                     storage.add_parameter(row['parameter_code'],
                                           row['welldata'])
                 else:
                     storage.add_well(row['number'],
                         {row['parameter_code']: row['welldata']})
+#            if Init.wells_init('c1.ini'):
+#                storage.category = Init.wells_init('c1.ini')
+#                tmp = [i for i in storage.wells]
+#                for well in tmp:
+#                    if not well in storage.category:
+#                        del storage.wells[well]
             r = Report.Report()
             storage.routine_operations()  # !!!!!!!
+
 ##############################
             # annual production/injection
             oil_density = int(const['oil_density'])
@@ -249,7 +255,7 @@ if __name__ == "__main__":
             r.render(savefile)
             storage.clear()
             r.reset()
-            progress.cancel()
+#            progress.cancel()
             ui.informationMessage(u"Завершено",
                                   caption=u"Fontaine")
             gc.collect()

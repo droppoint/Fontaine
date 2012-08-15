@@ -65,7 +65,7 @@ class Field(object):  # FIXME: More docstrings
 
     def add_well(self, number, data={}, **kwargs):
         import re
-        shrt_num = re.search(r"^([0-9A-Z]+)(?=BS|[_-])", number)
+        shrt_num = re.search(r"^([0-9A-Z]+)(?=BS)", number)
         if shrt_num:
             parent_number = shrt_num.group()
             if not parent_number in self.wells:

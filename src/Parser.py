@@ -18,8 +18,8 @@ regex_necessary_headers = re.compile(
 regex_header = re.compile(r"^(W[O|G|W|L][I|P][T|R|N])|(WBP9|WBHP)$")
 regex_properties = re.compile(
                 r"^(W[O|G|W|L][I|P][T|R|N])|(WBP9|WBHP)|(FPRP?)$")
-regex_numbers = re.compile(r"\s([0-9]+[A-Z]?(?:[-_]?\w*)?)\s")
-regex_data_line = re.compile(r"\s((?:[-+]?[0-9]*\.[0-9]*E?-?[0-9]*)|0)\s")
+regex_numbers = re.compile(r"\s((?:[0-9]+[A-Z]?(?:[-_]?\w*)?)|(?:[A-Z]{1,3}(?:[-_]\w*)?(?:[-_]\w*)?))\s")
+regex_data_line = re.compile(r"\s((?:[-+]?[0-9]*\.[0-9]*E?[+|-]?[0-9]*)|0)\s")
 regex_all_numbers = re.compile(r"\b([\w-]+)\b")
 regex_factor = re.compile(r"(?:\*10\*\*(\d))")
 regex_date_numeric = re.compile(r"((?:0[1-9]|[1-2][0-9]|3[0|1])/"
@@ -172,14 +172,14 @@ class Parser(object):
             del(temp)
             line = buf.readline()
             factor = []
-            while not re.search(r"\s([0-9]+[A-Z]?(?:[-_]?\w*)?)\s", line):
+            while not re.search(r"\s((?:[0-9]+[A-Z]?(?:[-_]?\w*)?)|(?:[A-Z]{1,3}(?:[-_]\w*)?(?:[-_]\w*)?))\s", line):
                 if self.config['r_pattern'].search(line):
                     break
                 if regex_factor.search(line):
                     temp_num = line[14:]   # bad block of code
                     nn = 0
                     while nn + 13 < len(temp_num):
-                        if regex_factor.match(temp_num[nn:nn + 13]):
+                        if regex_factor.search(temp_num[nn:nn + 13]):
                             factor.append(regex_factor.findall(
                                             temp_num[nn:nn + 13])[0])
                         else:
