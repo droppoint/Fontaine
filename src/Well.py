@@ -108,7 +108,7 @@ class Well(object):
                 if not datalist:
                     exists = borehole.recieve_parameter(arg)
                     if exists:
-                        datalist = list(exists)  # слишком хитровыебано
+                        datalist = list(exists)
                     continue
                 datalist = list_sum(datalist,
                                 list(borehole.recieve_parameter(arg)))
@@ -138,6 +138,7 @@ class Well(object):
             inj_parameters = self.recieve_parameters(*rate_inj_parameters)
         else:
             raise ValueError
+        print self.__boreholes
         production = list_sum(*prod_parameters)
         injection = list_sum(*inj_parameters)
         output = list(self.__class__.short_mask)
@@ -226,7 +227,7 @@ def pairs(lst):  # list generator
         prev = item
 
 
-def list_sum(*args):  # сделать элегантнее
+def list_sum(*args):
     if not args:
         raise ValueError
     if len(args) == 1:

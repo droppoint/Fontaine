@@ -81,6 +81,7 @@ class Ui_MainWindow(object):
         self.prefences = ConfigurationDialog()
         self.prefences_values = self.prefences.get_prefences()
         self.debug = False
+        self.lateral = True
         self.prefences.accepted.connect(self.acceptPrefences)
         self.prefences.rejected.connect(self.rejectPrefences)
 
@@ -145,10 +146,12 @@ class Ui_MainWindow(object):
     def acceptPrefences(self):
         self.prefences_values = self.prefences.get_prefences()
         self.debug = self.prefences.get_debug()
+        self.lateral = self.prefences.get_lateral()
 
     def rejectPrefences(self):
         self.prefences.set_prefences(self.prefences_values)
         self.prefences.set_debug(self.debug)
+        self.prefences.set_lateral(self.lateral)
 
     def openAboutWindow(self):
         self.about = QtGui.QDialog()
@@ -184,3 +187,9 @@ class ConfigurationDialog(QtGui.QDialog):
 
     def set_debug(self, state):
         self.ui.checkBox.setChecked(state)
+
+    def get_lateral(self):
+        return self.ui.checkBox_2.isChecked()
+
+    def set_lateral(self, state):
+        self.ui.checkBox_2.setChecked(state)

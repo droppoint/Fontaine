@@ -12,19 +12,19 @@ from PySide import QtCore, QtGui
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(220, 160)
+        Dialog.resize(220, 180)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(Dialog.sizePolicy().hasHeightForWidth())
         Dialog.setSizePolicy(sizePolicy)
-        Dialog.setMinimumSize(QtCore.QSize(220, 160))
-        Dialog.setMaximumSize(QtCore.QSize(220, 160))
+        Dialog.setMinimumSize(QtCore.QSize(220, 180))
+        Dialog.setMaximumSize(QtCore.QSize(220, 180))
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/fontaine/icons/fontaine_icon(32).png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         Dialog.setWindowIcon(icon)
         self.buttonBox = QtGui.QDialogButtonBox(Dialog)
-        self.buttonBox.setGeometry(QtCore.QRect(40, 125, 171, 32))
+        self.buttonBox.setGeometry(QtCore.QRect(40, 145, 171, 32))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")
@@ -71,6 +71,10 @@ class Ui_Dialog(object):
         self.checkBox = QtGui.QCheckBox(Dialog)
         self.checkBox.setGeometry(QtCore.QRect(10, 100, 131, 17))
         self.checkBox.setObjectName("checkBox")
+        self.checkBox_2 = QtGui.QCheckBox(Dialog)
+        self.checkBox_2.setGeometry(QtCore.QRect(10, 125, 180, 17))
+        self.checkBox_2.setObjectName("checkBox_2")
+        self.checkBox_2.setChecked(True)
 
         self.retranslateUi(Dialog)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), Dialog.accept)
@@ -85,5 +89,6 @@ class Ui_Dialog(object):
         self.label_2.setText(QtGui.QApplication.translate("Dialog", "Вода", None, QtGui.QApplication.UnicodeUTF8))
         self.label_4.setText(QtGui.QApplication.translate("Dialog", "кг/м3", None, QtGui.QApplication.UnicodeUTF8))
         self.checkBox.setText(QtGui.QApplication.translate("Dialog", "Включить отладку", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_2.setText(QtGui.QApplication.translate("Dialog", "Обнаружение боковых стволов", None, QtGui.QApplication.UnicodeUTF8))
 
 import res

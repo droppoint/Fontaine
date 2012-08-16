@@ -171,6 +171,7 @@ class Parser(object):
                     temp.append(value)
             del(temp)
             line = buf.readline()
+            line = buf.readline() # to skip quantity
             factor = []
             while not re.search(r"\s((?:[0-9]+[A-Z]?(?:[-_]?\w*)?)|(?:[A-Z]{1,3}(?:[-_]\w*)?(?:[-_]\w*)?))\s", line):
                 if self.config['r_pattern'].search(line):

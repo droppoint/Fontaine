@@ -94,8 +94,8 @@ if __name__ == "__main__":
                 error_msg('Field', str(e))
             except Report.ReportError as e:
                 error_msg('Report', e.msg)
-            except IOError:
-                error_msg('Initialization', "Ini-файл не найден или поврежден")
+#            except IOError:
+#                error_msg('Initialization', "Ini-файл не найден или поврежден")
             except Exception as inst:
                 logger.exception('Unknown error')
                 logger.exception(type(inst))
@@ -112,6 +112,7 @@ if __name__ == "__main__":
         savefile = ui.setSaveFileName()
         const = ui.prefences_values
         debug = ui.debug
+        lateral = ui.lateral
 #        if well_filename:
 #        storage.override = Init.wells_input_override('input.ini')
 #            pass
@@ -119,6 +120,7 @@ if __name__ == "__main__":
             p = Parser.Parser()
             p.initialization(filename)   # FIX: remove initialization or rename
             storage = Field.Field('test field', p.get_dates_list())
+            storage.lateral_detect(lateral)
             parsed_data = p.parse_file(filename)
             p.close()
             for row in parsed_data:

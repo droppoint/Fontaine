@@ -58,20 +58,25 @@ class Field(object):  # FIXME: More docstrings
         self.name = name
         self.wells = {}
         self.parameters = {}
+        self.lateral_detect(True)
         set_dates_list(self, dates_dict)
 
     def __call__(self):
         return self.name
 
+    def lateral_detect(self, state):
+        self.__lateral = state
+
     def add_well(self, number, data={}, **kwargs):
         import re
-        shrt_num = re.search(r"^([0-9A-Z]+)(?=BS)", number)
-        if shrt_num:
-            parent_number = shrt_num.group()
-            if not parent_number in self.wells:
-                self.wells[parent_number] = Well()
-            self.wells[parent_number].add_parameter(number, data)
-            return
+        if self.__lateral:
+            shrt_num = re.search(r"^([0-9A-Z]+)(?=(?:BS)|(?:[-_]\d{1}))", number)
+            if shrt_num:
+                parent_number = shrt_num.group()
+                if not parent_number in self.wells:
+                    self.wells[parent_number] = Well()
+                self.wells[parent_number].add_parameter(number, data)
+                return
 
         if not number in self.wells:
             self.wells[number] = Well()
