@@ -138,7 +138,6 @@ class Well(object):
             inj_parameters = self.recieve_parameters(*rate_inj_parameters)
         else:
             raise ValueError
-        print self.__boreholes
         production = list_sum(*prod_parameters)
         injection = list_sum(*inj_parameters)
         output = list(self.__class__.short_mask)

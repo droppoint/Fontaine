@@ -155,11 +155,12 @@ class Parser(object):
             #Reading header
             buf.seek(pointer)
             header_str = buf.readline()
-            headers = re.findall(r"([A-Z0-9_]+)", header_str)
+            headers = regex_all_headers.findall(header_str)
             result['headers'] = regex_necessary_headers.findall(header_str)
             if not result['headers']:
                 return
             #Comparsion of the headers
+
             def indices(mylist, value):
                 return [i for i, x in enumerate(mylist) if x == value]
 
@@ -170,22 +171,19 @@ class Parser(object):
                     index += indices(headers, value)
                     temp.append(value)
             del(temp)
-            line = buf.readline()
-            line = buf.readline() # to skip quantity
+            buf.readline()
+            line = buf.readline()  # to skip quantity
             factor = []
-            while not re.search(r"\s((?:[0-9]+[A-Z]?(?:[-_]?\w*)?)|(?:[A-Z]{1,3}(?:[-_]\w*)?(?:[-_]\w*)?))\s", line):
+            while not regex_numbers.search(line):
                 if self.config['r_pattern'].search(line):
                     break
                 if regex_factor.search(line):
-                    temp_num = line[14:]   # bad block of code
-                    nn = 0
-                    while nn + 13 < len(temp_num):
-                        if regex_factor.search(temp_num[nn:nn + 13]):
-                            factor.append(regex_factor.findall(
-                                            temp_num[nn:nn + 13])[0])
+                    temp_num = line[14:]
+                    for word in split_by_n(temp_num, 13):
+                        if regex_factor.search(word):
+                            factor.append(regex_factor.findall(word)[0])
                         else:
                             factor.append(None)
-                        nn += 13
                 line = buf.readline()
             numbers_str = line
             numbers = regex_numbers.findall(numbers_str)
@@ -195,14 +193,12 @@ class Parser(object):
             if ((len(headers) - 1) > len(numbers)) and numbers != []:
                 temp_num = numbers_str[14:]   # bad block of code
                 numbers = []
-                nn = 0
-                while nn + 13 < len(temp_num):
-                    if regex_all_numbers.search(temp_num[nn:nn + 13]):
-                        numbers.append(regex_all_numbers.search(
-                                        temp_num[nn:nn + 13]).group(0))
+                for word in split_by_n(temp_num, 13):
+                    if regex_all_numbers.search(word):
+                        numbers.append(
+                            regex_all_numbers.search(word).group(0))
                     else:
                         numbers.append("N/A")
-                    nn += 13
             if numbers == []:
                 numbers = ["N/A" for unused_i in range(len(headers) - 1)]
             result['numbers'] = [numbers[i - 1] for i in index if numbers]
@@ -224,14 +220,14 @@ class Parser(object):
         filesize = buf.size()
         n = 0
         buf.seek(n)
-        while buf.find("SUMMARY", n) != -1:
+        while buf.find("SUMMARY", n) != -1:   # вложенность
             n = buf.find("SUMMARY", n)
             m = buf.find("DATE", n)
             n += 1
             buf.seek(m)
-            self.__progress = (m*100)//filesize
+            self.__progress = (m * 100)//filesize
             cur_str = buf.readline()
-            if regex_necessary_headers.findall(cur_str):
+            if regex_necessary_headers.search(cur_str):
                 block = parseBlock(m)
                 for key, well_num in enumerate(block['numbers']):
                     data = [i[key] for i in block['data']]
@@ -251,3 +247,10 @@ class Parser(object):
 
         buf.close()
         f.close()
+
+
+def split_by_n(seq, n):
+    """A generator to divide a sequence into chunks of n units."""
+    while seq:
+        yield seq[:n]
+        seq = seq[n:]

@@ -10,7 +10,9 @@
 from PySide import QtCore, QtGui
 import sys
 import res
-import form, dialog
+import form
+import dialog
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -84,6 +86,8 @@ class Ui_MainWindow(object):
         self.lateral = True
         self.prefences.accepted.connect(self.acceptPrefences)
         self.prefences.rejected.connect(self.rejectPrefences)
+
+        self.progress = ProgressDialog()
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -167,6 +171,26 @@ class Ui_MainWindow(object):
         _ = QtGui.QMessageBox.critical(self.pushButton_2,
                 caption, message)
 
+
+class ProgressDialog(QtGui.QProgressDialog):
+    def __init__(self, parent=None):
+        super(ProgressDialog, self).__init__(parent)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/fontaine/icons/fontaine_icon(32).png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.ui = QtGui.QProgressDialog(u"Подготовка отчета...",
+                                    u"Отмена", 0, 100)
+        self.ui.setWindowIcon(icon)
+        self.ui.setWindowTitle(QtGui.QApplication.translate("Progress",
+                        "Fontaine", None, QtGui.QApplication.UnicodeUTF8))
+        self.ui.setWindowModality(QtCore.Qt.WindowModal)
+
+    def setProgress(self, progress):
+        self.ui.show()
+        self.ui.setValue(progress)
+
+    def close(self):
+        self.ui.cancel()
+        self.cancel()
 
 class ConfigurationDialog(QtGui.QDialog):
     def __init__(self, parent=None):

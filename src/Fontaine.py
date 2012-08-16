@@ -19,6 +19,7 @@ from PySide import QtGui, QtCore
 #from fontaine_ui import Ui_MainWindow
 from mainwindow import Ui_MainWindow
 
+
 class _Constants:   # this class store initial data and constants
 
     class ConstError(TypeError):
@@ -64,16 +65,10 @@ if __name__ == "__main__":
     fh.setFormatter(formatter)
     logger.addHandler(fh)
     logger.info('Fontaine start')
-
     const = _Constants()
     category = _Constants()
     app = QtGui.QApplication(sys.argv)
     mainwindow = QtGui.QMainWindow()
-#    progress = QtGui.QProgressDialog(u"Подготовка отчета...",
-#                                        u"Отмена", 0, 100)
-#    progress.setWindowTitle(QtGui.QApplication.translate("Progress",
-#                            "Fontaine", None, QtGui.QApplication.UnicodeUTF8))
-#    progress.setWindowModality(QtCore.Qt.WindowModal)
     ui = Ui_MainWindow()
     ui.setupUi(mainwindow)
     ui.action_5.triggered.connect(app.quit)
@@ -124,7 +119,7 @@ if __name__ == "__main__":
             parsed_data = p.parse_file(filename)
             p.close()
             for row in parsed_data:
-#                progress.setValue(p.report_progress())
+                ui.progress.setProgress(p.report_progress())
                 if row['number'] == 'N/A':
                     storage.add_parameter(row['parameter_code'],
                                           row['welldata'])
@@ -257,7 +252,7 @@ if __name__ == "__main__":
             r.render(savefile)
             storage.clear()
             r.reset()
-#            progress.cancel()
+            ui.progress.close()
             ui.informationMessage(u"Завершено",
                                   caption=u"Fontaine")
             gc.collect()
