@@ -46,6 +46,9 @@ class ParserFileHandler(object):
         self.date_pattern, self.date_pattern_str = self.readDateFormat()
         self.dates = self.readDates()
 
+    def reportProgress(self):
+        return self.pointer * 100 // self.buf.size()
+
     def readDelimiterFormat(self):
         self.buf.seek(0)
         delimiter = self.buf.readline()
@@ -173,7 +176,6 @@ class Parser(object):
         self.logger.info('creating an instance of Parser')
         self.reset()
         self.stream = ParserFileHandler(filename)
-        self.__progress = 0.0
 
     def reset(self):
         """Reset this instance.  Loses all unprocessed data."""
@@ -182,10 +184,9 @@ class Parser(object):
     def close(self):
         """Handle any buffered data."""
         self.reset()
-        self.__progress = 0.0
 
     def report_progress(self):
-        return self.__progress
+        return self.stream.reportProgress()
 
     def get_dates_list(self):  # Костыль
         return self.stream.getDatesList()
