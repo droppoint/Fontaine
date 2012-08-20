@@ -23,7 +23,7 @@ regex_properties = re.compile(
                 r"^(W[O|G|W|L][I|P][T|R|N])|(WBP9|WBHP)|(FPRP?)$")
 regex_numbers = re.compile(r"\s((?:[0-9]+[A-Z]?(?:[-_]?\w*)?)|(?:[A-Z]{1,3}(?:[-_]\w*)?(?:[-_]\w*)?))\s")
 regex_data_line = re.compile(r"\s((?:[-+]?[0-9]*\.[0-9]*E?[+|-]?[0-9]*)|0)\s")
-regex_all_numbers = re.compile(r"\b([\w-]+)\b")
+regex_all_numbers = re.compile(r"\s([A-Za-z0-9][\w\-]*)\s")
 regex_factor = re.compile(r"(?:\*10\*\*(\d))")
 regex_date_numeric = re.compile(r"((?:0[1-9]|[1-2][0-9]|3[0|1])/"
                  "(?:0[1-9]|1[0-2])/"
@@ -42,21 +42,53 @@ class ParserFileHandler(object):
         self.buf = mmap.mmap(self.__file.fileno(), 0)  # add filename check
         self.buf.seek(self.pointer)
         # Определение формата даты
-        self.date_pattern = self.readDateFormat()
+        self.delimiter = self.readDelimiterFormat()
+        self.date_pattern, self.date_pattern_str = self.readDateFormat()
+        self.dates = self.readDates()
 
-    def readDateFormat(self):
+    def readDelimiterFormat(self):
         self.buf.seek(0)
+        delimiter = self.buf.readline()
+        if delimiter not in ("\r\n", '1\r\n'):
+            raise ParseError('Unknown delimiter')
+        self.buf.seek(self.pointer)
+        return '\r\n' + delimiter
+
+    def findBlockBorders(self):
         start = self.buf.find("DATE", self.pointer)
-        self.buf.seek(start)
-        end = self.buf.find("SUMMARY", start)
+        end = self.buf.find(self.delimiter, start)
         if end == -1:
             end = self.buf.size()
+        return start, end
+
+    def readDates(self):
+        from datetime import datetime
+        self.buf.seek(self.pointer)
+        start, end = self.findBlockBorders()
+        self.buf.seek(start)
+        dates = {}
+        n = 0
+        while not self.buf.tell() >= end:
+            line = self.buf.readline()
+            if self.date_pattern.search(line):
+                clear_line = self.date_pattern.search(line).group(0)
+                date = datetime.strptime(clear_line, self.date_pattern_str)
+                dates[date.year] = n
+                n += 1
+        self.buf.seek(self.pointer)
+        return dates
+
+    def getDatesList(self):
+        return self.dates
+
+    def readDateFormat(self):
+        start, end = self.findBlockBorders()
         while True:
             line = self.buf.readline()
             if regex_date_numeric.search(line):
-                return regex_date_numeric
+                return regex_date_numeric, "%d/%m/%Y"
             elif regex_date_alphabetic.search(line):
-                return regex_date_alphabetic
+                return regex_date_alphabetic, "%d-%b-%Y"
             elif self.buf.tell() > end:
                 raise ParseError('Unknown date type or file damaged')
         self.buf.seek(self.pointer)
@@ -74,22 +106,16 @@ class ParserFileHandler(object):
         if n == -1:
             return False
         self.buf.seek(n)
-        self.buf.readline()
         self.pointer = n
         return True
 
     def readBlock(self):
-        self.buf.seek(self.pointer)
-        start = self.buf.find("DATE", self.pointer)
-        end = self.buf.find("SUMMARY", start)
-        if end == -1:
-            raise ParseError('Reading overlimit')
+        start, end = self.findBlockBorders()
         self.buf.seek(start)
         while not self.buf.tell() >= end:
             line = self.buf.readline()
-            while not self.date_pattern.search(line):
-                line = self.buf.readline()
-            if not re.match(r'^\s*$|^&', line):
+            if not re.match(r'^\s*$|^&', line) and \
+                self.date_pattern.search(line):
                 yield line
         self.buf.seek(self.pointer)
 
@@ -98,6 +124,7 @@ class ParserFileHandler(object):
         start = self.buf.find("DATE", self.pointer)
         self.buf.seek(start)
         self.buf.readline()
+        self.buf.readline() # skipping quantities
         numbers, factors = None, None
         while True:
             line = self.buf.readline()
@@ -138,49 +165,48 @@ class Parser(object):
     classdocs
     '''
 
-    def __init__(self):
+    def __init__(self, filename):
         '''
         Constructor
         '''
         self.logger = logging.getLogger('Fontaine.parser.Parser')
         self.logger.info('creating an instance of Parser')
         self.reset()
+        self.stream = ParserFileHandler(filename)
         self.__progress = 0.0
 
     def reset(self):
         """Reset this instance.  Loses all unprocessed data."""
-        self.data = {}
+        pass
 
     def close(self):
         """Handle any buffered data."""
-        self.data.clear()
         self.reset()
         self.__progress = 0.0
 
     def report_progress(self):
         return self.__progress
 
-    def get_dates_list(self):
-        return self.config['dates']
+    def get_dates_list(self):  # Костыль
+        return self.stream.getDatesList()
 
-    def parse_file(self, filename):
+    def parse_file(self):
         import math  # maybe in other place?
 
-        stream = ParserFileHandler(filename)
-        while stream.nextBlock():
+        while self.stream.nextBlock():
             '''
             Если в заголовке блока найден нужный заголовок/заголовки,
             то начинаем обработку блока. Если нет - то просто переходим
             к следующему. Проверяем через re.
             '''
-            header = stream.readHeader()
+            header = self.stream.readHeader()
             if regex_necessary_headers.search(header):
                 parsed_data = {}
                 '''
                  Считываются номера скважин, степень(если есть) и сам блок данных
                  '''
-                numbers, factors = stream.readContext()
-                block = stream.readBlock()
+                numbers, factors = self.stream.readContext()
+                block = self.stream.readBlock()
                 # Здесь header становится массивом содержащим заголовки
                 clear_headers = regex_necessary_headers.findall(header)
                 header = header.split()
@@ -195,28 +221,37 @@ class Parser(object):
                 clear_block = []
                 for line in block:
                     data = regex_data_line.findall(line)
-                    clear_block += [data[i] for i in index]
+                    clear_block.append([float(data[i]) for i in index])
                 clear_block = zip_list(*clear_block)
+                clear_block = [i for i in clear_block]
                 if numbers:
                     clear_numbers = strip_line(regex_all_numbers, numbers)
                     clear_numbers = [clear_numbers[i] for i in index]
                 if factors:
                     clear_factors = strip_line(regex_factor, factors)
                     clear_factors = [clear_factors[i] for i in index]
-                parsed_data['number'] = clear_numbers
-                parsed_data['parameter_code'] = clear_headers
-                parsed_data['welldata'] = clear_block
-                yield parsed_data
-        stream.close()
+                    for num, factor in enumerate(clear_factors):   # костыль
+                        if factor != 'N/A':
+                            clear_block[num] = \
+                             [math.pow(10, float(factor)) * i for i in clear_block[num]]
+                for num, parameter in enumerate(clear_headers):
+                    if numbers:
+                        parsed_data['number'] = clear_numbers[num]
+                    else:
+                        parsed_data['number'] = 'N/A'
+                    parsed_data['parameter_code'] = parameter
+                    parsed_data['welldata'] = clear_block[num]
+                    yield parsed_data
+        self.stream.close()
 
 
 def strip_line(regex, string):
-    temp_num = string[14:]
+    temp_num = string[13:]
     result = []
     for word in split_by_n(temp_num, 13):
-        clear_str = regex.search(word)
+        clear_str = regex.findall(word)
         if clear_str:
-            result.append(clear_str.group(0))
+            result.append(clear_str[0])
         else:
             result.append('N/A')
     return result

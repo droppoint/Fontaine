@@ -112,12 +112,10 @@ if __name__ == "__main__":
 #        storage.override = Init.wells_input_override('input.ini')
 #            pass
         if filename and savefile:
-            p = Parser.Parser()
-            p.initialization(filename)   # FIX: remove initialization or rename
+            p = Parser.Parser(filename)
+            parsed_data = p.parse_file()
             storage = Field.Field('test field', p.get_dates_list())
             storage.lateral_detect(lateral)
-            parsed_data = p.parse_file(filename)
-            p.close()
             for row in parsed_data:
                 ui.progress.setProgress(p.report_progress())
                 if row['number'] == 'N/A':

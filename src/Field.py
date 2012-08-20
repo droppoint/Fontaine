@@ -103,6 +103,9 @@ class Field(object):  # FIXME: More docstrings
         map(Well.abandonment_year, self.wells.values())
         map(Well.completion_year, self.wells.values())
         map(Well.well_classification, self.wells.values())
+#        for well in self.wells:
+#            print well
+#            self.wells[well].well_classification()
         map(lambda x: Well.well_classification(x, mode='rate'),
              self.wells.values())
         map(Well.inj_transfer_check, self.wells.values())
