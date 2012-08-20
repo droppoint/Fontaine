@@ -23,7 +23,7 @@ regex_properties = re.compile(
                 r"^(W[O|G|W|L][I|P][T|R|N])|(WBP9|WBHP)|(FPRP?)$")
 regex_numbers = re.compile(r"\s((?:[0-9]+[A-Z]?(?:[-_]?\w*)?)|(?:[A-Z]{1,3}(?:[-_]\w*)?(?:[-_]\w*)?))\s")
 regex_data_line = re.compile(r"\s((?:[-+]?[0-9]*\.[0-9]*E?[+|-]?[0-9]*)|0)\s")
-regex_all_numbers = re.compile(r"\s([\w-]+)\s")
+regex_all_numbers = re.compile(r"\b([\w-]+)\b")
 regex_factor = re.compile(r"(?:\*10\*\*(\d))")
 regex_date_numeric = re.compile(r"((?:0[1-9]|[1-2][0-9]|3[0|1])/"
                  "(?:0[1-9]|1[0-2])/"
@@ -46,16 +46,19 @@ class ParserFileHandler(object):
 
     def readDateFormat(self):
         self.buf.seek(0)
-        n = self.buf.find("DATE", self.pointer)
+        start = self.buf.find("DATE", self.pointer)
+        self.buf.seek(start)
+        end = self.buf.find("SUMMARY", start)
+        if end == -1:
+            end = self.buf.size()
         while True:
             line = self.buf.readline()
             if regex_date_numeric.search(line):
                 return regex_date_numeric
             elif regex_date_alphabetic.search(line):
                 return regex_date_alphabetic
-            elif 
-            raise ParseError('Unknown date type')
-        self.buf.readline()
+            elif self.buf.tell() > end:
+                raise ParseError('Unknown date type or file damaged')
         self.buf.seek(self.pointer)
 
     def readHeader(self):
@@ -79,10 +82,13 @@ class ParserFileHandler(object):
         self.buf.seek(self.pointer)
         start = self.buf.find("DATE", self.pointer)
         end = self.buf.find("SUMMARY", start)
-        if end == -1 return None
+        if end == -1:
+            raise ParseError('Reading overlimit')
         self.buf.seek(start)
         while not self.buf.tell() >= end:
             line = self.buf.readline()
+            while not self.date_pattern.search(line):
+                line = self.buf.readline()
             if not re.match(r'^\s*$|^&', line):
                 yield line
         self.buf.seek(self.pointer)
@@ -95,16 +101,19 @@ class ParserFileHandler(object):
         numbers, factors = None, None
         while True:
             line = self.buf.readline()
-            if self.date_pattern.search(line) break    # слабое место (нет ограничений)
-            elif regex_all_numbers.search(line) numbers = line
-            elif regex_factor.search(line) factors = line
+            if self.date_pattern.search(line):
+                break    # слабое место (нет ограничений)
+            elif regex_all_numbers.search(line):
+                numbers = line
+            elif regex_factor.search(line):
+                factors = line
         self.buf.seek(self.pointer)
         return numbers, factors
-
 
     def close(self):
         self.buf.close()
         self.__file.close()
+
 
 class ParseError(Exception):
     """Exception raised for all parse errors."""
@@ -154,11 +163,10 @@ class Parser(object):
     def get_dates_list(self):
         return self.config['dates']
 
-    def parse_file(self):
+    def parse_file(self, filename):
         import math  # maybe in other place?
-        self.initialization(self.__filename)
 
-        stream = ParserFileHandler(self.__filename)
+        stream = ParserFileHandler(filename)
         while stream.nextBlock():
             '''
             Если в заголовке блока найден нужный заголовок/заголовки,
@@ -175,11 +183,17 @@ class Parser(object):
                 block = stream.readBlock()
                 # Здесь header становится массивом содержащим заголовки
                 clear_headers = regex_necessary_headers.findall(header)
-                header = header.strip()
-                index = [indices(header, i) for i in clear_headers]
+                header = header.split()
+
+                tmp_header = []
+                index = []      # костыль
+                for i in clear_headers:
+                    if i not in tmp_header:
+                        index += indices(header, i)
+                        tmp_header.append(i)
+
                 clear_block = []
                 for line in block:
-                    print line
                     data = regex_data_line.findall(line)
                     clear_block += [data[i] for i in index]
                 clear_block = zip_list(*clear_block)
@@ -192,7 +206,7 @@ class Parser(object):
                 parsed_data['number'] = clear_numbers
                 parsed_data['parameter_code'] = clear_headers
                 parsed_data['welldata'] = clear_block
-                yield
+                yield parsed_data
         stream.close()
 
 
@@ -200,8 +214,11 @@ def strip_line(regex, string):
     temp_num = string[14:]
     result = []
     for word in split_by_n(temp_num, 13):
-        number = word.strip()
-        result.append(regex.search(number)[0])
+        clear_str = regex.search(word)
+        if clear_str:
+            result.append(clear_str.group(0))
+        else:
+            result.append('N/A')
     return result
 
 
@@ -218,6 +235,6 @@ def indices(mylist, value):
 
 def split_by_n(seq, n):
     """A generator to divide a sequence into chunks of n units."""
-    while seq:
+    while seq and len(seq) >= n:
         yield seq[:n]
         seq = seq[n:]
