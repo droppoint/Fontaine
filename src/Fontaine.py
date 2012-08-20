@@ -112,12 +112,19 @@ if __name__ == "__main__":
 #        storage.override = Init.wells_input_override('input.ini')
 #            pass
         if filename and savefile:
+            ui.progress.reset()
             p = Parser.Parser(filename)
             parsed_data = p.parse_file()
             storage = Field.Field('test field', p.get_dates_list())
             storage.lateral_detect(lateral)
             for row in parsed_data:
                 ui.progress.setProgress(p.report_progress())
+                if ui.progress.wasCanceled():
+                    storage.clear()
+                    ui.informationMessage(u"Прервано",
+                                  caption=u"Fontaine")
+                    ui.progress.close()
+                    return
                 if row['number'] == 'N/A':
                     storage.add_parameter(row['parameter_code'],
                                           row['welldata'])
