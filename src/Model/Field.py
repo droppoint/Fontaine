@@ -5,6 +5,7 @@ Created on 24.04.2012
 @author: APartilov
 '''
 from Well import Well
+import Parser
 
 
 # FIXME: expressions
@@ -49,7 +50,7 @@ class Field(object):  # FIXME: More docstrings
 #    __metaclass__ = Singleton
 #    __slots__ = {'name', 'wells', 'parameters', 'mask'
 #                 'dates'}
-    def __init__(self, name, dates_dict):
+    def __init__(self, name):
 
         def set_dates_list(self, dates):
             self.dates = dates
@@ -59,10 +60,14 @@ class Field(object):  # FIXME: More docstrings
         self.wells = {}
         self.parameters = {}
         self.lateral_detect(True)
+        self.parser = Parser.Parser(filename)
         set_dates_list(self, dates_dict)
 
     def __call__(self):
         return self.name
+
+    def add_file_for_parsing(self,  filename):
+        pass
 
     def lateral_detect(self, state):
         self.__lateral = state
@@ -261,3 +266,22 @@ def pairs(lst):  # list generator
     for item in i:
         yield prev, item
         prev = item
+
+
+#####  UNDERLINE
+
+#parsed_data = p.parse_file()
+#for row in parsed_data:
+#                ui.progress.setProgress(p.report_progress())
+#                if ui.progress.wasCanceled():
+#                    storage.clear()
+#                    ui.informationMessage(u"Прервано",
+#                                  caption=u"Fontaine")
+#                    ui.progress.close()
+#                    return
+#                if row['number'] == 'N/A':
+#                    storage.add_parameter(row['parameter_code'],
+#                                          row['welldata'])
+#                else:
+#                    storage.add_well(row['number'],
+#                        {row['parameter_code']: row['welldata']})
