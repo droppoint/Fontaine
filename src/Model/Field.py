@@ -50,24 +50,23 @@ class Field(object):  # FIXME: More docstrings
 #    __metaclass__ = Singleton
 #    __slots__ = {'name', 'wells', 'parameters', 'mask'
 #                 'dates'}
-    def __init__(self, name):
+    def __init__(self):
 
         def set_dates_list(self, dates):
             self.dates = dates
             self.mask = [0 for _ in self.dates]
 
-        self.name = name
+#        self.name = name
         self.wells = {}
         self.parameters = {}
         self.lateral_detect(True)
-        self.parser = Parser.Parser(filename)
-        set_dates_list(self, dates_dict)
 
-    def __call__(self):
-        return self.name
+#    def __call__(self):
+#        return self.name
 
     def add_file_for_parsing(self,  filename):
-        pass
+        self.parser = Parser.Parser(filename)
+        set_dates_list(self, dates_dict)
 
     def lateral_detect(self, state):
         self.__lateral = state

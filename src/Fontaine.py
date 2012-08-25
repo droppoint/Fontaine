@@ -34,7 +34,7 @@ if __name__ == "__main__":
 
     app = QApplication(sys.argv)
 
-    model = Field.Field('name')
+    model = Field.Field()
     controller = Controller(model)
 
     sys.exit(app.exec_())
