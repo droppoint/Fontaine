@@ -58,12 +58,21 @@ class Report(object):
     Report writing and render
     '''
 
-    def __init__(self, model):
+    def __init__(self, controller, model):
         '''
         Constructor
         '''
         self.reset()
         self.model = model
+        self.model.add_observer(self)
+
+    def model_is_changed(self, signal):
+        """
+        Реакция на изменение модели
+        """
+        # Если пришел сигнал об окончании расчета
+        if signal == 'complete':
+            pass
 
     def reset(self):
         """Reset this instance.  Loses all unprocessed data."""

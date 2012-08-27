@@ -42,14 +42,14 @@ class ParserFileHandler(object):
         self.buf = mmap.mmap(self.__file.fileno(), 0)  # add filename check
         self.buf.seek(self.pointer)
         # Определение формата даты
-        self.delimiter = self.readDelimiterFormat()
-        self.date_pattern, self.date_pattern_str = self.readDateFormat()
-        self.dates = self.readDates()
+        self.delimiter = self.read_delimiter_format()
+        self.date_pattern, self.date_pattern_str = self.read_date_format()
+        self.dates = self.read_dates()
 
-    def reportProgress(self):
+    def report_progress(self):
         return self.pointer * 100 // self.buf.size()
 
-    def readDelimiterFormat(self):
+    def read_delimiter_format(self):
         self.buf.seek(0)
         delimiter = self.buf.readline()
         if delimiter not in ("\r\n", '1\r\n'):
@@ -57,17 +57,17 @@ class ParserFileHandler(object):
         self.buf.seek(self.pointer)
         return '\r\n' + delimiter
 
-    def findBlockBorders(self):
+    def find_block_borders(self):
         start = self.buf.find("DATE", self.pointer)
         end = self.buf.find(self.delimiter, start)
         if end == -1:
             end = self.buf.size()
         return start, end
 
-    def readDates(self):
+    def read_dates(self):
         from datetime import datetime
         self.buf.seek(self.pointer)
-        start, end = self.findBlockBorders()
+        start, end = self.find_block_borders()
         self.buf.seek(start)
         dates = {}
         n = 0
@@ -81,11 +81,11 @@ class ParserFileHandler(object):
         self.buf.seek(self.pointer)
         return dates
 
-    def getDatesList(self):
+    def get_dates_list(self):
         return self.dates
 
-    def readDateFormat(self):
-        start, end = self.findBlockBorders()
+    def read_date_format(self):
+        start, end = self.find_block_borders()
         while True:
             line = self.buf.readline()
             if regex_date_numeric.search(line):
@@ -96,14 +96,14 @@ class ParserFileHandler(object):
                 raise ParseError('Unknown date type or file damaged')
         self.buf.seek(self.pointer)
 
-    def readHeader(self):
+    def read_header(self):
         n = self.buf.find("DATE", self.pointer)
         self.buf.seek(n)
         tmp = self.buf.readline()
         self.buf.seek(self.pointer)
         return tmp
 
-    def nextBlock(self):
+    def next_block(self):
         self.pointer += 1
         n = self.buf.find("SUMMARY", self.pointer)
         if n == -1:
@@ -112,8 +112,8 @@ class ParserFileHandler(object):
         self.pointer = n
         return True
 
-    def readBlock(self):
-        start, end = self.findBlockBorders()
+    def read_block(self):
+        start, end = self.find_block_borders()
         self.buf.seek(start)
         while not self.buf.tell() >= end:
             line = self.buf.readline()
@@ -122,7 +122,7 @@ class ParserFileHandler(object):
                 yield line
         self.buf.seek(self.pointer)
 
-    def readContext(self):
+    def read_context(self):
         self.buf.seek(self.pointer)
         start = self.buf.find("DATE", self.pointer)
         self.buf.seek(start)
@@ -189,25 +189,25 @@ class Parser(object):
         return self.stream.reportProgress()
 
     def get_dates_list(self):  # Костыль
-        return self.stream.getDatesList()
+        return self.stream.get_dates_list()
 
     def parse_file(self):
         import math  # maybe in other place?
 
-        while self.stream.nextBlock():
+        while self.stream.next_block():
             '''
             Если в заголовке блока найден нужный заголовок/заголовки,
             то начинаем обработку блока. Если нет - то просто переходим
             к следующему. Проверяем через re.
             '''
-            header = self.stream.readHeader()
+            header = self.stream.read_header()
             if regex_necessary_headers.search(header):
                 parsed_data = {}
                 '''
                  Считываются номера скважин, степень(если есть) и сам блок данных
                  '''
-                numbers, factors = self.stream.readContext()
-                block = self.stream.readBlock()
+                numbers, factors = self.stream.read_context()
+                block = self.stream.read_block()
                 # Здесь header становится массивом содержащим заголовки
                 clear_headers = regex_necessary_headers.findall(header)
                 header = header.split()

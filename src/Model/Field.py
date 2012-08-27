@@ -8,7 +8,6 @@ from Well import Well
 import Parser
 
 
-# FIXME: expressions
 class Singleton(type):
     '''
     Singleton class for creating 1 uniquie instance with
@@ -59,14 +58,43 @@ class Field(object):  # FIXME: More docstrings
 #        self.name = name
         self.wells = {}
         self.parameters = {}
-        self.lateral_detect(True)
+        self.lateral_detect(True)   # Костыль
+        self._mObservers = []
 
 #    def __call__(self):
 #        return self.name
 
+    '''
+    add_observer, remove_observer и notify_observer -
+    процедуры реализующие паттерн "Наблюдатель".
+    '''
+    def add_observer(self, inObserver):
+        self._mObservers.append(inObserver)
+
+    def remove_observer(self, inObserver):
+        self._mObservers.remove(inObserver)
+
+    def notify_observers(self, signal=None):
+        for x in self._mObservers:
+            x.modelIsChanged(signal)
+
+    def process_data(self):
+        '''
+        Получение данных из источника и заполнение модели
+        '''
+        parsed_data = self.parser.parse_file()
+        for row in parsed_data:
+            if row['number'] == 'N/A':
+                self.add_parameter(row['parameter_code'],
+                                      row['welldata'])
+            else:
+                self.add_well(row['number'],
+                    {row['parameter_code']: row['welldata']})
+        self.notifyObservers()
+
     def add_file_for_parsing(self,  filename):
         self.parser = Parser.Parser(filename)
-        set_dates_list(self, dates_dict)
+        self.set_dates_list(self.parser.get_dates_list())
 
     def lateral_detect(self, state):
         self.__lateral = state
@@ -107,9 +135,6 @@ class Field(object):  # FIXME: More docstrings
         map(Well.abandonment_year, self.wells.values())
         map(Well.completion_year, self.wells.values())
         map(Well.well_classification, self.wells.values())
-#        for well in self.wells:
-#            print well
-#            self.wells[well].well_classification()
         map(lambda x: Well.well_classification(x, mode='rate'),
              self.wells.values())
         map(Well.inj_transfer_check, self.wells.values())
@@ -265,22 +290,3 @@ def pairs(lst):  # list generator
     for item in i:
         yield prev, item
         prev = item
-
-
-#####  UNDERLINE
-
-#parsed_data = p.parse_file()
-#for row in parsed_data:
-#                ui.progress.setProgress(p.report_progress())
-#                if ui.progress.wasCanceled():
-#                    storage.clear()
-#                    ui.informationMessage(u"Прервано",
-#                                  caption=u"Fontaine")
-#                    ui.progress.close()
-#                    return
-#                if row['number'] == 'N/A':
-#                    storage.add_parameter(row['parameter_code'],
-#                                          row['welldata'])
-#                else:
-#                    storage.add_well(row['number'],
-#                        {row['parameter_code']: row['welldata']})

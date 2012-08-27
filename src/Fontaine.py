@@ -11,7 +11,7 @@ import logging
 import logging.handlers
 import Model.Field as Field
 import Controller.Controller as Controller
-from Pyside.QtGui import QApplication
+from PySide.QtGui import QApplication
 
 if __name__ == "__main__":
     # logger system initialization
@@ -29,13 +29,10 @@ if __name__ == "__main__":
     logger.addHandler(fh)
     logger.info('Fontaine start')
 
-#    const = Constants()
-#    category = Constants()
-
     app = QApplication(sys.argv)
 
     model = Field.Field()
-    controller = Controller(model)
+    controller = Controller.Controller(model)
 
     sys.exit(app.exec_())
 #    fh.close() нацепить на выход

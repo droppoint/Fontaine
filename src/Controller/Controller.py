@@ -1,11 +1,11 @@
+# -*- coding: UTF-8 -*-
 '''
 Created on 22.08.2012
 
 @author: APartilov
 '''
 from View.Report import Report
-from View.mainwindow import Ui_MainWindow
-from PySide import QtGui
+from View.UI import UserInterface
 
 
 class Controller():
@@ -19,11 +19,19 @@ class Controller():
         '''
         self.model = model
         self.view = Report(self, self.model)
-        self.ui = mainwindow = QtGui.QMainWindow()
-        ui = Ui_MainWindow()
-        ui.setupUi(mainwindow)
-#        ui.action_5.triggered.connect(app.quit)
-        mainwindow.show()
+        self.ui = UserInterface(self, self.model)
+
+    def set_file_name(self, filename):
+        '''
+        Initiating satellite scan
+        '''
+        self.model.add_file_for_parsing(filename)
+
+    def execute_converter(self):
+        '''
+        Execute converting from RSM to xls
+        '''
+        self.model.process_data()
 
 #    def errorlog(func):
 #
