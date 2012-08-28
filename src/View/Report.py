@@ -34,23 +34,23 @@ class ReportError(Exception):
 
 
 class ReportLine(object):
-        '''
-        Lines for report
-        '''
+    '''
+    Lines for report
+    '''
 
-        def __init__(self, number, caption="", data=[]):
-            '''
-            Constructor with unnecessary arguments
-            '''
-            self.reset()
-            self.number = number
-            self.caption = caption
-            self.data = data
+    def __init__(self, number, caption="", data=[]):
+        '''
+        Constructor with unnecessary arguments
+        '''
+        self.reset()
+        self.number = number
+        self.caption = caption
+        self.data = data
 
-        def reset(self):
-            self.caption = ""
-            self.number = 0
-            self.data = []
+    def reset(self):
+        self.caption = ""
+        self.number = 0
+        self.data = []
 
 
 class Report(object):
@@ -65,14 +65,28 @@ class Report(object):
         self.reset()
         self.model = model
         self.model.add_observer(self)
+        self.controller = controller
+        self._savefile = None
 
     def model_is_changed(self, signal):
         """
         Реакция на изменение модели
         """
         # Если пришел сигнал об окончании расчета
-        if signal == 'complete':
-            pass
+        if signal == ('start', 0):
+            self._savefile = self.controller.request_savefile()
+        elif signal == ('complete', 0):
+            self.report_formatting()
+            self.render(self._savefile)
+            self.reset()
+
+    @property
+    def savefile(self):
+        return self._savefile
+
+    @savefile.setter
+    def savefile(self, value):
+        self._savefile = value
 
     def reset(self):
         """Reset this instance.  Loses all unprocessed data."""
@@ -113,8 +127,8 @@ class Report(object):
     def report_formatting(self):
         ##############################
             # annual production/injection
-            oil_density = int(const['oil_density'])
-            water_density = int(const['water_density'])
+            oil_density = int(self.const['oil_density'])
+            water_density = int(self.const['water_density'])
             oil_PR_tons = self.model.production_rate('WOPT',
                          density=oil_density, degree=-6)
             water_PR_tons = self.model.production_rate('WWPT',
@@ -196,17 +210,17 @@ class Report(object):
             self.add_line(60, u'    Вывод из бездействия доб.', inactive_fond[0])
             self.add_line(61, u'    Вывод из бездействия наг.', inactive_fond[2])
 
-            formulas = Report.get_formulas("IF(%s=0;0;(%s-%s)/%s*100)",
+            formulas = get_formulas("IF(%s=0;0;(%s-%s)/%s*100)",
                                 (11, 11, 10, 11),
                                 len(self.model.mask))
             self.add_line(14, u'    Обводненность, %', formulas)
 
-            if debug:
-                n = 62
-                for well in self.model.wells:
-                    self.add_line(n, well, [])
-                    n += 1
-                    self.add_line(n, 'class',
-                               self.model.wells[well].classification_by_rate)
-                    n += 1
+#            if debug:
+#                n = 62
+#                for well in self.model.wells:
+#                    self.add_line(n, well, [])
+#                    n += 1
+#                    self.add_line(n, 'class',
+#                               self.model.wells[well].classification_by_rate)
+#                    n += 1
 ######################################

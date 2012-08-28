@@ -6,7 +6,6 @@ Created on 27.08.2012
 '''
 from View.mainwindow import Ui_MainWindow
 from PySide import QtGui
-from View import form
 
 
 class UserInterface(QtGui.QMainWindow):
@@ -31,88 +30,42 @@ class UserInterface(QtGui.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.show()
+        self.ui.pushButton_2.clicked.connect(self.ignition)
 
-#                self.prefences = ConfigurationDialog()
-#        self.prefences_values = self.prefences.get_prefences()
-#        self.debug = False
-#        self.lateral = True
-#        self.prefences.accepted.connect(self.acceptPrefences)
-#        self.prefences.rejected.connect(self.rejectPrefences)
-#
-#        self.progress = ProgressDialog()
-
-    def modelIsChanged(self, signal):
+    def model_is_changed(self, signal):
         """
         Реакция на изменение модели
+        Signal - кортеж который содержит в себе информацио о событии,
+        например, ('complete',0) подразумевает что расчеты окончены
+        без ошибок.
         """
-        if signal == 'complete':
-            self.information_message("Завершено")
-        elif signal == 'progress':
-            pass
+        if signal == ('complete', 0):
+            information_message("Завершено")
+            self.ui.progress.close()
+        elif signal[0] == 'progress':
+            self.ui.progress.setProgress(signal[1])
+        elif signal[0] == 'error':
+            self.errorMessage("Ошибка")
+            raise ValueError
 
-    def setOpenFileName(self):
-        options = QtGui.QFileDialog.Options()
-        if not self.native.isChecked():
-            options |= QtGui.QFileDialog.DontUseNativeDialog
-        fileName, unused_filtr = QtGui.QFileDialog.getOpenFileName(
-                    self.toolButton,
-                    u"Открыть",
-                    "",
-                    "Eclipse RSM File (*.rsm);;All Files (*)",
-                    "",
-                    options)
-        if fileName:
-            self.lineEdit.setText(fileName)
+    def ignition(self):
+        savefile = self.ui.setSaveFileName()
+        self.savefile = savefile     # костыль
+        self.controller.transfer_consts(self.ui.prefences.get_prefences())
+        openfile = self.ui.openfilename
+        if savefile and openfile:
+            self.controller.execute_converter(openfile, savefile)
+        else:
+            error_message('Файл для чтения не указан')
 
-    def setFileName(self):
-        options = QtGui.QFileDialog.Options()
-        if not self.native.isChecked():
-            options |= QtGui.QFileDialog.DontUseNativeDialog
-        fileName, unused_filtr = QtGui.QFileDialog.getOpenFileName(
-                    self.pushButton,
-                    u"Открыть",
-                    "",
-                    "All Files (*)",
-                    "",
-                    options)
-        if fileName:
-            self.lineEdit_2.setText(fileName)
 
-    def setSaveFileName(self):
-        options = QtGui.QFileDialog.Options()
-        if not self.native.isChecked():
-            options |= QtGui.QFileDialog.DontUseNativeDialog
-        fileName, unused_ok = QtGui.QFileDialog.getSaveFileName(
-                self.pushButton_2,
-                u"Сохранить",
-                "",
-                "Excel File (*.xls);;All Files (*)", "", options)
-        if fileName:
-            return fileName
+def information_message(message, caption="Fontaine"):
+        msgBox = QtGui.QMessageBox()
+        msgBox.setText(unicode(message))
+        msgBox.exec_()
 
-    def openPrefencesWindow(self):
-        self.prefences.show()
 
-    def acceptPrefences(self):
-        self.prefences_values = self.prefences.get_prefences()
-        self.debug = self.prefences.get_debug()
-        self.lateral = self.prefences.get_lateral()
-
-    def rejectPrefences(self):
-        self.prefences.set_prefences(self.prefences_values)
-        self.prefences.set_debug(self.debug)
-        self.prefences.set_lateral(self.lateral)
-
-    def openAboutWindow(self):
-        self.about = QtGui.QDialog()
-        ui = form.Ui_Form()
-        ui.setupUi(self.about)
-        self.about.show()
-
-    def informationMessage(self, message, caption="Fontaine"):
-        _ = QtGui.QMessageBox.information(self.pushButton_2,
-                caption, message)
-
-    def errorMessage(self, message, caption="Fontaine"):
-        _ = QtGui.QMessageBox.critical(self.pushButton_2,
-                caption, message)
+def error_message(message, caption="Fontaine"):
+        msgBox = QtGui.QMessageBox()
+        msgBox.setText(unicode(message))
+        msgBox.exec_()

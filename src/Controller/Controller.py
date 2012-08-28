@@ -27,12 +27,21 @@ class Controller():
         '''
         self.model.add_file_for_parsing(filename)
 
-    def execute_converter(self):
+    def execute_converter(self, openfile, savefile):
         '''
         Execute converting from RSM to xls
         '''
+        self.set_file_name(openfile)
+        self.view.savefile = savefile
+        print openfile, savefile
         self.model.process_data()
+        self.model.clear()
 
+    def request_savefile(self):
+        return self.ui.savefile
+
+    def transfer_consts(self, consts):
+        self.view.const = consts
 #    def errorlog(func):
 #
 #        def error_msg(module, msg):
@@ -93,4 +102,3 @@ class Controller():
 #        else:
 #            ui.informationMessage(u"Выберите файл для сохранения",
 #                                  caption=u"Ошибка запуска")
-#    ui.pushButton_2.clicked.connect(ignition)

@@ -186,7 +186,7 @@ class Parser(object):
         self.reset()
 
     def report_progress(self):
-        return self.stream.reportProgress()
+        return self.stream.report_progress()
 
     def get_dates_list(self):  # Костыль
         return self.stream.get_dates_list()

@@ -10,6 +10,8 @@
 from PySide import QtCore, QtGui
 import sys
 import res
+import dialog
+import form
 
 
 class Ui_MainWindow(object):
@@ -40,7 +42,6 @@ class Ui_MainWindow(object):
         self.toolButton = QtGui.QToolButton(self.centralWidget)
         self.toolButton.setGeometry(QtCore.QRect(284, 40, 21, 21))
         self.toolButton.setObjectName("toolButton")
-#        self.toolButton.clicked.connect(self.setOpenFileName)
         MainWindow.setCentralWidget(self.centralWidget)
         self.menuBar = QtGui.QMenuBar(MainWindow)
         self.menuBar.setGeometry(QtCore.QRect(0, 0, 320, 20))
@@ -55,13 +56,11 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusBar)
         self.action = QtGui.QAction(MainWindow)
         self.action.setObjectName("action")
-#        self.action.triggered.connect(self.openAboutWindow)
         self.action_2 = QtGui.QAction(MainWindow)
         self.action_2.setObjectName("action_2")
         self.action_2.setEnabled(False)
         self.action_3 = QtGui.QAction(MainWindow)
         self.action_3.setObjectName("action_3")
-#        self.action_3.triggered.connect(self.openPrefencesWindow)
         self.action_5 = QtGui.QAction(MainWindow)
         self.action_5.setObjectName("action_5")
         self.menu.addAction(self.action_2)
@@ -72,6 +71,10 @@ class Ui_MainWindow(object):
         self.menuBar.addAction(self.menu.menuAction())
         self.menuBar.addAction(self.menu_2.menuAction())
 
+        self.toolButton.clicked.connect(self.setOpenFileName)
+        self.action.triggered.connect(self.openAboutWindow)
+        self.action_3.triggered.connect(self.openPrefencesWindow)
+
         self.native = QtGui.QCheckBox()
         self.native.setText("Use native file dialog.")
         self.native.setChecked(True)
@@ -79,6 +82,14 @@ class Ui_MainWindow(object):
             self.native.hide()
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+        self.prefences = ConfigurationDialog()
+        self.prefences_values = self.prefences.get_prefences()
+        self.prefences.set_debug(False)
+        self.prefences.set_lateral(True)
+        self.prefences.accepted.connect(self.acceptPrefences)
+        self.prefences.rejected.connect(self.rejectPrefences)
+        self.progress = ProgressDialog()
+        self.openfilename = None # свойство должно быть частным
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Fontaine", None, QtGui.QApplication.UnicodeUTF8))
@@ -91,6 +102,52 @@ class Ui_MainWindow(object):
         self.action_2.setText(QtGui.QApplication.translate("MainWindow", "Открыть файл ограничений", None, QtGui.QApplication.UnicodeUTF8))
         self.action_3.setText(QtGui.QApplication.translate("MainWindow", "Настройки", None, QtGui.QApplication.UnicodeUTF8))
         self.action_5.setText(QtGui.QApplication.translate("MainWindow", "Выход", None, QtGui.QApplication.UnicodeUTF8))
+
+    def openPrefencesWindow(self):
+        self.prefences.show()
+
+    def acceptPrefences(self):
+        self.prefences_values = self.prefences.get_prefences()
+        self.debug = self.prefences.get_debug()
+        self.lateral = self.prefences.get_lateral()
+
+    def rejectPrefences(self):
+        self.prefences.set_prefences(self.prefences_values)
+        self.prefences.set_debug(self.debug)
+        self.prefences.set_lateral(self.lateral)
+
+    def openAboutWindow(self):
+        self.about = QtGui.QDialog()
+        ui = form.Ui_Form()
+        ui.setupUi(self.about)
+        self.about.show()
+
+    def setOpenFileName(self):
+        options = QtGui.QFileDialog.Options()
+        if not self.native.isChecked():
+            options |= QtGui.QFileDialog.DontUseNativeDialog
+        fileName, unused_filtr = QtGui.QFileDialog.getOpenFileName(
+                    self.toolButton,
+                    u"Открыть",
+                    "",
+                    "Eclipse RSM File (*.rsm);;All Files (*)",
+                    "",
+                    options)
+        if fileName:
+            self.lineEdit.setText(fileName)
+            self.openfilename = fileName
+
+    def setSaveFileName(self):
+        options = QtGui.QFileDialog.Options()
+        if not self.native.isChecked():
+            options |= QtGui.QFileDialog.DontUseNativeDialog
+        fileName, unused_ok = QtGui.QFileDialog.getSaveFileName(
+                self.pushButton_2,
+                u"Сохранить",
+                "",
+                "Excel File (*.xls);;All Files (*)", "", options)
+        if fileName:
+            return fileName
 
 
 class ProgressDialog(QtGui.QProgressDialog):

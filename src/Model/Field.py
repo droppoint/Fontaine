@@ -50,11 +50,6 @@ class Field(object):  # FIXME: More docstrings
 #    __slots__ = {'name', 'wells', 'parameters', 'mask'
 #                 'dates'}
     def __init__(self):
-
-        def set_dates_list(self, dates):
-            self.dates = dates
-            self.mask = [0 for _ in self.dates]
-
 #        self.name = name
         self.wells = {}
         self.parameters = {}
@@ -63,7 +58,9 @@ class Field(object):  # FIXME: More docstrings
 
 #    def __call__(self):
 #        return self.name
-
+    def set_dates_list(self, dates):
+        self.dates = dates
+        self.mask = [0 for _ in self.dates]
     '''
     add_observer, remove_observer и notify_observer -
     процедуры реализующие паттерн "Наблюдатель".
@@ -76,23 +73,27 @@ class Field(object):  # FIXME: More docstrings
 
     def notify_observers(self, signal=None):
         for x in self._mObservers:
-            x.modelIsChanged(signal)
+            x.model_is_changed(signal)
 
     def process_data(self):
         '''
         Получение данных из источника и заполнение модели
         '''
+        self.notify_observers(signal=('start', 0))
         parsed_data = self.parser.parse_file()
         for row in parsed_data:
+            progress = self.parser.report_progress()
+            self.notify_observers(signal=('progress', progress))
             if row['number'] == 'N/A':
                 self.add_parameter(row['parameter_code'],
                                       row['welldata'])
             else:
                 self.add_well(row['number'],
                     {row['parameter_code']: row['welldata']})
-        self.notifyObservers()
+        self.routine_operations()
+        self.notify_observers(signal=('complete', 0))
 
-    def add_file_for_parsing(self,  filename):
+    def add_file_for_parsing(self, filename):
         self.parser = Parser.Parser(filename)
         self.set_dates_list(self.parser.get_dates_list())
 
