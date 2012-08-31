@@ -103,7 +103,7 @@ class AboutWindow(Toplevel):
 
         frame = Frame(self)
         frame.pack()
-        canvas = Canvas(frame, bg="black", width=150, height=150)
+        canvas = Canvas(frame, bg="black", width=128, height=128)
         canvas.pack()
         program_label = Label(self, text="Fontaine v0.76", font="Arial 14")
         powered_label = Label(self, text="Powered by Python & TkInter",
@@ -118,8 +118,8 @@ class AboutWindow(Toplevel):
                                width=10, command=self.cancel)
         ok_button.pack()
 
-#        image = PhotoImage(file="fontaine.png")
-#        canvas.create_image(200, 200, image=image)
+#        image = PhotoImage(file="fontaine_icon(128).png")
+#        canvas.create_image(128, 128, image=image)
 
     def cancel(self):
         self.root.focus_set()
