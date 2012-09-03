@@ -76,7 +76,8 @@ class ParserFileHandler(object):
             if self.date_pattern.search(line):
                 clear_line = self.date_pattern.search(line).group(0)
                 date = datetime.strptime(clear_line, self.date_pattern_str)
-                dates[date.year] = n
+                if date.month == 1:
+                    dates[date.year] = n
                 n += 1
         self.buf.seek(self.pointer)
         return dates
