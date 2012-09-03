@@ -4,8 +4,10 @@ Created on 27.08.2012
 
 @author: APartilov
 '''
-from View.mainwindow import Ui_MainWindow
-from PySide import QtGui
+from View.mainwindow import Ui_MainWindow, ProgressDialog
+from View.mainwindow import Configuration
+from View.form import Ui_Form
+from PySide import QtGui, QtCore
 
 
 class UserInterface(QtGui.QMainWindow):
@@ -23,14 +25,34 @@ class UserInterface(QtGui.QMainWindow):
         '''
         UserInterface реализует паттерн "Наблюдатель"
         подписываясь на изменения в модели. View НЕ РАЗРЕШАЕТСЯ
-        взаимодействовать с моделью напрямую, только через один
-        контроллеров.
+        вносить изменения в модель напрямую, только через один
+        из контроллеров. В то же время разрешается прямое чтение
+        из модели
         '''
         self.model.add_observer(self)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        # Настройки
+        self.settings = QtCore.QSettings()
+        self.progress = ProgressDialog()
+        self.prefences = ConfigurationDialog()
+#        self.prefences_values = self.prefences.get_prefences()
+#        self.prefences.set_debug(False)
+#        self.prefences.set_lateral(True)
+#        self.prefences.accepted.connect(self.acceptPrefences)
+#        self.prefences.rejected.connect(self.rejectPrefences)
+        # Диалоги и второстепенные окна
+
+        # Инициализация логики
+        self.__init_logic()
+
         self.show()
-        self.ui.pushButton_2.clicked.connect(self.ignition)
+
+#        self.ui.pushButton_2.clicked.connect(self.ignition)
+
+    def __init_logic(self):
+        self.connect(self.ui.toolButton, QtCore.SIGNAL("clicked()"), self.setOpenFileName)
+        self.connect(self.ui.action, QtCore.SIGNAL("triggered()"), self.openAboutWindow)
 
     def model_is_changed(self, signal):
         """
@@ -41,9 +63,9 @@ class UserInterface(QtGui.QMainWindow):
         """
         if signal == ('complete', 0):
             information_message("Завершено")
-            self.ui.progress.close()
+            self.progress.close()
         elif signal[0] == 'progress':
-            self.ui.progress.setProgress(signal[1])
+            self.progress.setProgress(signal[1])
         elif signal[0] == 'error':
             self.errorMessage("Ошибка")
             raise ValueError
@@ -58,6 +80,25 @@ class UserInterface(QtGui.QMainWindow):
         else:
             error_message('Файл для чтения не указан')
 
+    def open_about_window(self):
+        about = QtGui.QDialog(self)
+        ui = Ui_Form()
+        ui.setupUi(about)
+        about.show()
+
+    def set_open_file_name(self):
+        options = QtGui.QFileDialog.Options()
+        if not self.ui.native.isChecked():
+            options |= QtGui.QFileDialog.DontUseNativeDialog
+        fileName, unused_filtr = QtGui.QFileDialog.getOpenFileName(
+                    self.ui.toolButton,
+                    u"Открыть",
+                    "",
+                    "Eclipse RSM File (*.rsm);;All Files (*)",
+                    "",
+                    options)
+        if fileName:
+            self.ui.lineEdit.setText(fileName)
 
 def information_message(message, caption="Fontaine"):
         msgBox = QtGui.QMessageBox()

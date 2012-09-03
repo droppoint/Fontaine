@@ -127,8 +127,12 @@ class Report(object):
     def report_formatting(self):
         ##############################
             # annual production/injection
-            oil_density = int(self.const['oil_density'])
-            water_density = int(self.const['water_density'])
+            if (not 'oil_density' in self.model.parameters) or \
+               (not 'water_density' in self.model.parameters):
+                raise ReportError('Data shortage: consts')
+                return
+            oil_density = int(self.model.parameters['oil_density'])
+            water_density = int(self.model.parameters['water_density'])
             oil_PR_tons = self.model.production_rate('WOPT',
                          density=oil_density, degree=-6)
             water_PR_tons = self.model.production_rate('WWPT',

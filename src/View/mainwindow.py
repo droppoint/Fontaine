@@ -70,11 +70,7 @@ class Ui_MainWindow(object):
         self.menu_2.addAction(self.action)
         self.menuBar.addAction(self.menu.menuAction())
         self.menuBar.addAction(self.menu_2.menuAction())
-
-        self.toolButton.clicked.connect(self.setOpenFileName)
-        self.action.triggered.connect(self.openAboutWindow)
         self.action_3.triggered.connect(self.openPrefencesWindow)
-
         self.native = QtGui.QCheckBox()
         self.native.setText("Use native file dialog.")
         self.native.setChecked(True)
@@ -82,14 +78,6 @@ class Ui_MainWindow(object):
             self.native.hide()
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
-        self.prefences = ConfigurationDialog()
-        self.prefences_values = self.prefences.get_prefences()
-        self.prefences.set_debug(False)
-        self.prefences.set_lateral(True)
-        self.prefences.accepted.connect(self.acceptPrefences)
-        self.prefences.rejected.connect(self.rejectPrefences)
-        self.progress = ProgressDialog()
-        self.openfilename = None # свойство должно быть частным
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Fontaine", None, QtGui.QApplication.UnicodeUTF8))
@@ -115,27 +103,6 @@ class Ui_MainWindow(object):
         self.prefences.set_prefences(self.prefences_values)
         self.prefences.set_debug(self.debug)
         self.prefences.set_lateral(self.lateral)
-
-    def openAboutWindow(self):
-        self.about = QtGui.QDialog()
-        ui = form.Ui_Form()
-        ui.setupUi(self.about)
-        self.about.show()
-
-    def setOpenFileName(self):
-        options = QtGui.QFileDialog.Options()
-        if not self.native.isChecked():
-            options |= QtGui.QFileDialog.DontUseNativeDialog
-        fileName, unused_filtr = QtGui.QFileDialog.getOpenFileName(
-                    self.toolButton,
-                    u"Открыть",
-                    "",
-                    "Eclipse RSM File (*.rsm);;All Files (*)",
-                    "",
-                    options)
-        if fileName:
-            self.lineEdit.setText(fileName)
-            self.openfilename = fileName
 
     def setSaveFileName(self):
         options = QtGui.QFileDialog.Options()

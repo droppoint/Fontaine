@@ -41,7 +41,7 @@ class Controller():
         return self.ui.savefile
 
     def transfer_consts(self, consts):
-        self.view.const = consts
+        self.model.parameters.update(consts)
 #    def errorlog(func):
 #
 #        def error_msg(module, msg):
@@ -68,37 +68,3 @@ class Controller():
 #                                caption=u"Fontaine")
 #                raise
 #        return decorator
-#
-#    @errorlog
-#    def ignition():
-#        filename = ui.lineEdit.text()
-#        savefile = ui.setSaveFileName()
-#        const = ui.prefences_values
-#        debug = ui.debug
-#        lateral = ui.lateral
-#        if filename and savefile:
-#            ui.progress.reset()
-#
-#
-#            storage.lateral_detect(lateral)
-#
-##            if Init.wells_init('c1.ini'):
-##                storage.category = Init.wells_init('c1.ini')
-##                tmp = [i for i in storage.wells]
-##                for well in tmp:
-##                    if not well in storage.category:
-##                        del storage.wells[well]
-#
-#            storage.routine_operations()  # !!!!!!!
-#            r.render(savefile)
-#            storage.clear()
-#            r.reset()
-#            ui.progress.close()
-#            ui.informationMessage(u"Завершено",
-#                                  caption=u"Fontaine")
-#        elif not filename:
-#            ui.informationMessage(u"Выберите файл для обработки",
-#                                  caption=u"Ошибка запуска")
-#        else:
-#            ui.informationMessage(u"Выберите файл для сохранения",
-#                                  caption=u"Ошибка запуска")
