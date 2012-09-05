@@ -5,7 +5,7 @@ Created on 22.08.2012
 @author: APartilov
 '''
 from View.Report import Report
-from View.UI import UserInterface
+from View.UI import UserInterface, information_message
 from Utility.Utility import errorlog
 import logging
 
@@ -49,4 +49,4 @@ class Controller():
         logger.info("emergency shutdown initiated")
         self.view.reset()
         self.model.clear()
-        self.ui.information_message(message)
+        information_message(message)

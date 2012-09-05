@@ -6,7 +6,6 @@ Created on 22.08.2012
 '''
 import logging
 from View.Report import ReportError
-from Controller.Controller import Controller
 
 logger = logging.getLogger('Fontaine.ErrorHandler')
 
@@ -19,6 +18,7 @@ def errorlog(func):
 #                        caption=u"Fontaine")
 
     def decorator(*args, **kwargs):
+        controller = args[0]
         try:
             return func(*args, **kwargs)
 #        except Parser.ParseError as e:
@@ -32,7 +32,7 @@ def errorlog(func):
 #            except IOError:
 #                error_msg('Initialization', "Ini-файл не найден или поврежден")
         except Exception as inst:
-            Controller.emergency_shutdown("Неизвестная ошибка")
+            controller.emergency_shutdown("Неизвестная ошибка")
             logger.exception('Unknown error')
             logger.exception(type(inst))
             logger.exception(inst.args)
