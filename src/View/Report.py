@@ -6,6 +6,7 @@ Created on 18.06.2012
 @author: APartilov
 '''
 
+import os
 
 def get_formulas(template, args, number):
     import xlwt.ExcelFormula
@@ -73,9 +74,8 @@ class Report(object):
         Реакция на изменение модели
         """
         # Если пришел сигнал об окончании расчета
-        if signal == ('start', 0):
+        if signal == ('complete', 0):
             self._savefile = self.controller.request_savefile()
-        elif signal == ('complete', 0):
             self.report_formatting()
             self.render(self._savefile)
             self.reset()
@@ -122,7 +122,17 @@ class Report(object):
         for line in self.lines:
             printRow(line.caption, line.data, line.number)
 
-        wb.save(filename)
+        # костыль
+        while True:
+            if filename == None:
+                print "Отменено"
+                break
+            try:
+                wb.save(filename)
+                print "Завершено"
+                break
+            except IOError:
+                filename = self.controller.request_savefile()
 
     def report_formatting(self):
         ##############################

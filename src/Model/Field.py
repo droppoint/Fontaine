@@ -6,6 +6,7 @@ Created on 24.04.2012
 '''
 from Well import Well
 import Parser
+from Utility.Utility import timer
 
 
 class Singleton(type):
@@ -90,6 +91,7 @@ class Field(object):  # FIXME: More docstrings
             else:
                 self.add_well(row['number'],
                     {row['parameter_code']: row['welldata']})
+        raise ValueError
         self.routine_operations()
         self.notify_observers(signal=('complete', 0))
 

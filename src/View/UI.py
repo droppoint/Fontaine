@@ -63,8 +63,8 @@ class UserInterface(QtGui.QMainWindow):
         без ошибок.
         """
         if signal == ('complete', 0):
-            information_message("Завершено")
             self.progress.close()
+#            information_message("Завершено")
         elif signal[0] == 'progress':
             self.progress.setProgress(signal[1])
         elif signal[0] == 'error':
@@ -72,12 +72,10 @@ class UserInterface(QtGui.QMainWindow):
             raise ValueError
 
     def ignition(self):
-        savefile = self.set_save_filename()   # <######################
-        self.savefile = savefile     # костыль
         self.controller.transfer_consts(self.settings)
         openfile = self.openfile
-        if savefile and openfile:
-            self.controller.execute_converter(openfile, savefile)
+        if openfile:
+            self.controller.execute_converter(openfile)
         else:
             error_message('Файл для чтения не указан')
 
@@ -116,6 +114,9 @@ class UserInterface(QtGui.QMainWindow):
                 "Excel File (*.xls);;All Files (*)", "", options)
         if filename:
             return filename
+
+    def reset(self):
+        self.progress.close()
 
 
 class ConfigurationDialog(QtGui.QDialog):

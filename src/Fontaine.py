@@ -15,7 +15,7 @@ from PySide.QtGui import QApplication
 
 if __name__ == "__main__":
     # logger system initialization
-    logger = logging.getLogger('')
+    logger = logging.getLogger('Fontaine')
     logger.setLevel(logging.DEBUG)
     #basic config here
     fh = logging.handlers.RotatingFileHandler('debug.log',
