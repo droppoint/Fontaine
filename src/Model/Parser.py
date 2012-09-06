@@ -9,6 +9,7 @@ Created on 18.06.2012
 
 import re
 import logging
+import numpy
 
 # Regular expressions used for parsing
 
@@ -230,8 +231,10 @@ class Parser(object):
                     data = line.split()
                     del data[0]  # удаляем дату из начала списка
                     clear_block.append([float(data[i]) for i in index])
-                clear_block = zip_list(*clear_block)
-                clear_block = [i for i in clear_block]
+                numpy_clear_block = numpy.array(clear_block)
+                numpy_clear_block = numpy_clear_block.transpose()
+#                clear_block = zip_list(*clear_block)
+#                clear_block = [i for i in clear_block]
                 if numbers:
                     clear_numbers = strip_line(regex_all_numbers, numbers)
                     clear_numbers = [clear_numbers[i] for i in index]
@@ -240,16 +243,18 @@ class Parser(object):
                     clear_factors = [clear_factors[i] for i in index]
                     for num, factor in enumerate(clear_factors):   # костыль
                         if factor != 'N/A':
-                            clear_block[num] = \
-                             [math.pow(10,
-                              float(factor)) * i for i in clear_block[num]]
+#                            clear_block[num] = \
+#                             [math.pow(10,
+#                              float(factor)) * i for i in clear_block[num]]
+                            numpy_clear_block[num] = \
+                                numpy_clear_block[num] * 10 ** float(factor)
                 for num, parameter in enumerate(clear_headers):
                     if numbers:
                         parsed_data['number'] = clear_numbers[num]
                     else:
                         parsed_data['number'] = 'N/A'
                     parsed_data['parameter_code'] = parameter
-                    parsed_data['welldata'] = clear_block[num]
+                    parsed_data['welldata'] = numpy_clear_block[num]
                     yield parsed_data
         self.stream.close()
 
