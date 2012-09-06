@@ -64,7 +64,9 @@ class Field(object):  # FIXME: More docstrings
         '''
         Получение данных из источника и заполнение модели
         '''
+        from time import time
         self.notify_observers(signal=('start', 0))
+        t1 = time()
         parsed_data = self.parser.parse_file()
         for row in parsed_data:
             progress = self.parser.report_progress()
@@ -75,7 +77,9 @@ class Field(object):  # FIXME: More docstrings
             else:
                 self.add_well(row['number'],
                     {row['parameter_code']: row['welldata']})
+        print time() - t1
         self.routine_operations()
+        print time() - t1
         self.notify_observers(signal=('complete', 0))
 
     def add_file_for_parsing(self, filename):

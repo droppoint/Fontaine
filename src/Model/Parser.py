@@ -222,7 +222,9 @@ class Parser(object):
 
                 clear_block = []
                 for line in block:
-                    data = regex_data_line.findall(line)
+#                    data = regex_data_line.findall(line)
+                    data = line.split()
+                    del data[0]  # удаляем дату из начала списка
                     clear_block.append([float(data[i]) for i in index])
                 clear_block = zip_list(*clear_block)
                 clear_block = [i for i in clear_block]
