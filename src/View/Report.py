@@ -8,6 +8,7 @@ Created on 18.06.2012
 
 import os
 
+
 def get_formulas(template, args, number):
     import xlwt.ExcelFormula
     from xlwt.Utils import rowcol_to_cell

@@ -11,6 +11,7 @@ import logging
 
 logger = logging.getLogger('Fontaine.ErrorHandler')
 
+
 class Controller():
     '''
     classdocs

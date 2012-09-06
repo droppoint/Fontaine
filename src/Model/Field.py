@@ -6,22 +6,6 @@ Created on 24.04.2012
 '''
 from Well import Well
 import Parser
-from Utility.Utility import timer
-
-
-class Singleton(type):
-    '''
-    Singleton class for creating 1 uniquie instance with
-    1 input point
-    '''
-    def __init__(cls, name, bases, dictationary):
-        super(Singleton, cls).__init__(name, bases, dictationary)
-        cls.instance = None
-
-    def __call__(cls, *args, **kw):
-        if cls.instance is None:
-            cls.instance = super(Singleton, cls).__call__(*args, **kw)
-        return cls.instance
 
 
 class FieldError(Exception):
@@ -91,7 +75,6 @@ class Field(object):  # FIXME: More docstrings
             else:
                 self.add_well(row['number'],
                     {row['parameter_code']: row['welldata']})
-        raise ValueError
         self.routine_operations()
         self.notify_observers(signal=('complete', 0))
 
