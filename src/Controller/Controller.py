@@ -7,6 +7,7 @@ Created on 22.08.2012
 from View.Report import Report
 from View.UI import UserInterface, information_message
 from Utility.Utility import errorlog
+from Utility.Utility import parse_cut_file
 import logging
 
 logger = logging.getLogger('Fontaine.ErrorHandler')
@@ -45,6 +46,10 @@ class Controller():
 
     def transfer_consts(self, consts):
         self.model.parameters.update(consts)
+
+    def open_limit_file(self, filename):
+        limit = parse_cut_file(filename)
+        self.model.limit = limit
 
     def emergency_shutdown(self, message):
         logger.info("emergency shutdown initiated")
