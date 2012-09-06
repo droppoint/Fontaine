@@ -56,7 +56,7 @@ class Ui_MainWindow(object):
         self.action.setObjectName("action")
         self.action_2 = QtGui.QAction(MainWindow)
         self.action_2.setObjectName("action_2")
-        self.action_2.setEnabled(False)
+#        self.action_2.setEnabled(False)
         self.action_3 = QtGui.QAction(MainWindow)
         self.action_3.setObjectName("action_3")
         self.action_5 = QtGui.QAction(MainWindow)

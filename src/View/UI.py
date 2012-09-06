@@ -51,6 +51,7 @@ class UserInterface(QtGui.QMainWindow):
         self.connect(self._ui.toolButton, QtCore.SIGNAL("clicked()"), self._load_file)
         self.connect(self._ui.pushButton_2, QtCore.SIGNAL("clicked()"), self._ignition)
         self.connect(self._ui.action, QtCore.SIGNAL("triggered()"), self._show_about)
+        self.connect(self._ui.action_2, QtCore.SIGNAL("triggered()"), self._open_limit_file)
         self.connect(self._ui.action_3, QtCore.SIGNAL("triggered()"), self._prefences.show)
         self.connect(self._prefences, QtCore.SIGNAL("accepted()"), self._prefences.save_settings)
         self.connect(self._prefences, QtCore.SIGNAL("rejected()"), self._prefences.load_settings)
@@ -114,6 +115,20 @@ class UserInterface(QtGui.QMainWindow):
                 "Excel File (*.xls);;All Files (*)", "", options)
         if filename:
             return filename
+
+    def _open_limit_file(self):
+        options = QtGui.QFileDialog.Options()
+        if not self._ui.native.isChecked():
+            options |= QtGui.QFileDialog.DontUseNativeDialog
+        filename, unused_filtr = QtGui.QFileDialog.getOpenFileName(
+                    self._ui.toolButton,
+                    u"Открыть",
+                    "",
+                    "Well limit file (*.ini);;All Files (*)",
+                    "",
+                    options)
+        if filename:
+            self.controller.open_limit_file(filename)
 
     def reset(self):
         self.progress.close()

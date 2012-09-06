@@ -39,6 +39,7 @@ class Field(object):  # FIXME: More docstrings
         self.wells = {}
         self.parameters = {}
         self.lateral_detect(True)   # Костыль
+        self.limit = {}
         self._mObservers = []
 
 #    def __call__(self):
@@ -60,6 +61,12 @@ class Field(object):  # FIXME: More docstrings
         for x in self._mObservers:
             x.model_is_changed(signal)
 
+    def cut_off_wells(self):
+        well_list = list(self.wells.keys())
+        for well in well_list:
+            if well not in self.limit:
+                del self.wells[well]
+
     def process_data(self):
         '''
         Получение данных из источника и заполнение модели
@@ -78,6 +85,8 @@ class Field(object):  # FIXME: More docstrings
                 self.add_well(row['number'],
                     {row['parameter_code']: row['welldata']})
         print time() - t1
+        if self.limit:
+            self.cut_off_wells()
         self.routine_operations()
         print time() - t1
         self.notify_observers(signal=('complete', 0))
