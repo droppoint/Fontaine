@@ -13,7 +13,7 @@ import logging
 # Regular expressions used for parsing
 
 total_parameters = ['WOPT', 'WWPT', 'WGPT', 'WWIT', 'WOIT', 'WGIT', 'WLPT',
-                    'WLPR', 'WOIN', 'WWIN', 'WGIN', 'WOIR', 'WWIR', 'WGIR', 
+                    'WLPR', 'WOIN', 'WWIN', 'WGIN', 'WOIR', 'WWIR', 'WGIR',
                     'WBP9', 'WBHP', 'FPRP', 'FPR']
 regex_all_headers = re.compile(r"([A-Z0-9_]+)")
 regex_necessary_headers = re.compile(
@@ -21,7 +21,9 @@ regex_necessary_headers = re.compile(
 regex_header = re.compile(r"^(W[O|G|W|L][I|P][T|R|N])|(WBP9|WBHP)$")
 regex_properties = re.compile(
                 r"^(W[O|G|W|L][I|P][T|R|N])|(WBP9|WBHP)|(FPRP?)$")
-regex_numbers = re.compile(r"\s((?:[0-9]+[A-Z]?(?:[-_]?\w*)?)|(?:[A-Z]{1,3}(?:[-_]\w*)?(?:[-_]\w*)?))\s")
+regex_numbers = re.compile(r"\s((?:[0-9]+[A-Z]?"
+                                "(?:[-_]?\w*)?)|(?:[A-Z]{1,3}"
+                                "(?:[-_]\w*)?(?:[-_]\w*)?))\s")
 regex_data_line = re.compile(r"\s((?:[-+]?[0-9]*\.[0-9]*E?[+|-]?[0-9]*)|0)\s")
 regex_all_numbers = re.compile(r"\s([A-Za-z0-9][\w\-]*)\s")
 regex_factor = re.compile(r"(?:\*10\*\*(\d))")
@@ -87,6 +89,7 @@ class ParserFileHandler(object):
 
     def read_date_format(self):
         start, end = self.find_block_borders()
+        self.buf.seek(start)
         while True:
             line = self.buf.readline()
             if regex_date_numeric.search(line):
@@ -128,7 +131,7 @@ class ParserFileHandler(object):
         start = self.buf.find("DATE", self.pointer)
         self.buf.seek(start)
         self.buf.readline()
-        self.buf.readline() # skipping quantities
+        self.buf.readline()  # skipping quantities
         numbers, factors = None, None
         while True:
             line = self.buf.readline()
@@ -205,7 +208,8 @@ class Parser(object):
             if regex_necessary_headers.search(header):
                 parsed_data = {}
                 '''
-                 Считываются номера скважин, степень(если есть) и сам блок данных
+                 Считываются номера скважин, степень(если есть)
+                 и сам блок данных
                  '''
                 numbers, factors = self.stream.read_context()
                 block = self.stream.read_block()
@@ -237,7 +241,8 @@ class Parser(object):
                     for num, factor in enumerate(clear_factors):   # костыль
                         if factor != 'N/A':
                             clear_block[num] = \
-                             [math.pow(10, float(factor)) * i for i in clear_block[num]]
+                             [math.pow(10,
+                              float(factor)) * i for i in clear_block[num]]
                 for num, parameter in enumerate(clear_headers):
                     if numbers:
                         parsed_data['number'] = clear_numbers[num]

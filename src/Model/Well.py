@@ -121,8 +121,10 @@ class Well(object):
         for number in self.__boreholes:
             if number == name:
                 continue  # плохо, очень плохо
-            production = list_sum(*self.__boreholes[number].recieve_parameters(*total_prod_parameters))
-            injection = list_sum(*self.__boreholes[number].recieve_parameters(*total_inj_parameters))
+            production = list_sum(*self.__boreholes[number].recieve_parameters(
+                                                    *total_prod_parameters))
+            injection = list_sum(*self.__boreholes[number].recieve_parameters(
+                                                    *total_inj_parameters))
             for year, (prod, inj) in enumerate(zip(production, injection)):
                 if inj + prod > 0:
                     years.append(year)

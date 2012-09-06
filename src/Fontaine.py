@@ -7,7 +7,6 @@ Created on 03.04.2012
 '''
 
 import sys
-import logging
 import logging.handlers
 import Model.Field as Field
 import Controller.Controller as Controller

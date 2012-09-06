@@ -48,13 +48,20 @@ class UserInterface(QtGui.QMainWindow):
         self.show()
 
     def _init_logic(self):
-        self.connect(self._ui.toolButton, QtCore.SIGNAL("clicked()"), self._load_file)
-        self.connect(self._ui.pushButton_2, QtCore.SIGNAL("clicked()"), self._ignition)
-        self.connect(self._ui.action, QtCore.SIGNAL("triggered()"), self._show_about)
-        self.connect(self._ui.action_2, QtCore.SIGNAL("triggered()"), self._open_limit_file)
-        self.connect(self._ui.action_3, QtCore.SIGNAL("triggered()"), self._prefences.show)
-        self.connect(self._prefences, QtCore.SIGNAL("accepted()"), self._prefences.save_settings)
-        self.connect(self._prefences, QtCore.SIGNAL("rejected()"), self._prefences.load_settings)
+        self.connect(self._ui.toolButton, QtCore.SIGNAL("clicked()"),
+                     self._load_file)
+        self.connect(self._ui.pushButton_2, QtCore.SIGNAL("clicked()"),
+                     self._ignition)
+        self.connect(self._ui.action, QtCore.SIGNAL("triggered()"),
+                     self._show_about)
+        self.connect(self._ui.action_2, QtCore.SIGNAL("triggered()"),
+                     self._open_limit_file)
+        self.connect(self._ui.action_3, QtCore.SIGNAL("triggered()"),
+                     self._prefences.show)
+        self.connect(self._prefences, QtCore.SIGNAL("accepted()"),
+                     self._prefences.save_settings)
+        self.connect(self._prefences, QtCore.SIGNAL("rejected()"),
+                     self._prefences.load_settings)
 
     def model_is_changed(self, signal):
         """

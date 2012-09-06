@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\Python27\convert\mainwindow.ui'
+# Form implementation generated from reading ui file
+# 'C:\Python27\convert\mainwindow.ui'
 #
 # Created: Mon Aug 13 13:35:04 2012
 #      by: pyside-uic 0.2.13 running on PySide 1.1.0
@@ -16,15 +17,18 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(320, 175)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed,
+                                       QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(MainWindow.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+                    MainWindow.sizePolicy().hasHeightForWidth())
         MainWindow.setSizePolicy(sizePolicy)
         MainWindow.setMinimumSize(QtCore.QSize(320, 175))
         MainWindow.setMaximumSize(QtCore.QSize(320, 175))
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/fontaine/icons/fontaine_icon(32).png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap(":/fontaine/icons/fontaine_icon(32).png"),
+                       QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)
         self.centralWidget = QtGui.QWidget(MainWindow)
         self.centralWidget.setObjectName("centralWidget")
@@ -77,23 +81,35 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Fontaine", None, QtGui.QApplication.UnicodeUTF8))
-        self.label.setText(QtGui.QApplication.translate("MainWindow", "Выберите файл *.rsm", None, QtGui.QApplication.UnicodeUTF8))
-        self.pushButton_2.setText(QtGui.QApplication.translate("MainWindow", "Преобразовать", None, QtGui.QApplication.UnicodeUTF8))
-        self.toolButton.setText(QtGui.QApplication.translate("MainWindow", "...", None, QtGui.QApplication.UnicodeUTF8))
-        self.menu.setTitle(QtGui.QApplication.translate("MainWindow", "Файл", None, QtGui.QApplication.UnicodeUTF8))
-        self.menu_2.setTitle(QtGui.QApplication.translate("MainWindow", "Справка", None, QtGui.QApplication.UnicodeUTF8))
-        self.action.setText(QtGui.QApplication.translate("MainWindow", "О программе", None, QtGui.QApplication.UnicodeUTF8))
-        self.action_2.setText(QtGui.QApplication.translate("MainWindow", "Открыть файл ограничений", None, QtGui.QApplication.UnicodeUTF8))
-        self.action_3.setText(QtGui.QApplication.translate("MainWindow", "Настройки", None, QtGui.QApplication.UnicodeUTF8))
-        self.action_5.setText(QtGui.QApplication.translate("MainWindow", "Выход", None, QtGui.QApplication.UnicodeUTF8))
+        MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow",
+                "Fontaine", None, QtGui.QApplication.UnicodeUTF8))
+        self.label.setText(QtGui.QApplication.translate("MainWindow",
+                "Выберите файл *.rsm", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton_2.setText(QtGui.QApplication.translate("MainWindow",
+                "Преобразовать", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton.setText(QtGui.QApplication.translate("MainWindow",
+                "...", None, QtGui.QApplication.UnicodeUTF8))
+        self.menu.setTitle(QtGui.QApplication.translate("MainWindow",
+                "Файл", None, QtGui.QApplication.UnicodeUTF8))
+        self.menu_2.setTitle(QtGui.QApplication.translate("MainWindow",
+                "Справка", None, QtGui.QApplication.UnicodeUTF8))
+        self.action.setText(QtGui.QApplication.translate("MainWindow",
+                "О программе", None, QtGui.QApplication.UnicodeUTF8))
+        self.action_2.setText(QtGui.QApplication.translate("MainWindow",
+                "Открыть файл ограничений", None,
+                QtGui.QApplication.UnicodeUTF8))
+        self.action_3.setText(QtGui.QApplication.translate("MainWindow",
+                "Настройки", None, QtGui.QApplication.UnicodeUTF8))
+        self.action_5.setText(QtGui.QApplication.translate("MainWindow",
+                "Выход", None, QtGui.QApplication.UnicodeUTF8))
 
 
 class ProgressDialog(QtGui.QProgressDialog):
     def __init__(self, parent=None):
         super(ProgressDialog, self).__init__(parent)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/fontaine/icons/fontaine_icon(32).png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap(":/fontaine/icons/fontaine_icon(32).png"),
+                        QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.ui = QtGui.QProgressDialog(u"Подготовка отчета...",
                                     u"Отмена", 0, 100)
         self.ui.setWindowIcon(icon)
@@ -114,7 +130,8 @@ class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
         Dialog.resize(220, 180)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed,
+                                       QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(Dialog.sizePolicy().hasHeightForWidth())
@@ -122,12 +139,14 @@ class Ui_Dialog(object):
         Dialog.setMinimumSize(QtCore.QSize(220, 180))
         Dialog.setMaximumSize(QtCore.QSize(220, 180))
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/fontaine/icons/fontaine_icon(32).png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap(":/fontaine/icons/fontaine_icon(32).png"),
+                       QtGui.QIcon.Normal, QtGui.QIcon.Off)
         Dialog.setWindowIcon(icon)
         self.buttonBox = QtGui.QDialogButtonBox(Dialog)
         self.buttonBox.setGeometry(QtCore.QRect(40, 145, 171, 32))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel |
+                                          QtGui.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")
         self.buttonBox.accepted.connect(Dialog.accept)
         self.buttonBox.rejected.connect(Dialog.reject)
@@ -143,7 +162,8 @@ class Ui_Dialog(object):
         self.label = QtGui.QLabel(self.widget)
         self.label.setObjectName("label")
         self.gridLayout.addWidget(self.label, 0, 0, 1, 1)
-        spacerItem = QtGui.QSpacerItem(30, 17, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        spacerItem = QtGui.QSpacerItem(30, 17, QtGui.QSizePolicy.Expanding,
+                                       QtGui.QSizePolicy.Minimum)
         self.gridLayout.addItem(spacerItem, 0, 1, 1, 1)
         self.doubleSpinBox = QtGui.QDoubleSpinBox(self.widget)
         self.doubleSpinBox.setMaximumSize(QtCore.QSize(60, 20))
@@ -158,7 +178,8 @@ class Ui_Dialog(object):
         self.label_2 = QtGui.QLabel(self.widget)
         self.label_2.setObjectName("label_2")
         self.gridLayout.addWidget(self.label_2, 1, 0, 1, 1)
-        spacerItem1 = QtGui.QSpacerItem(34, 17, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        spacerItem1 = QtGui.QSpacerItem(34, 17, QtGui.QSizePolicy.Expanding,
+                                        QtGui.QSizePolicy.Minimum)
         self.gridLayout.addItem(spacerItem1, 1, 1, 1, 1)
         self.doubleSpinBox_2 = QtGui.QDoubleSpinBox(self.widget)
         self.doubleSpinBox_2.setMaximumSize(QtCore.QSize(60, 20))
@@ -181,21 +202,32 @@ class Ui_Dialog(object):
         self.retranslateUi(Dialog)
 
     def retranslateUi(self, Dialog):
-        Dialog.setWindowTitle(QtGui.QApplication.translate("Dialog", "Настройки", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Плотность", None, QtGui.QApplication.UnicodeUTF8))
-        self.label.setText(QtGui.QApplication.translate("Dialog", "Нефть", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_3.setText(QtGui.QApplication.translate("Dialog", "кг/м3", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_2.setText(QtGui.QApplication.translate("Dialog", "Вода", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_4.setText(QtGui.QApplication.translate("Dialog", "кг/м3", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox.setText(QtGui.QApplication.translate("Dialog", "Включить отладку", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox_2.setText(QtGui.QApplication.translate("Dialog", "Обнаружение боковых стволов", None, QtGui.QApplication.UnicodeUTF8))
+        Dialog.setWindowTitle(QtGui.QApplication.translate("Dialog",
+                            "Настройки", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox.setTitle(QtGui.QApplication.translate("Dialog",
+                            "Плотность", None, QtGui.QApplication.UnicodeUTF8))
+        self.label.setText(QtGui.QApplication.translate("Dialog",
+                            "Нефть", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_3.setText(QtGui.QApplication.translate("Dialog",
+                            "кг/м3", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_2.setText(QtGui.QApplication.translate("Dialog",
+                            "Вода", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_4.setText(QtGui.QApplication.translate("Dialog",
+                            "кг/м3", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox.setText(QtGui.QApplication.translate("Dialog",
+                            "Включить отладку", None,
+                            QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_2.setText(QtGui.QApplication.translate("Dialog",
+                            "Обнаружение боковых стволов", None,
+                            QtGui.QApplication.UnicodeUTF8))
 
 
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
         Form.resize(320, 270)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed,
+                                       QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(Form.sizePolicy().hasHeightForWidth())
@@ -203,7 +235,8 @@ class Ui_Form(object):
         Form.setMinimumSize(QtCore.QSize(320, 270))
         Form.setMaximumSize(QtCore.QSize(320, 270))
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/fontaine/icons/fontaine_icon(32).png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap(":/fontaine/icons/fontaine_icon(32).png"),
+                       QtGui.QIcon.Normal, QtGui.QIcon.Off)
         Form.setWindowIcon(icon)
         self.pushButton = QtGui.QPushButton(Form)
         self.pushButton.setGeometry(QtCore.QRect(120, 230, 75, 23))
@@ -213,7 +246,8 @@ class Ui_Form(object):
         self.label.setGeometry(QtCore.QRect(90, 10, 128, 128))
         self.label.setMaximumSize(QtCore.QSize(128, 128))
         self.label.setText("")
-        self.label.setPixmap(QtGui.QPixmap(":/fontaine/images/fontaine_icon(128).png"))
+        self.label.setPixmap(QtGui.QPixmap(
+                            ":/fontaine/images/fontaine_icon(128).png"))
         self.label.setObjectName("label")
         self.label_2 = QtGui.QLabel(Form)
         self.label_2.setGeometry(QtCore.QRect(80, 160, 139, 16))
@@ -232,8 +266,18 @@ class Ui_Form(object):
         QtCore.QMetaObject.connectSlotsByName(Form)
 
     def retranslateUi(self, Form):
-        Form.setWindowTitle(QtGui.QApplication.translate("Form", "О программе", None, QtGui.QApplication.UnicodeUTF8))
-        self.pushButton.setText(QtGui.QApplication.translate("Form", "OK", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_2.setText(QtGui.QApplication.translate("Form", "Fontaine v0.8", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_3.setText(QtGui.QApplication.translate("Form", "Powered by PySide & Python", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_4.setText(QtGui.QApplication.translate("Form", "Alexei Partilov @ 2012", None, QtGui.QApplication.UnicodeUTF8))
+        Form.setWindowTitle(QtGui.QApplication.translate("Form",
+                            "О программе", None,
+                            QtGui.QApplication.UnicodeUTF8))
+        self.pushButton.setText(QtGui.QApplication.translate("Form",
+                            "OK", None,
+                            QtGui.QApplication.UnicodeUTF8))
+        self.label_2.setText(QtGui.QApplication.translate("Form",
+                            "Fontaine v0.8", None,
+                            QtGui.QApplication.UnicodeUTF8))
+        self.label_3.setText(QtGui.QApplication.translate("Form",
+                            "Powered by PySide & Python", None,
+                            QtGui.QApplication.UnicodeUTF8))
+        self.label_4.setText(QtGui.QApplication.translate("Form",
+                            "Alexei Partilov @ 2012", None,
+                            QtGui.QApplication.UnicodeUTF8))

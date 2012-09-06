@@ -101,7 +101,8 @@ class Field(object):  # FIXME: More docstrings
     def add_well(self, number, data={}, **kwargs):
         import re
         if self.__lateral:
-            shrt_num = re.search(r"^([0-9A-Z]+)(?=(?:BS|B)|(?:[-_]\d{1}))", number)
+            shrt_num = re.search(r"^([0-9A-Z]+)(?=(?:BS|B)|(?:[-_]\d{1}))",
+                                 number)
             if shrt_num:
                 parent_number = shrt_num.group()
                 if not parent_number in self.wells:
@@ -124,7 +125,8 @@ class Field(object):  # FIXME: More docstrings
                 tmp.append(data[year])
             self.parameters[parameter] = tmp
         else:
-            raise FieldError("Repeated field parameters", parameter=str(parameter))
+            raise FieldError("Repeated field parameters",
+                             parameter=str(parameter))
 
     def routine_operations(self):
         map(lambda x: Well.add_worktime(x, dates=self.dates),
