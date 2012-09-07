@@ -15,6 +15,7 @@ rate_parameters = ['WLPR', 'WOIN', 'WWIN', 'WGIN']
 rate_prod_parameters = ['WLPR']
 rate_inj_parameters = ['WOIN', 'WWIN', 'WGIN', 'WOIR', 'WWIR', 'WGIR']
 
+import numpy
 
 class Borehole(object):
     '''
@@ -30,20 +31,15 @@ class Borehole(object):
         self.parameters.update(data)
 
     def compress_data(self, dates):  # уменьшить вложенность
+        numpy.set_printoptions(precision=3)
+        b = dates.values()
         for parameter in self.parameters:
-            compress = list(self.parameters[parameter])
-            self.parameters[parameter][:] = []
+            self.parameters[parameter] = \
+                self.parameters[parameter].take(sorted(b))
             if parameter in total_parameters:
-                for cur_date, next_date in pairs(sorted(dates.values())):
-                    value = float(compress[next_date]) - \
-                            float(compress[cur_date])
-                    self.parameters[parameter].append(value)
-            else:
-                s_dates = sorted(dates.values())
-                s_dates.pop(0)
-                self.__class__.short_mask = [0] * len(s_dates)
-                for date in s_dates:
-                    self.parameters[parameter].append(float(compress[date]))
+                a = self.parameters[parameter]
+                a = numpy.roll(a, -1) - a
+                self.parameters[parameter] = numpy.delete(a, -1)
 
     def recieve_parameter(self, code):
         return self.parameters.get(code)
@@ -105,13 +101,12 @@ class Well(object):
         for arg in args:
             datalist = None
             for borehole in self.__boreholes.values():
-                if not datalist:
+                if datalist == None:
                     exists = borehole.recieve_parameter(arg)
-                    if exists:
-                        datalist = list(exists)
+                    if exists != None:
+                        datalist = exists
                     continue
-                datalist = list_sum(datalist,
-                                list(borehole.recieve_parameter(arg)))
+                datalist = datalist + borehole.recieve_parameter(arg)
             if datalist == None:
                 continue
             yield datalist
@@ -133,15 +128,16 @@ class Well(object):
 
     def well_classification(self, mode='total'):
         if mode == 'total':
-            prod_parameters = self.recieve_parameters(*total_prod_parameters)
-            inj_parameters = self.recieve_parameters(*total_inj_parameters)
+            production = self.recieve_parameters(*total_prod_parameters)
+            injection = self.recieve_parameters(*total_inj_parameters)
         elif mode == 'rate':
-            prod_parameters = self.recieve_parameters(*rate_prod_parameters)
-            inj_parameters = self.recieve_parameters(*rate_inj_parameters)
+            production = self.recieve_parameters(*rate_prod_parameters)
+            injection = self.recieve_parameters(*rate_inj_parameters)
         else:
             raise ValueError
-        production = list_sum(*prod_parameters)
-        injection = list_sum(*inj_parameters)
+        production = reduce(lambda x, y: x + y, production)
+        injection = reduce(lambda x, y: x + y, injection)
+        # here lies numpy
         output = list(self.__class__.short_mask)
         for year, (prod, inj) in enumerate(zip(production, injection)):
             # inactiveness condition
@@ -177,27 +173,30 @@ class Well(object):
         return output
 
     def add_worktime(self, dates):
+        # accepts numpy array as data
         def countMonth(self, data):
             m = 0
             k = 12 / len(data)
             for rate in data:
-                if float(rate) > 0:
+                if rate > 0:
                     m += 1 * k
             return m
-        s_dates = sorted(dates.values())    # не элегантно
+        s_dates = sorted(dates.values())
         s_dates.pop(0)
-        self.__class__.short_mask = [0] * len(s_dates)
-        well_work_time = list(self.__class__.short_mask)
+#        self.__class__.short_mask = numpy.zeros(len(s_dates))
+        well_work_time = numpy.zeros(len(s_dates))
         parameters = self.recieve_parameters(*total_parameters)
         for data in parameters:
-            s_data = []
-            for cur_total, next_total in pairs(data):  # не элегантно
-                s_data.append(float(next_total) - float(cur_total))
+#            for cur_total, next_total in pairs(data):  # не элегантно
+#                s_data.append(float(next_total) - float(cur_total))
+            a = data
+            a = numpy.roll(a, -1) - a
+            a = numpy.delete(a, -1)
             work_time = []
             for cur, nex in pairs(sorted(dates)):
                 cur_line = dates[cur]
                 next_line = dates[nex]
-                sliced_data = s_data[cur_line:next_line:]
+                sliced_data = a[cur_line:next_line]
                 m = countMonth(cur, sliced_data)
                 work_time.append(m)
             for i, val in enumerate(work_time):
@@ -228,13 +227,13 @@ def pairs(lst):  # list generator
         prev = item
 
 
-def list_sum(*args):
-    if not args:
-        raise ValueError
-    if len(args) == 1:
-        return [float(x) for x in args[0]]
-
-    def list2_sum(a, b):
-        return [float(x) + float(y) for x, y in zip(a, b)]
-
-    return reduce(list2_sum, args)
+#def list_sum(*args):
+#    if not args:
+#        raise ValueError
+#    if len(args) == 1:
+#        return [float(x) for x in args[0]]
+#
+#    def list2_sum(a, b):
+#        return [float(x) + float(y) for x, y in zip(a, b)]
+#
+#    return reduce(list2_sum, args)
