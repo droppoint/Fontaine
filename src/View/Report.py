@@ -7,6 +7,7 @@ Created on 18.06.2012
 '''
 
 import os
+import numpy
 
 
 def get_formulas(template, args, number):
@@ -108,6 +109,8 @@ class Report(object):
             ws.write(y, x, name)
             x += 1
             for key in data:
+                if isinstance(key, (numpy.int16, numpy.int32, numpy.float64)):
+                    key = numpy.asscalar(key)
                 ws.write(y, x, key)
                 x += 1
 

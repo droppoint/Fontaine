@@ -17,6 +17,7 @@ rate_inj_parameters = ['WOIN', 'WWIN', 'WGIN', 'WOIR', 'WWIR', 'WGIR']
 
 import numpy
 
+
 class Borehole(object):
     '''
     classdocs
@@ -45,9 +46,10 @@ class Borehole(object):
         return self.parameters.get(code)
 
     def recieve_parameters(self, *args):
+        datalist = None
         for arg in args:
             datalist = self.recieve_parameter(arg)
-            if datalist:
+            if datalist != None:
                 yield datalist
 
     def clear(self):
@@ -115,13 +117,16 @@ class Well(object):
         years = []
         for number in self.__boreholes:
             if number == name:
-                continue  # плохо, очень плохо
-            production = list_sum(*self.__boreholes[number].recieve_parameters(
-                                                    *total_prod_parameters))
-            injection = list_sum(*self.__boreholes[number].recieve_parameters(
-                                                    *total_inj_parameters))
-            for year, (prod, inj) in enumerate(zip(production, injection)):
-                if inj + prod > 0:
+                continue
+            production = self.__boreholes[number].recieve_parameters(
+                                *total_prod_parameters)
+            production = reduce(lambda x, y: x + y, production)
+            injection = self.__boreholes[number].recieve_parameters(
+                                *total_inj_parameters)
+            injection = reduce(lambda x, y: x + y, injection)
+            total = production + injection
+            for year, total in enumerate(total):
+                if total > 0:
                     years.append(year)
                     break
         return years
@@ -137,9 +142,11 @@ class Well(object):
             raise ValueError
         production = reduce(lambda x, y: x + y, production)
         injection = reduce(lambda x, y: x + y, injection)
-        # here lies numpy
-        output = list(self.__class__.short_mask)
-        for year, (prod, inj) in enumerate(zip(production, injection)):
+        rates = numpy.column_stack((production, injection))
+        output = numpy.zeros_like(production, dtype="uint8")
+        for year, rate in enumerate(rates):
+            prod = rate[0]
+            inj = rate[1]
             # inactiveness condition
             if inj + prod == 0 and  \
                year > self.first_run and year < self.abandonment:
@@ -161,13 +168,20 @@ class Well(object):
     def inj_transfer_check(self):
         n = 0
         output = False
-        for cur, nex in pairs(self.classification):
+        a = numpy.roll(self.classification, -1)
+        a = numpy.delete(a, -1)
+        b = numpy.copy(self.classification)
+        b = numpy.delete(b, -1)
+        a = numpy.column_stack((a, b))
+        for elem in a:
+            cur = elem[0]
+            nex = elem[1]
             n += 1
             if cur == 2 and nex == 1:
                 output = n
                 break
             if cur == 4 and nex == 1 and \
-                self.classification[self.first_run] == 2:
+                (self.classification[self.first_run] == 2):
                 output = n
                 break
         return output
@@ -183,12 +197,11 @@ class Well(object):
             return m
         s_dates = sorted(dates.values())
         s_dates.pop(0)
-#        self.__class__.short_mask = numpy.zeros(len(s_dates))
+
         well_work_time = numpy.zeros(len(s_dates))
         parameters = self.recieve_parameters(*total_parameters)
         for data in parameters:
-#            for cur_total, next_total in pairs(data):  # не элегантно
-#                s_data.append(float(next_total) - float(cur_total))
+
             a = data
             a = numpy.roll(a, -1) - a
             a = numpy.delete(a, -1)
@@ -225,15 +238,3 @@ def pairs(lst):  # list generator
     for item in i:
         yield prev, item
         prev = item
-
-
-#def list_sum(*args):
-#    if not args:
-#        raise ValueError
-#    if len(args) == 1:
-#        return [float(x) for x in args[0]]
-#
-#    def list2_sum(a, b):
-#        return [float(x) + float(y) for x, y in zip(a, b)]
-#
-#    return reduce(list2_sum, args)

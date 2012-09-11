@@ -6,6 +6,7 @@ Created on 24.04.2012
 '''
 from Well import Well
 import Parser
+import numpy
 
 
 class FieldError(Exception):
@@ -141,35 +142,32 @@ class Field(object):  # FIXME: More docstrings
         map(Well.inj_transfer_check, self.wells.values())
 
     def production_rate(self, code, density=1, degree=0):
-        rate = []
+        rate = None
         for well in self.wells.values():
             for data in well.recieve_parameters(code):
-                if data:
-                    if not rate:
+                if data != None:
+                    if rate == None:
                         rate = data
                     else:
-                        tmp_rate = list(rate)
-                        rate = []
-                        for a, b in zip(tmp_rate, data):
-                            rate.append(a + b)
-        return [x * density * (10 ** degree) for x in rate]
+                        rate = rate + data
+        return rate * density * 10 ** degree
 
     def new_well_rate(self, code, density=1, degree=0):
-        rate = list(self.mask)
+        rate = numpy.array(self.mask)
         for well in self.wells.values():  # без values
             for data in well.recieve_parameters(code):
-                if data:
+                if data != None:
                     rate[well.first_run] += data[well.first_run]
-        return [x * density * (10 ** degree) for x in rate]
+        return rate * density * (10 ** degree)
 
     def new_well_work_time(self):
-        work_time = list(self.mask)
+        work_time = numpy.array(self.mask)
         for well in self.wells.values():  # без values
             work_time[well.first_run] += well.work_time[well.first_run]
         return work_time
 
     def completed_wells(self, code='all'):
-        output = list(self.mask)
+        output = numpy.array(self.mask, dtype="int16")
         for well in self.wells.values():
             if code == 'all':
                 output[well.first_run] += 1
@@ -178,7 +176,7 @@ class Field(object):  # FIXME: More docstrings
         return output
 
     def abandoned_wells(self, code='all'):
-        output = list(self.mask)
+        output = numpy.array(self.mask, dtype="int16")
         for well in self.wells.values():
             if well.abandonment == 'working':
                 continue
@@ -189,7 +187,7 @@ class Field(object):  # FIXME: More docstrings
         return output
 
     def transfered_wells(self):
-        output = list(self.mask)
+        output = numpy.array(self.mask, dtype="int16")
         for well in self.wells.values():
             n = well.inj_transfer_check()
             if n:
@@ -197,21 +195,30 @@ class Field(object):  # FIXME: More docstrings
         return output
 
     def inactive_transfer(self):
-        in_prod, in_inje, out_prod, out_inje = \
-        list(self.mask), list(self.mask), list(self.mask), list(self.mask)
+        result = None
         for well in self.wells.values():
-            n = 0
-            for cur_state, next_state in pairs(well.classification_by_rate):
-                if cur_state == 1 and next_state == 4:
-                    out_inje[n] += 1
-                if cur_state == 4 and next_state == 1:
-                    in_inje[n] += 1
-                if cur_state == 2 and next_state == 4:
-                    out_prod[n] += 1
-                if cur_state == 4 and next_state == 2:
-                    in_prod[n] += 1
-                n += 1
-        return in_prod, out_prod, in_inje, out_inje
+            if result == None:
+                result = numpy.zeros_like(well.classification_by_rate, dtype="int32")
+                result = numpy.vstack((result, result, result, result))
+        a = numpy.roll(well.classification_by_rate, -1)
+        a = numpy.delete(a, -1)
+        b = numpy.copy(well.classification_by_rate)
+        b = numpy.delete(b, -1)
+        a = numpy.column_stack((a, b))
+        n = 0
+        for elem in a:
+            cur = elem[0]
+            nex = elem[1]
+            if cur == 4 and nex == 2:
+                result[0][n] += 1
+            if cur == 2 and nex == 4:
+                result[1][n] += 1
+            if cur == 4 and nex == 1:
+                result[2][n] += 1
+            if cur == 1 and nex == 4:
+                result[3][n] += 1
+            n += 1
+        return result
 
     def work_time(self, code='all'):  # не элегантно
         output = list(self.mask)
@@ -245,49 +252,39 @@ class Field(object):  # FIXME: More docstrings
         return fond
 
     def avg_pressure(self, pres_type):
-        mask = list(self.mask)
+        mask = list(self.mask)  # плохо
         mask.pop(0)
-        avg_inj_pres = list(mask)  # проверить маску
-        avg_prod_pres = list(mask)
-        for num in range(len(mask)):
-            pres_prod, pres_inj = 0, 0
-            count_prod, count_inj = 0, 0
-            for well in self.wells.values():  # деление на well_fond
-                for data in well.recieve_parameters(pres_type):
-                    if data:
-                        if well.classification_by_rate[num] == 2:
-                            pres_prod += data[num]
-                            count_prod += 1
-                        elif well.classification_by_rate[num] == 1:
-                            pres_inj += data[num]
-                            count_inj += 1
-            if count_prod != 0:
-                avg_prod_pres[num] += pres_prod / count_prod
-            if count_inj != 0:
-                avg_inj_pres[num] += pres_inj / count_inj
+        avg_inj_pres = numpy.array(mask)
+        avg_prod_pres = numpy.array(mask)
+        count_prod = numpy.array(mask, dtype="int16")
+        count_inj = numpy.array(mask, dtype="int16")
+        for well in self.wells.values():  # деление на well_fond
+            pressure = well.recieve_parameters(pres_type)
+            for year, pressure in enumerate(pressure):
+                if well.classification_by_rate[year] == 2:
+                    avg_prod_pres[year] += pressure
+                    count_prod[year] += 1
+                elif well.classification_by_rate[year] == 1:
+                    avg_inj_pres[year] += pressure
+                    count_inj[year] += 1
+        numpy.seterr(divide="ignore")
+        avg_prod_pres = avg_prod_pres / count_prod
+        avg_inj_pres = avg_inj_pres / count_inj
         return avg_prod_pres, avg_inj_pres
 
-    def countMonth(self, pointer, data):
-        m = 0
-        start = self.dates[pointer]
-        end = self.dates[pointer + 1]
-        k = 12 / (end - start)
-        for curr, nextt in pairs(range(end - start + 1)):
-            if (float(data[nextt + start]) -
-                    float(data[curr + start]) != 0):
-                m += 1 * k
-        return m
+#    def countMonth(self, pointer, data):
+#        m = 0
+#        start = self.dates[pointer]
+#        end = self.dates[pointer + 1]
+#        k = 12 / (end - start)
+#        for curr, nextt in pairs(range(end - start + 1)):
+#            if (float(data[nextt + start]) -
+#                    float(data[curr + start]) != 0):
+#                m += 1 * k
+#        return m
 
     def clear(self):
         for well in self.wells.values():
             well.clear()
         self.parameters.clear()
         self.mask = []
-
-
-def pairs(lst):  # list generator
-    i = iter(lst)
-    prev = item = i.next()
-    for item in i:
-        yield prev, item
-        prev = item
