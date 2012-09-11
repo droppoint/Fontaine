@@ -234,9 +234,11 @@ class Field(object):  # FIXME: More docstrings
         return output
 
     def well_fond(self, code):   # коды состояний 0.1.2.4
-        wells_fond = list(self.mask)
-        wells_fond.pop(0)
+        wells_fond = None
         for well in self.wells.values():
+            if wells_fond == None:
+                wells_fond = numpy.zeros_like(well.classification_by_rate)
+                wells_fond = numpy.delete(wells_fond, -1)
             for year, _ in enumerate(wells_fond):
                 if well.classification_by_rate[year] == code:
                     wells_fond[year] += 1
@@ -253,35 +255,26 @@ class Field(object):  # FIXME: More docstrings
 
     def avg_pressure(self, pres_type):
         mask = list(self.mask)  # плохо
-        mask.pop(0)
-        avg_inj_pres = numpy.array(mask)
-        avg_prod_pres = numpy.array(mask)
+        avg_inj_pres = numpy.array(mask, dtype="float32")
+        avg_prod_pres = numpy.array(mask, dtype="float32")
         count_prod = numpy.array(mask, dtype="int16")
         count_inj = numpy.array(mask, dtype="int16")
         for well in self.wells.values():  # деление на well_fond
             pressure = well.recieve_parameters(pres_type)
-            for year, pressure in enumerate(pressure):
+            pressure = reduce(lambda x, y: x + y, pressure)
+            for year, pres in enumerate(pressure):
                 if well.classification_by_rate[year] == 2:
-                    avg_prod_pres[year] += pressure
+                    avg_prod_pres[year] += pres
                     count_prod[year] += 1
                 elif well.classification_by_rate[year] == 1:
-                    avg_inj_pres[year] += pressure
+                    avg_inj_pres[year] += pres
                     count_inj[year] += 1
         numpy.seterr(divide="ignore")
         avg_prod_pres = avg_prod_pres / count_prod
+        avg_prod_pres = numpy.delete(avg_prod_pres, 0)
         avg_inj_pres = avg_inj_pres / count_inj
+        avg_inj_pres = numpy.delete(avg_inj_pres, 0)
         return avg_prod_pres, avg_inj_pres
-
-#    def countMonth(self, pointer, data):
-#        m = 0
-#        start = self.dates[pointer]
-#        end = self.dates[pointer + 1]
-#        k = 12 / (end - start)
-#        for curr, nextt in pairs(range(end - start + 1)):
-#            if (float(data[nextt + start]) -
-#                    float(data[curr + start]) != 0):
-#                m += 1 * k
-#        return m
 
     def clear(self):
         for well in self.wells.values():

@@ -109,7 +109,8 @@ class Report(object):
             ws.write(y, x, name)
             x += 1
             for key in data:
-                if isinstance(key, (numpy.int16, numpy.int32, numpy.float64)):
+                if isinstance(key, (numpy.int16, numpy.int32, numpy.float64,
+                                    numpy.float32, numpy.uint8)):
                     key = numpy.asscalar(key)
                 ws.write(y, x, key)
                 x += 1
