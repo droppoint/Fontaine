@@ -271,8 +271,10 @@ class Field(object):  # FIXME: More docstrings
                     count_inj[year] += 1
         numpy.seterr(divide="ignore")
         avg_prod_pres = avg_prod_pres / count_prod
+        avg_prod_pres = numpy.nan_to_num(avg_prod_pres)
         avg_prod_pres = numpy.delete(avg_prod_pres, 0)
         avg_inj_pres = avg_inj_pres / count_inj
+        avg_inj_pres = numpy.nan_to_num(avg_inj_pres)
         avg_inj_pres = numpy.delete(avg_inj_pres, 0)
         return avg_prod_pres, avg_inj_pres
 
