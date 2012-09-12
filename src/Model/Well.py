@@ -174,8 +174,8 @@ class Well(object):
         b = numpy.delete(b, -1)
         a = numpy.column_stack((a, b))
         for elem in a:
-            cur = elem[0]
-            nex = elem[1]
+            nex = elem[0]
+            cur = elem[1]
             n += 1
             if cur == 2 and nex == 1:
                 output = n
