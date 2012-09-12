@@ -200,24 +200,24 @@ class Field(object):  # FIXME: More docstrings
             if result == None:
                 result = numpy.zeros_like(well.classification_by_rate, dtype="int32")
                 result = numpy.vstack((result, result, result, result))
-        a = numpy.roll(well.classification_by_rate, -1)
-        a = numpy.delete(a, -1)
-        b = numpy.copy(well.classification_by_rate)
-        b = numpy.delete(b, -1)
-        a = numpy.column_stack((a, b))
-        n = 0
-        for elem in a:
-            cur = elem[0]
-            nex = elem[1]
-            if cur == 4 and nex == 2:
-                result[0][n] += 1
-            if cur == 2 and nex == 4:
-                result[1][n] += 1
-            if cur == 4 and nex == 1:
-                result[2][n] += 1
-            if cur == 1 and nex == 4:
-                result[3][n] += 1
-            n += 1
+            a = numpy.roll(well.classification_by_rate, -1)
+            a = numpy.delete(a, -1)
+            b = numpy.copy(well.classification_by_rate)
+            b = numpy.delete(b, -1)
+            a = numpy.column_stack((a, b))
+            n = 0
+            for elem in a:
+                nex = elem[0]
+                cur = elem[1]
+                if cur == 4 and nex == 2:
+                    result[0][n] += 1
+                if cur == 2 and nex == 4:
+                    result[1][n] += 1
+                if cur == 4 and nex == 1:
+                    result[2][n] += 1
+                if cur == 1 and nex == 4:
+                    result[3][n] += 1
+                n += 1
         return result
 
     def work_time(self, code='all'):  # не элегантно
