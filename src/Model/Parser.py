@@ -197,7 +197,6 @@ class Parser(object):
         return self.stream.get_dates_list()
 
     def parse_file(self):
-        import math  # maybe in other place?
 
         while self.stream.next_block():
             '''
@@ -227,14 +226,12 @@ class Parser(object):
 
                 clear_block = []
                 for line in block:
-#                    data = regex_data_line.findall(line)
                     data = line.split()
                     del data[0]  # удаляем дату из начала списка
                     clear_block.append([float(data[i]) for i in index])
+                    numpy.fromstring(line, dtype="float32", sep=" ")
                 numpy_clear_block = numpy.array(clear_block)
                 numpy_clear_block = numpy_clear_block.transpose()
-#                clear_block = zip_list(*clear_block)
-#                clear_block = [i for i in clear_block]
                 if numbers:
                     clear_numbers = strip_line(regex_all_numbers, numbers)
                     clear_numbers = [clear_numbers[i] for i in index]
@@ -243,9 +240,6 @@ class Parser(object):
                     clear_factors = [clear_factors[i] for i in index]
                     for num, factor in enumerate(clear_factors):   # костыль
                         if factor != 'N/A':
-#                            clear_block[num] = \
-#                             [math.pow(10,
-#                              float(factor)) * i for i in clear_block[num]]
                             numpy_clear_block[num] = \
                                 numpy_clear_block[num] * 10 ** float(factor)
                 for num, parameter in enumerate(clear_headers):
